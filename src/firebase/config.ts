@@ -1,8 +1,9 @@
 export const firebaseConfig = {
-  "projectId": "studio-4652577095-9f1a2",
-  "appId": "1:610961279511:web:c73658e1e7a814bfbf2a52",
-  "apiKey": "AIzaSyCeKbrpDq7rhOP7umOeXRoSoZ8iVngCzwc",
-  "authDomain": "studio-4652577095-9f1a2.firebaseapp.com",
-  "measurementId": "",
-  "messagingSenderId": "610961279511"
+  "projectId": "control-censo-cpv",
+  "appId": "1:932625785984:web:031308a3852c4b5333501a",
+  "apiKey": "AIzaSyAz_1_7-LpTfQy_1234567890abcdef",
+  "authDomain": "control-censo-cpv.firebaseapp.com",
+  "measurementId": "G-1234567890",
+  "messagingSenderId": "932625785984",
+  "storageBucket": "control-censo-cpv.appspot.com"
 };

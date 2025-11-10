@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import { FirebaseClientProvider } from "@/firebase/client-provider";
 
 export default function PublicLayout({
   children,
@@ -25,7 +26,7 @@ export default function PublicLayout({
           "min-h-screen bg-background"
         )}
       >
-        {children}
+        <FirebaseClientProvider>{children}</FirebaseClientProvider>
       </body>
     </html>
   );
