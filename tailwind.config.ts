@@ -18,7 +18,7 @@ export default {
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
-        'progress': 'progress 3s ease-in-out forwards',
+        'progress': 'progress 1s ease-in-out forwards',
         'progressBar': 'progressBar 2s ease-in-out forwards',
       },
       keyframes: {

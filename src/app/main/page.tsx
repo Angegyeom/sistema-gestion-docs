@@ -8,7 +8,7 @@ export default function MainPage() {
   useEffect(() => {
     const timer = setTimeout(() => {
       router.push("/login");
-    }, 3000);
+    }, 1000);
     return () => clearTimeout(timer);
   }, [router]);
 
@@ -45,7 +45,7 @@ export default function MainPage() {
           animation: pulse 2s infinite;
         }
         .animate-progress {
-          animation: progress 3s ease-in-out forwards;
+          animation: progress 1s ease-in-out forwards;
         }
       `}</style>
     </div>
