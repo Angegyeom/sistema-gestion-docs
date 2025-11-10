@@ -34,9 +34,7 @@ export default function RootLayout({
           "min-h-screen bg-gradient-to-br from-[#667eea] to-[#764ba2]"
         )}
       >
-        <FirebaseClientProvider>
-          {children}
-        </FirebaseClientProvider>
+        <FirebaseClientProvider>{children}</FirebaseClientProvider>
         <Toaster />
       </body>
     </html>

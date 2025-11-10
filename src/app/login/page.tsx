@@ -24,6 +24,12 @@ export default function LoginPage() {
 
     setLoading(true);
 
+    if (!auth) {
+      showError("❌ Error de autenticación. Intente de nuevo.");
+      setLoading(false);
+      return;
+    }
+
     signInWithEmailAndPassword(auth, email, password)
       .then((userCredential) => {
         // Signed in
