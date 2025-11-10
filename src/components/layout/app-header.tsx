@@ -1,40 +1,39 @@
 "use client";
+import { usePathname } from 'next/navigation';
+import Link from 'next/link';
+import Image from 'next/image';
 
-import { SidebarTrigger } from "@/components/ui/sidebar";
-import { Button } from "@/components/ui/button";
-import { Moon, Sun } from "lucide-react";
-import { useEffect, useState } from "react";
-import type { ViewType } from "@/lib/types";
-import { viewTitles } from "@/lib/types";
+const navItems = [
+    { href: '/dashboard', label: '🏠 Inicio' },
+    { href: '/aplicativos', label: '📱 Aplicativos' },
+    { href: '/documentacion', label: '📄 Documentación' },
+    { href: '/presentaciones', label: '📊 Presentaciones' },
+    { href: '/monitoreo', label: '📈 Monitoreo' },
+];
 
-type AppHeaderProps = {
-  activeView: ViewType;
-};
+export default function AppHeader() {
+    const pathname = usePathname();
 
-export default function AppHeader({ activeView }: AppHeaderProps) {
-  const [isDark, setIsDark] = useState(true);
+    return (
+        <header className="bg-white/10 backdrop-blur-md py-4 border-b border-white/20 sticky top-0 z-50">
+            <div className="max-w-7xl mx-auto px-5 flex justify-between items-center">
+                <div className="h-12">
+                   <Image src="/images/censo-logo.png" alt="Censo 2025 Logo" width={140} height={48} objectFit='contain' />
+                </div>
 
-  useEffect(() => {
-    setIsDark(document.documentElement.classList.contains('dark'));
-  }, []);
+                <nav className="hidden md:flex gap-2">
+                    {navItems.map(item => (
+                        <Link key={item.href} href={item.href}
+                           className={`text-white no-underline py-2.5 px-5 rounded-full transition-all duration-300 ${pathname === item.href ? 'bg-white/20' : 'bg-white/10 hover:bg-white/20 hover:-translate-y-0.5'}`}>
+                            {item.label}
+                        </Link>
+                    ))}
+                </nav>
 
-  const toggleTheme = () => {
-    document.documentElement.classList.toggle('dark');
-    setIsDark(prev => !prev);
-  }
-
-  return (
-    <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-background px-4 md:px-6">
-      <SidebarTrigger className="md:hidden" />
-      <h1 className="text-lg font-semibold md:text-xl">
-        {viewTitles[activeView]}
-      </h1>
-      <div className="ml-auto">
-        <Button variant="ghost" size="icon" onClick={toggleTheme} aria-label="Toggle theme">
-          <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-          <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-        </Button>
-      </div>
-    </header>
-  );
+                <div className="h-12">
+                    <Image src="/images/inei-logo.png" alt="INEI Logo" width={140} height={48} objectFit='contain' />
+                </div>
+            </div>
+        </header>
+    );
 }

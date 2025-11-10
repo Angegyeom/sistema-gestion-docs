@@ -10,9 +10,45 @@ export default {
   theme: {
     extend: {
       fontFamily: {
+        sans: ['Segoe UI', 'Tahoma', 'Geneva', 'Verdana', 'sans-serif'],
         body: ['Inter', 'sans-serif'],
         headline: ['Inter', 'sans-serif'],
         code: ['monospace'],
+      },
+      animation: {
+        'accordion-down': 'accordion-down 0.2s ease-out',
+        'accordion-up': 'accordion-up 0.2s ease-out',
+        'progress': 'progress 3s ease-in-out forwards',
+        'progressBar': 'progressBar 2s ease-in-out forwards',
+      },
+      keyframes: {
+        'accordion-down': {
+          from: {
+            height: '0',
+          },
+          to: {
+            height: 'var(--radix-accordion-content-height)',
+          },
+        },
+        'accordion-up': {
+          from: {
+            height: 'var(--radix-accordion-content-height)',
+          },
+          to: {
+            height: '0',
+          },
+        },
+        progress: {
+            '0%': { width: '0%' },
+            '100%': { width: '100%' },
+        },
+        progressBar: {
+            from: { width: '0%' },
+            to: { width: '100%' },
+        }
+      },
+       textShadow: {
+        DEFAULT: '2px 2px 4px rgba(0,0,0,0.3)',
       },
       colors: {
         background: 'hsl(var(--background))',
@@ -71,29 +107,23 @@ export default {
         md: 'calc(var(--radius) - 2px)',
         sm: 'calc(var(--radius) - 4px)',
       },
-      keyframes: {
-        'accordion-down': {
-          from: {
-            height: '0',
-          },
-          to: {
-            height: 'var(--radix-accordion-content-height)',
-          },
-        },
-        'accordion-up': {
-          from: {
-            height: 'var(--radix-accordion-content-height)',
-          },
-          to: {
-            height: '0',
-          },
-        },
-      },
-      animation: {
-        'accordion-down': 'accordion-down 0.2s ease-out',
-        'accordion-up': 'accordion-up 0.2s ease-out',
-      },
     },
   },
-  plugins: [require('tailwindcss-animate')],
+  plugins: [require('tailwindcss-animate'), function({ addUtilities }) {
+        const newUtilities = {
+          '.text-shadow': {
+            textShadow: '2px 2px 4px rgba(0,0,0,0.3)',
+          },
+          '.text-shadow-md': {
+            textShadow: '4px 4px 8px rgba(0,0,0,0.3)',
+          },
+          '.text-shadow-lg': {
+            textShadow: '6px 6px 12px rgba(0,0,0,0.3)',
+          },
+          '.text-shadow-none': {
+            textShadow: 'none',
+          },
+        }
+        addUtilities(newUtilities)
+      }],
 } satisfies Config;
