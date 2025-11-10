@@ -1,71 +1,78 @@
+
 "use client";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/firebase";
 import { signInWithEmailAndPassword } from "firebase/auth";
-import { doc, setDoc, serverTimestamp } from "firebase/firestore";
-import { useFirestore } from "@/firebase";
-import { setDocumentNonBlocking } from "@/firebase/non-blocking-updates";
+import { useAuth, useFirestore } from "@/firebase";
+import { useToast } from "@/hooks/use-toast";
+import { Loader2 } from "lucide-react";
+import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
 
 export default function LoginPage() {
-  const router = useRouter();
   const [email, setEmail] = useState("admin@inei.gob.pe");
   const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
-
+  const router = useRouter();
   const auth = useAuth();
   const firestore = useFirestore();
+  const { toast } = useToast();
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     setError("");
     if (!email || !password) {
       showError("⚠️ Por favor complete todos los campos");
       return;
     }
 
-    setLoading(true);
-
     if (!auth || !firestore) {
       showError("❌ Error de autenticación. Intente de nuevo.");
-      setLoading(false);
       return;
     }
+    
+    setIsLoading(true);
 
-    signInWithEmailAndPassword(auth, email, password)
-      .then((userCredential) => {
-        const user = userCredential.user;
-        const userDocRef = doc(firestore, "users", user.uid);
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      const userDocRef = doc(firestore, 'users', user.uid);
+      const userDocSnap = await getDoc(userDocRef);
+
+      if (!userDocSnap.exists()) {
+        // El documento del usuario no existe, así que lo creamos.
+        console.warn(`User document for ${user.uid} not found. Creating it.`);
         
-        // Create user document in Firestore without blocking
-        setDocumentNonBlocking(userDocRef, {
-            uid: user.uid,
-            email: user.email,
-            role: "admin", // Default role
-            createdAt: serverTimestamp(),
+        await setDoc(userDocRef, {
+          uid: user.uid,
+          email: user.email,
+          role: email === 'admin@inei.gob.pe' ? 'admin' : 'consulta', // Default role
+          createdAt: serverTimestamp(),
         }, { merge: true });
 
+         toast({
+            title: "Perfil creado",
+            description: "Hemos creado tu perfil de usuario automáticamente."
+        });
+      }
 
-        setSuccess(true);
-        setTimeout(() => {
-          router.push("/dashboard");
-        }, 2000);
-      })
-      .catch((error) => {
-        setLoading(false);
-        switch (error.code) {
-          case "auth/user-not-found":
-          case "auth/wrong-password":
-          case "auth/invalid-credential":
-            showError("❌ Usuario o contraseña incorrectos");
-            break;
-          default:
-            showError("❌ Ocurrió un error inesperado.");
-            break;
-        }
+      toast({
+        title: "Inicio de sesión exitoso",
+        description: `¡Bienvenido! Redirigiendo al panel de control...`,
       });
+      
+      router.push("/dashboard");
+
+    } catch (error: any) {
+      console.error("Failed to sign in", error);
+      let description = "Ocurrió un error inesperado.";
+      if (error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+        description = "Correo electrónico o contraseña incorrectos."
+      }
+       showError(`❌ ${description}`);
+       setIsLoading(false);
+    }
   };
 
   const showError = (message: string) => {
@@ -80,47 +87,18 @@ export default function LoginPage() {
       }, 500);
     }
   };
-
+  
   const handleKeyPress = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === "Enter") {
       handleLogin();
     }
   };
 
-  if (success) {
-    return (
-      <div className="bg-gradient-to-br from-[#667eea] to-[#764ba2] min-h-screen flex items-center justify-center">
-        <div className="bg-white/95 backdrop-blur-sm rounded-2xl p-10 shadow-lg w-full max-w-md text-center">
-          <div className="text-6xl mb-5">✅</div>
-          <h2 className="text-green-500 text-2xl font-semibold mb-4">
-            ¡Acceso Autorizado!
-          </h2>
-          <p className="text-gray-600 mb-7">Redirigiendo al sistema...</p>
-          <div className="w-full h-1.5 bg-gray-200 rounded-full overflow-hidden">
-            <div className="h-full bg-gradient-to-r from-green-400 to-green-600 w-0 animate-progressBar"></div>
-          </div>
-        </div>
-        <style jsx>{`
-          @keyframes progressBar {
-            from {
-              width: 0%;
-            }
-            to {
-              width: 100%;
-            }
-          }
-          .animate-progressBar {
-            animation: progressBar 2s ease-in-out forwards;
-          }
-        `}</style>
-      </div>
-    );
-  }
 
   return (
     <div
       className={`bg-gradient-to-br from-[#667eea] to-[#764ba2] min-h-screen flex items-center justify-center font-sans ${
-        loading ? "opacity-70 pointer-events-none" : ""
+        isLoading ? "opacity-70 pointer-events-none" : ""
       }`}
     >
       <div className="bg-white/95 backdrop-blur-sm rounded-2xl p-10 shadow-lg w-full max-w-md text-center">
@@ -176,12 +154,19 @@ export default function LoginPage() {
 
         <button
           className={`w-full bg-gradient-to-r from-[#667eea] to-[#764ba2] text-white p-4 rounded-xl text-lg font-semibold cursor-pointer transition-all duration-300 mb-5 hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0 ${
-            loading ? "bg-gray-300" : ""
+            isLoading ? "bg-gray-300" : ""
           }`}
           onClick={handleLogin}
-          disabled={loading}
+          disabled={isLoading}
         >
-          🔐 Ingresar al Sistema
+          {isLoading ? (
+            <span className="flex items-center justify-center">
+              <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+              Ingresando...
+            </span>
+          ) : (
+            "🔐 Ingresar al Sistema"
+          )}
         </button>
       </div>
       <style jsx>{`
