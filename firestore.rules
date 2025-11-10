@@ -7,6 +7,7 @@
  *
  * Data Structure:
  * All data resides in top-level collections:
+ * - /users/{userId}
  * - /system_performance/{systemPerformanceId}
  * - /optimization_recommendations/{optimizationRecommendationId}
  * - /configuration_profiles/{configurationProfileId}
@@ -14,13 +15,27 @@
  * - /alerts/{alertId}
  *
  * Key Security Decisions:
- * - Public read access is enabled for all collections.
+ * - Public read access is enabled for all collections except 'users'.
  * - Write access is restricted to authenticated users only.
- * - No user-specific data or ownership is enforced.
+ * - User data in /users/{userId} is only accessible by the owner.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    
+    /**
+     * @description Rules for the users collection.
+     * @path /users/{userId}
+     * @allow (get, update) - Only the user themselves can read or update their own profile.
+     * @allow (create) - Any authenticated user can create their own user profile document.
+     * @deny (list, delete) - No one can list all users or delete a user profile.
+     * @principle Enforces user data privacy and ownership.
+     */
+    match /users/{userId} {
+      allow get, update: if request.auth.uid == userId;
+      allow create: if request.auth.uid == userId;
+      allow list, delete: if false;
+    }
 
     /**
      * @description Allows public read access and authenticated-user-only write access for system performance data.

@@ -4,6 +4,9 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/firebase";
 import { signInWithEmailAndPassword } from "firebase/auth";
+import { doc, setDoc, serverTimestamp } from "firebase/firestore";
+import { useFirestore } from "@/firebase";
+import { setDocumentNonBlocking } from "@/firebase/non-blocking-updates";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -14,6 +17,7 @@ export default function LoginPage() {
   const [success, setSuccess] = useState(false);
 
   const auth = useAuth();
+  const firestore = useFirestore();
 
   const handleLogin = () => {
     setError("");
@@ -24,7 +28,7 @@ export default function LoginPage() {
 
     setLoading(true);
 
-    if (!auth) {
+    if (!auth || !firestore) {
       showError("❌ Error de autenticación. Intente de nuevo.");
       setLoading(false);
       return;
@@ -32,7 +36,18 @@ export default function LoginPage() {
 
     signInWithEmailAndPassword(auth, email, password)
       .then((userCredential) => {
-        // Signed in
+        const user = userCredential.user;
+        const userDocRef = doc(firestore, "users", user.uid);
+        
+        // Create user document in Firestore without blocking
+        setDocumentNonBlocking(userDocRef, {
+            uid: user.uid,
+            email: user.email,
+            role: "admin", // Default role
+            createdAt: serverTimestamp(),
+        }, { merge: true });
+
+
         setSuccess(true);
         setTimeout(() => {
           router.push("/dashboard");
