@@ -8,7 +8,7 @@ export default function MainPage() {
   useEffect(() => {
     const timer = setTimeout(() => {
       router.push("/login");
-    }, 1000);
+    }, 100);
     return () => clearTimeout(timer);
   }, [router]);
 
