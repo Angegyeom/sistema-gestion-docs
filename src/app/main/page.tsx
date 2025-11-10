@@ -12,9 +12,6 @@ export default function MainPage() {
           <div className="text-6xl mb-5 animate-pulse">🏛️</div>
           <h1 className="text-5xl mb-2.5">CPV 2025</h1>
           <p className="text-xl opacity-80 mb-7">Sistema de Gestión Censal</p>
-          <div className="w-[300px] h-1.5 bg-white/30 rounded-full overflow-hidden mx-auto">
-            <div className="h-full bg-gradient-to-r from-[#4CAF50] to-[#45a049] w-full"></div>
-          </div>
           <p className="mt-5 opacity-70">Redirigiendo al inicio de sesión...</p>
         </div>
         <style jsx>{`
