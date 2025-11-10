@@ -4,7 +4,6 @@ import Link from 'next/link';
 import Image from 'next/image';
 
 const navItems = [
-    { href: '/dashboard', label: '🏠 Inicio' },
     { href: '/aplicativos', label: '📱 Aplicativos' },
     { href: '/documentacion', label: '📄 Documentación' },
     { href: '/presentaciones', label: '📊 Presentaciones' },

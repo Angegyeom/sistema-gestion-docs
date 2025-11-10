@@ -62,7 +62,7 @@ export default function LoginPage() {
         description: `¡Bienvenido! Redirigiendo al panel de control...`,
       });
       
-      router.push("/dashboard");
+      router.push("/aplicativos");
 
     } catch (error: any) {
       console.error("Failed to sign in", error);
