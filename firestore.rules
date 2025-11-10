@@ -1,0 +1,104 @@
+/**
+ * @fileoverview Firestore Security Rules for OptimoSystem.
+ *
+ * Core Philosophy:
+ * This ruleset allows public read access and restricts write access to authenticated users.
+ * Since there's no user ownership, all data is stored in root-level collections.
+ *
+ * Data Structure:
+ * All data resides in top-level collections:
+ * - /system_performance/{systemPerformanceId}
+ * - /optimization_recommendations/{optimizationRecommendationId}
+ * - /configuration_profiles/{configurationProfileId}
+ * - /resource_forecasts/{resourceForecastId}
+ * - /alerts/{alertId}
+ *
+ * Key Security Decisions:
+ * - Public read access is enabled for all collections.
+ * - Write access is restricted to authenticated users only.
+ * - No user-specific data or ownership is enforced.
+ */
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    /**
+     * @description Allows public read access and authenticated-user-only write access for system performance data.
+     * @path /system_performance/{systemPerformanceId}
+     * @allow (get, list) - Any user can read system performance data.
+     * @allow (create, update, delete) - Only authenticated users can write system performance data.
+     * @deny (create, update, delete) - Unauthenticated users cannot write system performance data.
+     * @principle Enables public monitoring while restricting data modification to authorized users.
+     */
+    match /system_performance/{systemPerformanceId} {
+      allow get, list: if true;
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && resource != null;
+      allow delete: if isSignedIn() && resource != null;
+    }
+
+    /**
+     * @description Allows public read access and authenticated-user-only write access for optimization recommendations.
+     * @path /optimization_recommendations/{optimizationRecommendationId}
+     * @allow (get, list) - Any user can read optimization recommendations.
+     * @allow (create, update, delete) - Only authenticated users can write optimization recommendations.
+     * @deny (create, update, delete) - Unauthenticated users cannot write optimization recommendations.
+     * @principle Enables public access to recommendations while restricting data modification to authorized users.
+     */
+    match /optimization_recommendations/{optimizationRecommendationId} {
+      allow get, list: if true;
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && resource != null;
+      allow delete: if isSignedIn() && resource != null;
+    }
+
+    /**
+     * @description Allows public read access and authenticated-user-only write access for configuration profiles.
+     * @path /configuration_profiles/{configurationProfileId}
+     * @allow (get, list) - Any user can read configuration profiles.
+     * @allow (create, update, delete) - Only authenticated users can write configuration profiles.
+     * @deny (create, update, delete) - Unauthenticated users cannot write configuration profiles.
+     * @principle Enables public viewing of profiles while restricting modification to authorized users.
+     */
+    match /configuration_profiles/{configurationProfileId} {
+      allow get, list: if true;
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && resource != null;
+      allow delete: if isSignedIn() && resource != null;
+    }
+
+    /**
+     * @description Allows public read access and authenticated-user-only write access for resource forecasts.
+     * @path /resource_forecasts/{resourceForecastId}
+     * @allow (get, list) - Any user can read resource forecasts.
+     * @allow (create, update, delete) - Only authenticated users can write resource forecasts.
+     * @deny (create, update, delete) - Unauthenticated users cannot write resource forecasts.
+     * @principle Enables public visibility of forecasts while restricting modification to authorized users.
+     */
+    match /resource_forecasts/{resourceForecastId} {
+      allow get, list: if true;
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && resource != null;
+      allow delete: if isSignedIn() && resource != null;
+    }
+
+    /**
+     * @description Allows public read access and authenticated-user-only write access for alerts.
+     * @path /alerts/{alertId}
+     * @allow (get, list) - Any user can read alerts.
+     * @allow (create, update, delete) - Only authenticated users can write alerts.
+     * @deny (create, update, delete) - Unauthenticated users cannot write alerts.
+     * @principle Enables public access to alerts while restricting management to authorized users.
+     */
+    match /alerts/{alertId} {
+      allow get, list: if true;
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && resource != null;
+      allow delete: if isSignedIn() && resource != null;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+  }
+}

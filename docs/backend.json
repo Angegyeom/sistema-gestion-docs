@@ -1,0 +1,252 @@
+{
+  "entities": {
+    "SystemPerformance": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "SystemPerformance",
+      "type": "object",
+      "description": "Represents real-time performance data for a monitored system.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the System Performance record."
+        },
+        "timestamp": {
+          "type": "string",
+          "description": "Timestamp of when the performance data was recorded.",
+          "format": "date-time"
+        },
+        "cpuUsage": {
+          "type": "number",
+          "description": "CPU usage percentage."
+        },
+        "memoryConsumption": {
+          "type": "number",
+          "description": "Memory consumption in megabytes."
+        },
+        "networkLatency": {
+          "type": "number",
+          "description": "Network latency in milliseconds."
+        }
+      },
+      "required": [
+        "id",
+        "timestamp",
+        "cpuUsage",
+        "memoryConsumption",
+        "networkLatency"
+      ]
+    },
+    "OptimizationRecommendation": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "OptimizationRecommendation",
+      "type": "object",
+      "description": "Represents an AI-powered optimization recommendation for a system.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Optimization Recommendation."
+        },
+        "systemPerformanceId": {
+          "type": "string",
+          "description": "Reference to SystemPerformance. (Relationship: SystemPerformance 1:N OptimizationRecommendation)"
+        },
+        "recommendation": {
+          "type": "string",
+          "description": "The optimization recommendation provided by the AI."
+        },
+        "confidenceScore": {
+          "type": "number",
+          "description": "Confidence score of the AI's recommendation."
+        }
+      },
+      "required": [
+        "id",
+        "systemPerformanceId",
+        "recommendation",
+        "confidenceScore"
+      ]
+    },
+    "ConfigurationProfile": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "ConfigurationProfile",
+      "type": "object",
+      "description": "Represents a system configuration profile.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Configuration Profile."
+        },
+        "profileName": {
+          "type": "string",
+          "description": "Name of the configuration profile."
+        },
+        "configurationSettings": {
+          "type": "string",
+          "description": "JSON string representing the configuration settings."
+        }
+      },
+      "required": [
+        "id",
+        "profileName",
+        "configurationSettings"
+      ]
+    },
+    "ResourceForecast": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "ResourceForecast",
+      "type": "object",
+      "description": "Represents a forecast of future resource usage.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Resource Forecast."
+        },
+        "timestamp": {
+          "type": "string",
+          "description": "Timestamp of when the forecast was generated.",
+          "format": "date-time"
+        },
+        "cpuDemand": {
+          "type": "number",
+          "description": "Predicted CPU demand."
+        },
+        "memoryDemand": {
+          "type": "number",
+          "description": "Predicted memory demand."
+        }
+      },
+      "required": [
+        "id",
+        "timestamp",
+        "cpuDemand",
+        "memoryDemand"
+      ]
+    },
+    "Alert": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Alert",
+      "type": "object",
+      "description": "Represents a custom alert based on performance thresholds.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Alert."
+        },
+        "alertName": {
+          "type": "string",
+          "description": "Name of the alert."
+        },
+        "metric": {
+          "type": "string",
+          "description": "The performance metric being monitored (e.g., CPU Usage)."
+        },
+        "threshold": {
+          "type": "number",
+          "description": "The threshold value that triggers the alert."
+        },
+        "severity": {
+          "type": "string",
+          "description": "Severity level of the alert (e.g., Warning, Critical)."
+        }
+      },
+      "required": [
+        "id",
+        "alertName",
+        "metric",
+        "threshold",
+        "severity"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/system_performance/{systemPerformanceId}",
+        "definition": {
+          "entityName": "SystemPerformance",
+          "schema": {
+            "$ref": "#/backend/entities/SystemPerformance"
+          },
+          "description": "Stores real-time system performance data.  No denormalized authorization fields are needed as there is no concept of user ownership.",
+          "params": [
+            {
+              "name": "systemPerformanceId",
+              "description": "Unique identifier for the System Performance record."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/optimization_recommendations/{optimizationRecommendationId}",
+        "definition": {
+          "entityName": "OptimizationRecommendation",
+          "schema": {
+            "$ref": "#/backend/entities/OptimizationRecommendation"
+          },
+          "description": "Stores AI-powered optimization recommendations.  No denormalized authorization fields are needed as there is no concept of user ownership.",
+          "params": [
+            {
+              "name": "optimizationRecommendationId",
+              "description": "Unique identifier for the Optimization Recommendation."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/configuration_profiles/{configurationProfileId}",
+        "definition": {
+          "entityName": "ConfigurationProfile",
+          "schema": {
+            "$ref": "#/backend/entities/ConfigurationProfile"
+          },
+          "description": "Stores system configuration profiles. No denormalized authorization fields are needed as there is no concept of user ownership.",
+          "params": [
+            {
+              "name": "configurationProfileId",
+              "description": "Unique identifier for the Configuration Profile."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/resource_forecasts/{resourceForecastId}",
+        "definition": {
+          "entityName": "ResourceForecast",
+          "schema": {
+            "$ref": "#/backend/entities/ResourceForecast"
+          },
+          "description": "Stores forecasts of future resource usage. No denormalized authorization fields are needed as there is no concept of user ownership.",
+          "params": [
+            {
+              "name": "resourceForecastId",
+              "description": "Unique identifier for the Resource Forecast."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/alerts/{alertId}",
+        "definition": {
+          "entityName": "Alert",
+          "schema": {
+            "$ref": "#/backend/entities/Alert"
+          },
+          "description": "Stores custom alerts based on performance thresholds. No denormalized authorization fields are needed as there is no concept of user ownership.",
+          "params": [
+            {
+              "name": "alertId",
+              "description": "Unique identifier for the Alert."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The Firestore data structure is designed to optimize performance monitoring and AI-powered optimization for the OptimoSystem application. It prioritizes authorization independence, clarity, and scalability.  Since there is no concept of user ownership, we will use root-level collections for all data. This simplifies security rules and avoids unnecessary hierarchy. Each collection is designed to hold a specific type of data, ensuring a homogeneous security posture within each collection.\n\n1.  **Authorization Independence:** Since there is no user context, authorization will rely on project-level permissions, which can be managed outside of the data structure itself (e.g., via Firebase IAM roles or a separate admin panel). The data structures are independent and do not require `get()` calls to parent documents for authorization.\n\n2.  **QAPs (Rules are not Filters):**\n    *   The segregation of data into separate collections based on type (/system_performance, /optimization_recommendations, etc.) ensures that listing operations can be performed securely without filtering data based on its content. Each collection has a specific security posture.\n\n3.  **Invariants:** The structure supports invariants such as data integrity through defined schemas for each document type. Timestamps can be enforced via security rules."
+  }
+}
