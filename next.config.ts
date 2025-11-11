@@ -2,11 +2,6 @@ import type {NextConfig} from 'next';
 
 const nextConfig: NextConfig = {
   /* config options here */
-  experimental: {
-    // This allows the Next.js dev server to accept requests from the
-    // Firebase Studio environment.
-    allowedDevOrigins: ["https://*.cluster-l2bgochoazbomqgfmlhuvdvgiy.cloudworkstations.dev"],
-  },
   typescript: {
     ignoreBuildErrors: true,
   },
@@ -16,19 +11,19 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
       {
-        protocol: 'https',
+        protocol: 'https' as const,
         hostname: 'placehold.co',
         port: '',
         pathname: '/**',
       },
       {
-        protocol: 'https',
+        protocol: 'https' as const,
         hostname: 'images.unsplash.com',
         port: '',
         pathname: '/**',
       },
       {
-        protocol: 'https',
+        protocol: 'https' as const,
         hostname: 'picsum.photos',
         port: '',
         pathname: '/**',
