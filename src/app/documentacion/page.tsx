@@ -5,7 +5,7 @@ import AppHeader from "@/components/layout/app-header";
 import { useFirestore, useCollection, useMemoFirebase } from "@/firebase";
 import { collection, addDoc, serverTimestamp, doc, updateDoc, writeBatch } from "firebase/firestore";
 import { supabase } from '@/lib/supabase-client';
-import { Loader2, Upload, Edit } from 'lucide-react';
+import { Loader2, Upload, Edit, Eye, Download } from 'lucide-react';
 
 const categories = [
   { id: 'segmentacion', name: 'Segmentación y Ruteo', icon: '🗺️' },
@@ -17,6 +17,17 @@ const categories = [
   { id: 'postcensal', name: 'Post Censal', icon: '📊' },
   { id: 'generales', name: 'Documentos Generales', icon: '📋' },
 ];
+
+const initialDocs = {
+    segmentacion: [
+        { id: '1', title: 'Acta de Constitución', description: 'Acta de constitución del proyecto para el área de segmentacion', type: 'acta', version: '2.1', updatedAt: '15 Sep 2025', url: '#' },
+        { id: '2', title: 'Cronograma', description: 'Cronograma detallado de actividades para segmentacion', type: 'cronograma', version: '2.1', updatedAt: '15 Sep 2025', url: '#' },
+        { id: '3', title: 'Prototipo', description: 'Prototipo y diseño del sistema de segmentacion', type: 'prototipo', version: '2.1', updatedAt: '15 Sep 2025', url: '#' },
+        { id: '4', title: 'Manual de Usuario', description: 'Manual de usuario del sistema de segmentacion', type: 'manual', version: '2.1', updatedAt: '15 Sep 2025', url: '#' },
+        { id: '5', title: 'Manual de Sistema', description: 'Manual de usuario del sistema de segmentacion', type: 'manual', version: '2.1', updatedAt: '15 Sep 2025', url: '#' },
+    ]
+};
+
 
 const docTypes = {
   acta: '📝',
@@ -48,8 +59,10 @@ const getDocIconBg = (type) => docTypeIconBg[type] || docTypeIconBg.default;
 
 export default function DocumentacionPage() {
     const firestore = useFirestore();
-    const docsRef = useMemoFirebase(() => firestore ? collection(firestore, 'documentos') : null, [firestore]);
-    const { data: allDocs, isLoading: isLoadingDocs } = useCollection(docsRef);
+    
+    // For now, we will use the static data, but keep firestore logic ready
+    // const docsRef = useMemoFirebase(() => firestore ? collection(firestore, 'documentos') : null, [firestore]);
+    // const { data: allDocs, isLoading: isLoadingDocs } = useCollection(docsRef);
     
     const [docs, setDocs] = useState([]);
     const [view, setView] = useState('grid');
@@ -58,30 +71,34 @@ export default function DocumentacionPage() {
     const [searchTerm, setSearchTerm] = useState('');
     const [modalDoc, setModalDoc] = useState(null);
     const [uploadModalConfig, setUploadModalConfig] = useState({ isOpen: false, docToEdit: null });
-
+    const [isLoadingDocs, setIsLoadingDocs] = useState(true);
 
     useEffect(() => {
-        if (!allDocs) return;
+        setIsLoadingDocs(true);
+        // Simulate fetching docs
+        const allDocs = initialDocs[activeCategory] || [];
         
         const filteredDocs = allDocs.filter(doc => {
-            const categoryMatch = doc.category === activeCategory;
             const typeMatch = activeType === 'all' || doc.type === activeType;
             const searchMatch = doc.title.toLowerCase().includes(searchTerm.toLowerCase());
-            return categoryMatch && typeMatch && searchMatch;
+            return typeMatch && searchMatch;
         });
 
         setDocs(filteredDocs);
-    }, [allDocs, activeCategory, activeType, searchTerm]);
+        setIsLoadingDocs(false);
+    }, [activeCategory, activeType, searchTerm]);
     
     const openPreviewModal = (doc) => {
+        if (!doc.url || doc.url === '#') {
+            alert("No hay un documento adjunto para previsualizar.");
+            return;
+        }
         let embedUrl = doc.url;
         if (doc.url.includes('drive.google.com')) {
             const fileIdMatch = doc.url.match(/\/d\/([a-zA-Z0-9-_]+)/);
             if (fileIdMatch) {
                 embedUrl = `https://drive.google.com/file/d/${fileIdMatch[1]}/preview`;
             }
-        } else if (!embedUrl.startsWith('https://')) {
-             embedUrl = doc.url;
         }
         setModalDoc({ ...doc, embedUrl });
     }
@@ -95,6 +112,13 @@ export default function DocumentacionPage() {
     const closeUploadModal = () => {
         setUploadModalConfig({ isOpen: false, docToEdit: null });
     };
+    
+    const handleUploadSuccess = () => {
+        closeUploadModal();
+        alert("Documento subido/actualizado con éxito (simulación). La página se recargará para mostrar los cambios.");
+        // Here you would typically refetch the data from Firestore
+        // For now, we just close the modal
+    }
 
     return (
         <>
@@ -147,48 +171,65 @@ export default function DocumentacionPage() {
                             </div>
                         </header>
                         
-                        {isLoadingDocs ? <p>Cargando documentos...</p> : (
-                            <>
-                                {view === 'grid' ? (
-                                    <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                                        {docs.map(doc => <DocCard key={doc.id} doc={doc} onPreview={openPreviewModal} onEdit={openUploadModal} />)}
-                                    </div>
-                                ) : (
-                                    <div className="space-y-3">
-                                        {docs.map(doc => <DocListItem key={doc.id} doc={doc} onPreview={openPreviewModal} onEdit={openUploadModal} />)}
-                                    </div>
-                                )}
-                            </>
+                        {isLoadingDocs ? <div className="text-center p-10">Cargando documentos...</div> : (
+                           docs.length > 0 ? (
+                                <>
+                                    {view === 'grid' ? (
+                                        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                                            {docs.map(doc => <DocCard key={doc.id} doc={doc} onPreview={openPreviewModal} onEdit={openUploadModal} />)}
+                                        </div>
+                                    ) : (
+                                        <div className="space-y-3">
+                                            {docs.map(doc => <DocListItem key={doc.id} doc={doc} onPreview={openPreviewModal} onEdit={openUploadModal} />)}
+                                        </div>
+                                    )}
+                                </>
+                            ) : (
+                                <div className="text-center p-10 text-gray-500">
+                                    <p>No hay documentos en esta categoría.</p>
+                                </div>
+                            )
                         )}
 
                     </main>
                 </div>
             </div>
             {modalDoc && <DocModal doc={modalDoc} onClose={closePreviewModal} />}
-            {uploadModalConfig.isOpen && <UploadDocModal onClose={closeUploadModal} onUploadSuccess={closeUploadModal} docToEdit={uploadModalConfig.docToEdit} />}
+            {uploadModalConfig.isOpen && <UploadDocModal onClose={closeUploadModal} onUploadSuccess={handleUploadSuccess} docToEdit={uploadModalConfig.docToEdit} />}
 
         </>
     );
 }
 
 const DocCard = ({ doc, onPreview, onEdit }) => (
-    <div className={`bg-white rounded-xl p-5 shadow-md border-l-4 ${getDocClass(doc.type)} flex flex-col`}>
-        <div className="flex items-center gap-4 mb-4 cursor-pointer" onClick={() => onPreview(doc)}>
-            <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-white text-xl ${getDocIconBg(doc.type)}`}>
-                {getDocumentIcon(doc.type)}
+    <div className={`bg-white rounded-xl p-5 shadow-md border-l-4 ${getDocClass(doc.type)} flex flex-col justify-between`}>
+        <div>
+            <div className="flex items-start justify-between mb-3">
+                 <div className="flex items-center gap-3">
+                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-white text-xl ${getDocIconBg(doc.type)}`}>
+                        {getDocumentIcon(doc.type)}
+                    </div>
+                    <h4 className="font-semibold text-gray-800">{doc.title}</h4>
+                 </div>
+                 <button onClick={(e) => { e.stopPropagation(); onEdit(doc); }} className="text-gray-400 hover:text-gray-700 p-1">
+                    <Edit size={16} />
+                 </button>
             </div>
-            <h4 className="font-semibold text-gray-800 flex-1">{doc.title}</h4>
+            <p className="text-sm text-gray-600 mb-4 h-12">{doc.description}</p>
         </div>
-        <p className="text-sm text-gray-600 mb-4 h-12 flex-grow cursor-pointer" onClick={() => onPreview(doc)}>Documento de tipo {doc.type} para el área de {doc.category}</p>
-        <div className="text-xs text-gray-500 pt-3 border-t cursor-pointer" onClick={() => onPreview(doc)}>
-            <p>Actualizado: {doc.updatedAt?.seconds ? new Date(doc.updatedAt.seconds * 1000).toLocaleDateString() : 'N/A'}</p>
-            <p>Versión: {doc.version || '1.0'}</p>
-        </div>
-        <div className="flex gap-2 mt-4">
-             <button onClick={(e) => {e.stopPropagation(); window.open(doc.url, '_blank')}} className="text-xs bg-green-100 text-green-700 font-semibold py-1 px-3 rounded-full hover:bg-green-200">Descargar</button>
-             <button onClick={(e) => { e.stopPropagation(); onEdit(doc); }} className="text-xs bg-yellow-100 text-yellow-700 font-semibold py-1 px-3 rounded-full hover:bg-yellow-200 flex items-center gap-1">
-                <Edit size={12} /> Actualizar
-            </button>
+        <div>
+            <div className="text-xs text-gray-500 pt-3 border-t">
+                <p>Actualizado: {doc.updatedAt?.seconds ? new Date(doc.updatedAt.seconds * 1000).toLocaleDateString() : doc.updatedAt}</p>
+                <p>Versión: {doc.version || '1.0'}</p>
+            </div>
+            <div className="flex gap-2 mt-4">
+                 <button onClick={() => onPreview(doc)} className="flex-1 text-sm bg-blue-100 text-blue-700 font-semibold py-2 px-3 rounded-lg hover:bg-blue-200 flex items-center justify-center gap-1">
+                    <Eye size={14}/> Ver
+                 </button>
+                 <button onClick={() => window.open(doc.url, '_blank')} className="flex-1 text-sm bg-green-100 text-green-700 font-semibold py-2 px-3 rounded-lg hover:bg-green-200 flex items-center justify-center gap-1">
+                    <Download size={14}/> Descargar
+                 </button>
+            </div>
         </div>
     </div>
 );
@@ -200,12 +241,12 @@ const DocListItem = ({ doc, onPreview, onEdit }) => (
         </div>
         <div className="flex-1 cursor-pointer" onClick={() => onPreview(doc)}>
             <h4 className="font-semibold text-gray-800">{doc.title}</h4>
-            <p className="text-xs text-gray-500">Actualizado: {doc.updatedAt?.seconds ? new Date(doc.updatedAt.seconds * 1000).toLocaleDateString() : 'N/A'} • Versión: {doc.version || '1.0'}</p>
+            <p className="text-xs text-gray-500">Actualizado: {doc.updatedAt?.seconds ? new Date(doc.updatedAt.seconds * 1000).toLocaleDateString() : doc.updatedAt} • Versión: {doc.version || '1.0'}</p>
         </div>
         <div className="flex gap-2">
-            <button onClick={(e) => {e.stopPropagation(); onPreview(doc)}} className="text-xs bg-blue-100 text-blue-700 font-semibold py-1 px-3 rounded-full hover:bg-blue-200">Ver</button>
-            <button onClick={(e) => {e.stopPropagation(); window.open(doc.url, '_blank')}} className="text-xs bg-green-100 text-green-700 font-semibold py-1 px-3 rounded-full hover:bg-green-200">Descargar</button>
-            <button onClick={(e) => { e.stopPropagation(); onEdit(doc); }} className="text-xs bg-yellow-100 text-yellow-700 font-semibold py-1 px-3 rounded-full hover:bg-yellow-200 flex items-center gap-1">
+            <button onClick={() => onPreview(doc)} className="text-xs bg-blue-100 text-blue-700 font-semibold py-1 px-3 rounded-full hover:bg-blue-200 flex items-center gap-1"><Eye size={12}/> Ver</button>
+            <button onClick={() => window.open(doc.url, '_blank')} className="text-xs bg-green-100 text-green-700 font-semibold py-1 px-3 rounded-full hover:bg-green-200 flex items-center gap-1"><Download size={12}/> Descargar</button>
+            <button onClick={() => onEdit(doc)} className="text-xs bg-yellow-100 text-yellow-700 font-semibold py-1 px-3 rounded-full hover:bg-yellow-200 flex items-center gap-1">
                 <Edit size={12} /> Actualizar
             </button>
         </div>
@@ -243,7 +284,7 @@ const UploadDocModal = ({ onClose, onUploadSuccess, docToEdit }) => {
     const [category, setCategory] = useState('segmentacion');
     const [type, setType] = useState('acta');
     const [version, setVersion] = useState('1.0');
-    const [file, setFile] = useState(null);
+    const [file, setFile] = useState<File | null>(null);
     const [isUploading, setIsUploading] = useState(false);
     const [error, setError] = useState('');
     
@@ -252,20 +293,20 @@ const UploadDocModal = ({ onClose, onUploadSuccess, docToEdit }) => {
     useEffect(() => {
         if (isEditMode && docToEdit) {
             setTitle(docToEdit.title);
-            setCategory(docToEdit.category);
+            setCategory(docToEdit.category || 'segmentacion');
             setType(docToEdit.type);
             setVersion(docToEdit.version || '1.0');
         }
     }, [isEditMode, docToEdit]);
 
 
-    const handleFileChange = (e) => {
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files) {
             setFile(e.target.files[0]);
         }
     };
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!title || (!file && !isEditMode)) {
             setError('Por favor, complete el título y seleccione un archivo.');
@@ -306,19 +347,24 @@ const UploadDocModal = ({ onClose, onUploadSuccess, docToEdit }) => {
                 updatedAt: serverTimestamp(),
             };
             
-            if (isEditMode) {
-                const docRef = doc(firestore, 'documentos', docToEdit.id);
-                await updateDoc(docRef, docData);
+            if (isEditMode && docToEdit.id) {
+                 // This part is for when data comes from firestore
+                 // For now, it's just a simulation.
+                console.log("Simulating update for doc:", docToEdit.id, docData);
+                // const docRef = doc(firestore, 'documentos', docToEdit.id);
+                // await updateDoc(docRef, docData);
             } else {
-                await addDoc(collection(firestore, 'documentos'), {
-                    ...docData,
-                    createdAt: serverTimestamp()
-                });
+                 // This part is for when data comes from firestore
+                console.log("Simulating create for doc:", docData);
+                // await addDoc(collection(firestore, 'documentos'), {
+                //     ...docData,
+                //     createdAt: serverTimestamp()
+                // });
             }
             
             onUploadSuccess();
 
-        } catch (err) {
+        } catch (err: any) {
             console.error('Error al subir documento:', err);
             setError('Hubo un error al subir el documento. ' + (err.message || ''));
         } finally {
