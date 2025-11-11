@@ -8,10 +8,12 @@
  * Data Structure:
  * All data resides in top-level collections:
  * - /users/{userId}
+ * - /documentos/{docId}
  *
  * Key Security Decisions:
  * - Write access is restricted to authenticated users only.
  * - User data in /users/{userId} is only accessible by the owner.
+ * - Document data in /documentos/{docId} can be read and created by any authenticated user.
  */
 rules_version = '2';
 service cloud.firestore {
@@ -29,6 +31,20 @@ service cloud.firestore {
       allow get, update: if request.auth.uid == userId;
       allow create: if request.auth.uid == userId;
       allow list, delete: if false;
+    }
+
+    /**
+     * @description Rules for the documentos collection.
+     * @path /documentos/{docId}
+     * @allow (list, get) - Any authenticated user can read documents.
+     * @allow (create) - Any authenticated user can upload (create) a new document.
+     * @deny (update, delete) - No one can update or delete documents for now.
+     * @principle Allows collaborative document access for signed-in users.
+     */
+    match /documentos/{docId} {
+        allow list, get: if isSignedIn();
+        allow create: if isSignedIn();
+        allow update, delete: if false;
     }
 
     function isSignedIn() {
