@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import AppHeader from "@/components/layout/app-header";
-import { useFirestore, useCollection, useMemoFirebase } from "@/firebase";
+import { useFirestore, useCollection, useMemoFirebase, useUser } from "@/firebase";
 import { collection, addDoc, serverTimestamp, doc, updateDoc, writeBatch } from "firebase/firestore";
 import { supabase } from '@/lib/supabase-client';
 import { Loader2, Upload, Edit, Eye, Download, Plus } from 'lucide-react';
@@ -300,6 +300,7 @@ const DocModal = ({ doc, onClose }) => {
 
 const UploadDocModal = ({ onClose, onUploadSuccess, docToEdit, activeCategory }) => {
     const firestore = useFirestore();
+    const { user } = useUser();
     const [title, setTitle] = useState('');
     const [category, setCategory] = useState(activeCategory);
     const [type, setType] = useState('acta');
@@ -339,11 +340,20 @@ const UploadDocModal = ({ onClose, onUploadSuccess, docToEdit, activeCategory })
             setError('Error de conexión con la base de datos.');
             return;
         }
+        if (!user) {
+            setError('Debe iniciar sesión para subir archivos.');
+            return;
+        }
+
 
         setIsUploading(true);
         setError('');
 
         try {
+            // Get Firebase token and set it in Supabase
+            const token = await user.getIdToken();
+            supabase.auth.setAuth(token);
+
             let newFileUrl = docToEdit?.url;
 
             if (file) {
