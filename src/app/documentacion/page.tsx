@@ -5,7 +5,7 @@ import AppHeader from "@/components/layout/app-header";
 import { useFirestore, useCollection, useMemoFirebase } from "@/firebase";
 import { collection, addDoc, serverTimestamp, doc, updateDoc, writeBatch } from "firebase/firestore";
 import { supabase } from '@/lib/supabase-client';
-import { Loader2, Upload, Edit, Eye, Download } from 'lucide-react';
+import { Loader2, Upload, Edit, Eye, Download, Plus } from 'lucide-react';
 
 const categories = [
   { id: 'segmentacion', name: 'Segmentación y Ruteo', icon: '🗺️' },
@@ -70,7 +70,6 @@ export default function DocumentacionPage() {
     const [modalDoc, setModalDoc] = useState(null);
     const [uploadModalConfig, setUploadModalConfig] = useState({ isOpen: false, docToEdit: null });
 
-    // Function to seed initial data to Firestore
     const seedData = async () => {
         if (!firestore || !allDocs || allDocs.length > 0) return;
         console.log("No documents found, seeding initial data...");
@@ -88,7 +87,6 @@ export default function DocumentacionPage() {
         }
     };
     
-    // Seed data only once if the collection is empty
     useEffect(() => {
         if (!isLoadingDocs && allDocs && allDocs.length === 0) {
             seedData();
@@ -113,7 +111,6 @@ export default function DocumentacionPage() {
             return;
         }
         let embedUrl = doc.url;
-        // Handle Google Drive links for embedding
         if (doc.url.includes('docs.google.com') && !doc.url.includes('/embed') && !doc.url.includes('/preview')) {
              if (doc.url.includes('/presentation/')) {
                  embedUrl = doc.url.replace('/edit', '/embed').replace('/view', '/embed');
@@ -136,7 +133,6 @@ export default function DocumentacionPage() {
     
     const handleUploadSuccess = () => {
         closeUploadModal();
-        // The useCollection hook will automatically refresh the list.
     }
 
     return (
@@ -212,8 +208,15 @@ export default function DocumentacionPage() {
                 </div>
             </div>
             {modalDoc && <DocModal doc={modalDoc} onClose={closePreviewModal} />}
-            {uploadModalConfig.isOpen && <UploadDocModal onClose={closeUploadModal} onUploadSuccess={handleUploadSuccess} docToEdit={uploadModalConfig.docToEdit} />}
+            {uploadModalConfig.isOpen && <UploadDocModal onClose={closeUploadModal} onUploadSuccess={handleUploadSuccess} docToEdit={uploadModalConfig.docToEdit} activeCategory={activeCategory} />}
 
+            <button
+                onClick={() => openUploadModal()}
+                className="fixed bottom-10 right-10 bg-gradient-to-r from-[#667eea] to-[#764ba2] text-white w-16 h-16 rounded-full shadow-lg flex items-center justify-center hover:scale-110 transition-transform"
+                title="Subir Nuevo Documento"
+            >
+                <Plus size={32} />
+            </button>
         </>
     );
 }
@@ -295,24 +298,28 @@ const DocModal = ({ doc, onClose }) => {
     );
 };
 
-const UploadDocModal = ({ onClose, onUploadSuccess, docToEdit }) => {
+const UploadDocModal = ({ onClose, onUploadSuccess, docToEdit, activeCategory }) => {
     const firestore = useFirestore();
     const [title, setTitle] = useState('');
-    const [category, setCategory] = useState('segmentacion');
+    const [category, setCategory] = useState(activeCategory);
     const [type, setType] = useState('acta');
     const [version, setVersion] = useState('1.0');
     const [file, setFile] = useState<File | null>(null);
     const [isUploading, setIsUploading] = useState(false);
     const [error, setError] = useState('');
 
+    const isEditMode = Boolean(docToEdit);
+
     useEffect(() => {
-        if (docToEdit) {
+        if (isEditMode) {
             setTitle(docToEdit.title);
-            setCategory(docToEdit.category || 'segmentacion');
+            setCategory(docToEdit.category);
             setType(docToEdit.type);
             setVersion(docToEdit.version || '1.0');
+        } else {
+            setCategory(activeCategory);
         }
-    }, [docToEdit]);
+    }, [docToEdit, isEditMode, activeCategory]);
 
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -323,12 +330,12 @@ const UploadDocModal = ({ onClose, onUploadSuccess, docToEdit }) => {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!file) { // A new file is required for an update
-            setError('Por favor, seleccione un nuevo archivo para actualizar.');
+        if (!file) {
+            setError('Por favor, seleccione un archivo.');
             return;
         }
-        if (!firestore || !docToEdit?.id) {
-            setError('Error de conexión con la base de datos o documento no válido.');
+        if (!firestore) {
+            setError('Error de conexión con la base de datos.');
             return;
         }
 
@@ -356,20 +363,25 @@ const UploadDocModal = ({ onClose, onUploadSuccess, docToEdit }) => {
                 title,
                 category,
                 type,
-                url: newFileUrl, // Use the new URL from Supabase
+                url: newFileUrl,
                 version,
                 updatedAt: serverTimestamp(),
             };
             
-            // 4. Update the document in Firestore
-            const docRef = doc(firestore, 'documentos', docToEdit.id);
-            await updateDoc(docRef, docData);
+            // 4. Update or Create document in Firestore
+            if (isEditMode) {
+                const docRef = doc(firestore, 'documentos', docToEdit.id);
+                await updateDoc(docRef, docData);
+            } else {
+                const collectionRef = collection(firestore, 'documentos');
+                await addDoc(collectionRef, { ...docData, createdAt: serverTimestamp() });
+            }
             
             onUploadSuccess();
 
         } catch (err: any) {
-            console.error('Error al actualizar documento:', err);
-            setError('Hubo un error al actualizar el documento. ' + (err.message || ''));
+            console.error('Error al subir/actualizar documento:', err);
+            setError('Hubo un error al procesar el documento. ' + (err.message || ''));
         } finally {
             setIsUploading(false);
         }
@@ -379,7 +391,7 @@ const UploadDocModal = ({ onClose, onUploadSuccess, docToEdit }) => {
         <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4" onClick={onClose}>
             <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl flex flex-col" onClick={e => e.stopPropagation()}>
                 <header className="flex justify-between items-center p-5 border-b bg-gray-50 rounded-t-2xl">
-                    <h3 className="text-lg font-semibold text-gray-800">Actualizar Documento</h3>
+                    <h3 className="text-lg font-semibold text-gray-800">{isEditMode ? 'Actualizar Documento' : 'Subir Nuevo Documento'}</h3>
                     <button onClick={onClose} className="w-9 h-9 rounded-full bg-red-500 text-white font-bold text-xl hover:bg-red-600 transition-colors">×</button>
                 </header>
                 <form onSubmit={handleSubmit} className="p-8 space-y-6">
@@ -391,7 +403,7 @@ const UploadDocModal = ({ onClose, onUploadSuccess, docToEdit }) => {
                     <div className="grid grid-cols-2 gap-6">
                         <div>
                             <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">Categoría</label>
-                             <select id="category" value={category} onChange={(e) => setCategory(e.target.value)} className="w-full p-3 bg-gray-100 border-2 border-gray-200 rounded-lg" disabled>
+                             <select id="category" value={category} onChange={(e) => setCategory(e.target.value)} className="w-full p-3 bg-gray-100 border-2 border-gray-200 rounded-lg" disabled={isEditMode}>
                                 {categories.map(cat => <option key={cat.id} value={cat.id}>{cat.name}</option>)}
                             </select>
                         </div>
@@ -403,18 +415,18 @@ const UploadDocModal = ({ onClose, onUploadSuccess, docToEdit }) => {
                         </div>
                     </div>
                      <div>
-                        <label htmlFor="version" className="block text-sm font-medium text-gray-700 mb-1">Nueva Versión</label>
-                        <input type="text" id="version" value={version} onChange={(e) => setVersion(e.target.value)} required className="w-full p-3 border-2 border-gray-200 rounded-lg outline-none focus:border-[#667eea]" placeholder="Ej: 2.2"/>
+                        <label htmlFor="version" className="block text-sm font-medium text-gray-700 mb-1">Versión</label>
+                        <input type="text" id="version" value={version} onChange={(e) => setVersion(e.target.value)} required className="w-full p-3 border-2 border-gray-200 rounded-lg outline-none focus:border-[#667eea]" placeholder="Ej: 1.0"/>
                     </div>
                     <div>
-                        <label htmlFor="file" className="block text-sm font-medium text-gray-700 mb-1">Reemplazar Archivo</label>
+                        <label htmlFor="file" className="block text-sm font-medium text-gray-700 mb-1">{isEditMode ? 'Reemplazar Archivo' : 'Seleccionar Archivo'}</label>
                         <input type="file" id="file" onChange={handleFileChange} required className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"/>
-                        <p className="text-xs text-gray-500 mt-1">Sube el nuevo archivo para reemplazar el existente.</p>
+                        {isEditMode && <p className="text-xs text-gray-500 mt-1">Sube el nuevo archivo para reemplazar el existente.</p>}
                     </div>
                     <div className="flex justify-end gap-4 pt-4">
                         <button type="button" onClick={onClose} className="py-2 px-6 bg-gray-200 text-gray-800 rounded-lg font-semibold hover:bg-gray-300">Cancelar</button>
                         <button type="submit" disabled={isUploading} className="py-2 px-6 bg-gradient-to-r from-[#667eea] to-[#764ba2] text-white rounded-lg font-semibold hover:-translate-y-0.5 transition-transform flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
-                            {isUploading ? <><Loader2 className="animate-spin" /> Actualizando...</> : 'Actualizar Documento'}
+                            {isUploading ? <><Loader2 className="animate-spin" /> Procesando...</> : (isEditMode ? 'Actualizar Documento' : 'Subir Documento')}
                         </button>
                     </div>
                 </form>
