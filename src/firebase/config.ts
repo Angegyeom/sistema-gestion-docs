@@ -1,9 +1,9 @@
 export const firebaseConfig = {
   "projectId": "control-censo-cpv",
-  "appId": "1:932625785984:web:031308a3852c4b5333501a",
-  "apiKey": "AIzaSyAz_1_7-LpTfQy_1234567890abcdef",
+  "appId": "1:1060140636879:web:f2d7e81a0b01696d87f5ba",
+  "apiKey": "AIzaSyArKc7pVvzJqp1KFk6-qPfywooSjn883kA",
   "authDomain": "control-censo-cpv.firebaseapp.com",
-  "measurementId": "G-1234567890",
-  "messagingSenderId": "932625785984",
+  "measurementId": "",
+  "messagingSenderId": "1060140636879",
   "storageBucket": "control-censo-cpv.appspot.com"
 };
