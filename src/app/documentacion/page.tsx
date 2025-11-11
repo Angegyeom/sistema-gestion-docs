@@ -330,7 +330,8 @@ const UploadDocModal = ({ onClose, onUploadSuccess, docToEdit, activeCategory })
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!file) {
+        
+        if (!isEditMode && !file) {
             setError('Por favor, seleccione un archivo.');
             return;
         }
@@ -343,22 +344,27 @@ const UploadDocModal = ({ onClose, onUploadSuccess, docToEdit, activeCategory })
         setError('');
 
         try {
-            // 1. Upload new file to Supabase Storage
-            const filePath = `${category}/${Date.now()}-${file.name}`;
-            const { error: uploadError } = await supabase.storage
-                .from('documentos')
-                .upload(filePath, file);
+            let newFileUrl = docToEdit?.url;
 
-            if (uploadError) throw uploadError;
+            if (file) {
+                const filePath = `${category}/${Date.now()}-${file.name}`;
+                const { error: uploadError } = await supabase.storage
+                    .from('documentos')
+                    .upload(filePath, file);
 
-            // 2. Get public URL of the new file
-            const { data: urlData } = supabase.storage
-                .from('documentos')
-                .getPublicUrl(filePath);
-            
-            const newFileUrl = urlData.publicUrl;
+                if (uploadError) throw uploadError;
 
-            // 3. Prepare data for Firestore
+                const { data: urlData } = supabase.storage
+                    .from('documentos')
+                    .getPublicUrl(filePath);
+                
+                newFileUrl = urlData.publicUrl;
+            } else if (!isEditMode) {
+                 setError('Por favor, seleccione un archivo para subir.');
+                 setIsUploading(false);
+                 return;
+            }
+
             const docData = {
                 title,
                 category,
@@ -368,7 +374,6 @@ const UploadDocModal = ({ onClose, onUploadSuccess, docToEdit, activeCategory })
                 updatedAt: serverTimestamp(),
             };
             
-            // 4. Update or Create document in Firestore
             if (isEditMode) {
                 const docRef = doc(firestore, 'documentos', docToEdit.id);
                 await updateDoc(docRef, docData);
@@ -419,9 +424,9 @@ const UploadDocModal = ({ onClose, onUploadSuccess, docToEdit, activeCategory })
                         <input type="text" id="version" value={version} onChange={(e) => setVersion(e.target.value)} required className="w-full p-3 border-2 border-gray-200 rounded-lg outline-none focus:border-[#667eea]" placeholder="Ej: 1.0"/>
                     </div>
                     <div>
-                        <label htmlFor="file" className="block text-sm font-medium text-gray-700 mb-1">{isEditMode ? 'Reemplazar Archivo' : 'Seleccionar Archivo'}</label>
-                        <input type="file" id="file" onChange={handleFileChange} required className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"/>
-                        {isEditMode && <p className="text-xs text-gray-500 mt-1">Sube el nuevo archivo para reemplazar el existente.</p>}
+                        <label htmlFor="file" className="block text-sm font-medium text-gray-700 mb-1">{isEditMode ? 'Reemplazar Archivo (Opcional)' : 'Seleccionar Archivo'}</label>
+                        <input type="file" id="file" onChange={handleFileChange} required={!isEditMode} className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"/>
+                        {isEditMode ? <p className="text-xs text-gray-500 mt-1">Sube un archivo solo si quieres reemplazar el existente.</p> : <p className="text-xs text-gray-500 mt-1">El archivo es obligatorio al crear un nuevo documento.</p>}
                     </div>
                     <div className="flex justify-end gap-4 pt-4">
                         <button type="button" onClick={onClose} className="py-2 px-6 bg-gray-200 text-gray-800 rounded-lg font-semibold hover:bg-gray-300">Cancelar</button>
