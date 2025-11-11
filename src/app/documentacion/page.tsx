@@ -352,7 +352,8 @@ const UploadDocModal = ({ onClose, onUploadSuccess, docToEdit, activeCategory })
         try {
             // Get Firebase token and set it in Supabase
             const token = await user.getIdToken();
-            supabase.auth.setAuth(token);
+            await supabase.auth.setSession({ access_token: token, refresh_token: '' });
+
 
             let newFileUrl = docToEdit?.url;
 
