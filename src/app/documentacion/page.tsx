@@ -351,13 +351,8 @@ const UploadDocModal = ({ onClose, onUploadSuccess, docToEdit, activeCategory })
 
         try {
             const token = await user.getIdToken();
-            const { data: sessionData, error: authError } = await supabase.auth.signInWithIdToken({
-                provider: 'firebase',
-                token,
-            });
-
+            const { error: authError } = await supabase.auth.setSession({ access_token: token, refresh_token: '' });
             if (authError) throw new Error(`Supabase auth error: ${authError.message}`);
-            if (!sessionData.session) throw new Error('Could not get Supabase session.');
 
             let newFileUrl = docToEdit?.url;
 
