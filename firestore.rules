@@ -38,13 +38,13 @@ service cloud.firestore {
      * @path /documentos/{docId}
      * @allow (list, get) - Any authenticated user can read documents.
      * @allow (create) - Any authenticated user can upload (create) a new document.
-     * @deny (update, delete) - No one can update or delete documents for now.
+     * @allow (update, delete) - Any authenticated user can update or delete a document.
      * @principle Allows collaborative document access for signed-in users.
      */
     match /documentos/{docId} {
         allow list, get: if isSignedIn();
         allow create: if isSignedIn();
-        allow update, delete: if false;
+        allow update, delete: if isSignedIn();
     }
 
     function isSignedIn() {
