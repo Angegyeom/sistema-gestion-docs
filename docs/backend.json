@@ -27,6 +27,22 @@
         }
       },
       "required": ["uid", "email", "role", "createdAt"]
+    },
+    "Documento": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Documento",
+      "type": "object",
+      "description": "Represents a document with its metadata.",
+      "properties": {
+        "title": { "type": "string", "description": "The title of the document." },
+        "url": { "type": "string", "format": "uri", "description": "The public URL of the stored document file." },
+        "category": { "type": "string", "description": "The category the document belongs to." },
+        "type": { "type": "string", "description": "The type of the document (e.g., acta, manual)." },
+        "createdAt": { "type": "string", "format": "date-time", "description": "The timestamp of when the document was created." },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "The timestamp of when the document was last updated." },
+        "version": { "type": "string", "description": "The version of the document."}
+      },
+      "required": ["title", "url", "category", "type", "createdAt"]
     }
   },
   "auth": {
@@ -50,6 +66,22 @@
               "description": "The user's unique ID."
             }
           ]
+        }
+      },
+      {
+        "path": "/documentos/{docId}",
+        "definition": {
+            "entityName": "Documento",
+            "schema": {
+                "$ref": "#/backend/entities/Documento"
+            },
+            "description": "Stores metadata for uploaded documents.",
+            "params": [
+                {
+                    "name": "docId",
+                    "description": "The unique ID of the document."
+                }
+            ]
         }
       }
     ]
