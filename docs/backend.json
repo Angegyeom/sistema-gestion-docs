@@ -42,7 +42,7 @@
         "updatedAt": { "type": "string", "format": "date-time", "description": "The timestamp of when the document was last updated." },
         "version": { "type": "string", "description": "The version of the document."}
       },
-      "required": ["title", "url", "category", "type", "createdAt"]
+      "required": ["title", "url", "category", "type", "createdAt", "updatedAt"]
     }
   },
   "auth": {
