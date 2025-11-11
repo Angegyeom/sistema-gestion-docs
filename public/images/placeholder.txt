@@ -1,0 +1,1 @@
+Esta carpeta es para las imágenes principales, como censo-logo.png e inei-logo.png. Por favor, coloque los archivos de imagen aquí y elimine este archivo de marcador de posición.
