@@ -110,14 +110,28 @@ export default function DocumentacionPage() {
             alert("No hay un documento adjunto para previsualizar.");
             return;
         }
+
         let embedUrl = doc.url;
-        if (doc.url.includes('docs.google.com') && !doc.url.includes('/embed') && !doc.url.includes('/preview')) {
-             if (doc.url.includes('/presentation/')) {
-                 embedUrl = doc.url.replace('/edit', '/embed').replace('/view', '/embed');
-             } else {
-                 embedUrl = doc.url.replace('/edit', '/preview').replace('/view', '/preview');
-             }
+        
+        if (doc.url.includes('supabase.co')) {
+            // Handle Supabase URLs. Use Google's doc viewer as a proxy for non-embeddable types.
+            const fileExtension = doc.url.split('.').pop()?.toLowerCase();
+            const embeddableExtensions = ['pdf'];
+            if (embeddableExtensions.includes(fileExtension)) {
+                 embedUrl = doc.url;
+            } else {
+                 embedUrl = `https://docs.google.com/gview?url=${encodeURIComponent(doc.url)}&embedded=true`;
+            }
+        } else if (doc.url.includes('docs.google.com') && !doc.url.includes('/embed') && !doc.url.includes('/preview')) {
+            // Handle Google Docs URLs
+            if (doc.url.includes('/presentation/')) {
+                embedUrl = doc.url.replace('/edit', '/embed').replace('/view', '/embed');
+            } else {
+                embedUrl = doc.url.replace('/edit', '/preview').replace('/view', '/preview');
+            }
         }
+        // For other URLs (like Figma), we can assume they are directly embeddable or just open them.
+        
         setModalDoc({ ...doc, embedUrl });
     }
     
@@ -354,7 +368,7 @@ const UploadDocModal = ({ onClose, onUploadSuccess, docToEdit, activeCategory })
             const sanitizedFileName = file.name
                 .normalize('NFD')
                 .replace(/[\u0300-\u036f]/g, '')
-                .replace(/[^a-zA-Z0-9.\-_]/g, '_');
+                .replace(/[^\w.\-_]/g, '_');
 
             const filePath = `${category}/${Date.now()}-${sanitizedFileName}`;
 
