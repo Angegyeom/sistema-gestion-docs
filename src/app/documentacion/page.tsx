@@ -350,7 +350,6 @@ const UploadDocModal = ({ onClose, onUploadSuccess, docToEdit, activeCategory })
         setError('');
 
         try {
-            // Get Firebase token and set it in Supabase
             const token = await user.getIdToken();
             const { error: authError } = await supabase.auth.setSession({ access_token: token, refresh_token: '' });
             if (authError) throw new Error(`Supabase auth error: ${authError.message}`);
