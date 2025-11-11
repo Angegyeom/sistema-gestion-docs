@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import AppHeader from "@/components/layout/app-header";
-import { useFirestore, useCollection, useMemoFirebase, useUser } from "@/firebase";
+import { useFirestore, useCollection, useMemoFirebase, useUser, errorEmitter, FirestorePermissionError } from "@/firebase";
 import { collection, addDoc, serverTimestamp, doc, updateDoc, writeBatch } from "firebase/firestore";
 import { supabase } from '@/lib/supabase-client';
 import { Loader2, Upload, Edit, Eye, Download, Plus } from 'lucide-react';
@@ -348,18 +348,17 @@ const UploadDocModal = ({ onClose, onUploadSuccess, docToEdit, activeCategory })
         setIsUploading(true);
         setError('');
 
-        try {
-            let newFileUrl = docToEdit?.url;
+        let newFileUrl = docToEdit?.url;
 
-            if (file) {
-                // Sanitize filename
-                const sanitizedFileName = file.name
-                    .normalize('NFD') // Decompose combined characters (e.g., 'é' -> 'e' + '´')
-                    .replace(/[\u0300-\u036f]/g, '') // Remove diacritical marks
-                    .replace(/[^a-zA-Z0-9.\-_]/g, '_'); // Replace invalid characters with underscore
+        if (file) {
+            const sanitizedFileName = file.name
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .replace(/[^a-zA-Z0-9.\-_]/g, '_');
 
-                const filePath = `${category}/${Date.now()}-${sanitizedFileName}`;
+            const filePath = `${category}/${Date.now()}-${sanitizedFileName}`;
 
+            try {
                 const { error: uploadError } = await supabase.storage
                     .from('documentos')
                     .upload(filePath, file);
@@ -371,36 +370,63 @@ const UploadDocModal = ({ onClose, onUploadSuccess, docToEdit, activeCategory })
                     .getPublicUrl(filePath);
                 
                 newFileUrl = urlData.publicUrl;
-            } else if (!isEditMode) {
-                 setError('Por favor, seleccione un archivo para subir.');
-                 setIsUploading(false);
-                 return;
+            } catch (err: any) {
+                setError('Hubo un error al subir el archivo a Supabase. ' + (err.message || ''));
+                setIsUploading(false);
+                return;
             }
+        } else if (!isEditMode) {
+             setError('Por favor, seleccione un archivo para subir.');
+             setIsUploading(false);
+             return;
+        }
 
-            const docData = {
-                title,
-                category,
-                type,
-                url: newFileUrl,
-                version,
-                updatedAt: serverTimestamp(),
-            };
-            
-            if (isEditMode) {
-                const docRef = doc(firestore, 'documentos', docToEdit.id);
-                await updateDoc(docRef, docData);
-            } else {
-                const collectionRef = collection(firestore, 'documentos');
-                await addDoc(collectionRef, { ...docData, createdAt: serverTimestamp() });
-            }
-            
-            onUploadSuccess();
-
-        } catch (err: any) {
-            console.error('Error al subir/actualizar documento:', err);
-            setError('Hubo un error al procesar el documento. ' + (err.message || ''));
-        } finally {
-            setIsUploading(false);
+        const docData = {
+            title,
+            category,
+            type,
+            url: newFileUrl,
+            version,
+            updatedAt: serverTimestamp(),
+        };
+        
+        if (isEditMode) {
+            const docRef = doc(firestore, 'documentos', docToEdit.id);
+            updateDoc(docRef, docData)
+                .then(() => {
+                    onUploadSuccess();
+                })
+                .catch((err) => {
+                    const permissionError = new FirestorePermissionError({
+                        path: docRef.path,
+                        operation: 'update',
+                        requestResourceData: docData,
+                    });
+                    errorEmitter.emit('permission-error', permissionError);
+                    setError('Error de permisos al actualizar el documento en Firestore.');
+                })
+                .finally(() => {
+                    setIsUploading(false);
+                });
+        } else {
+            const collectionRef = collection(firestore, 'documentos');
+            const finalDocData = { ...docData, createdAt: serverTimestamp() };
+            addDoc(collectionRef, finalDocData)
+                .then(() => {
+                    onUploadSuccess();
+                })
+                .catch((err) => {
+                    const permissionError = new FirestorePermissionError({
+                        path: collectionRef.path,
+                        operation: 'create',
+                        requestResourceData: finalDocData,
+                    });
+                    errorEmitter.emit('permission-error', permissionError);
+                    setError('Error de permisos al crear el documento en Firestore.');
+                })
+                .finally(() => {
+                    setIsUploading(false);
+                });
         }
     };
 
