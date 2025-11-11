@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import AppHeader from "@/components/layout/app-header";
 import { useFirestore, useCollection, useMemoFirebase } from "@/firebase";
-import { collection, addDoc, serverTimestamp, doc, updateDoc } from "firebase/firestore";
+import { collection, addDoc, serverTimestamp, doc, updateDoc, writeBatch } from "firebase/firestore";
 import { supabase } from '@/lib/supabase-client';
 import { Loader2, Upload, Edit, Eye, Download } from 'lucide-react';
 
@@ -20,11 +20,11 @@ const categories = [
 
 const initialDocs = {
     segmentacion: [
-        { id: '1', title: 'Acta de Constitución', description: 'Acta de constitución del proyecto para el área de segmentacion', type: 'acta', version: '2.1', updatedAt: '15 Sep 2025', url: 'https://docs.google.com/document/d/1example/edit' },
-        { id: '2', title: 'Cronograma', description: 'Cronograma detallado de actividades para segmentacion', type: 'cronograma', version: '2.1', updatedAt: '15 Sep 2025', url: 'https://docs.google.com/spreadsheets/d/1example/edit' },
-        { id: '3', title: 'Prototipo', description: 'Prototipo y diseño del sistema de segmentacion', type: 'prototipo', version: '2.1', updatedAt: '15 Sep 2025', url: 'https://www.figma.com/file/1example' },
-        { id: '4', title: 'Manual de Usuario', description: 'Manual de usuario del sistema de segmentacion', type: 'manual', version: '2.1', updatedAt: '15 Sep 2025', url: 'https://docs.google.com/document/d/1example/edit' },
-        { id: '5', title: 'Manual de Sistema', description: 'Manual de usuario del sistema de segmentacion', type: 'manual', version: '2.1', updatedAt: '15 Sep 2025', url: 'https://docs.google.com/document/d/1example/edit' },
+        { id: '1', title: 'Acta de Constitución', description: 'Acta de constitución del proyecto para el área de segmentacion', type: 'acta', version: '2.1', updatedAt: '15 Sep 2025', url: 'https://docs.google.com/document/d/1example/edit', category: 'segmentacion' },
+        { id: '2', title: 'Cronograma', description: 'Cronograma detallado de actividades para segmentacion', type: 'cronograma', version: '2.1', updatedAt: '15 Sep 2025', url: 'https://docs.google.com/spreadsheets/d/1example/edit', category: 'segmentacion' },
+        { id: '3', title: 'Prototipo', description: 'Prototipo y diseño del sistema de segmentacion', type: 'prototipo', version: '2.1', updatedAt: '15 Sep 2025', url: 'https://www.figma.com/file/1example', category: 'segmentacion' },
+        { id: '4', title: 'Manual de Usuario', description: 'Manual de usuario del sistema de segmentacion', type: 'manual', version: '2.1', updatedAt: '15 Sep 2025', url: 'https://docs.google.com/document/d/1example/edit', category: 'segmentacion' },
+        { id: '5', title: 'Manual de Sistema', description: 'Manual de usuario del sistema de segmentacion', type: 'manual', version: '2.1', updatedAt: '15 Sep 2025', url: 'https://docs.google.com/document/d/1example/edit', category: 'segmentacion' },
     ]
 };
 
@@ -59,11 +59,8 @@ const getDocIconBg = (type) => docTypeIconBg[type] || docTypeIconBg.default;
 
 export default function DocumentacionPage() {
     const firestore = useFirestore();
-    
-    // For now, we will use the static data and simulate firestore updates.
-    // In a real scenario, you would uncomment and use the firestore collection.
-    // const docsRef = useMemoFirebase(() => firestore ? collection(firestore, 'documentos') : null, [firestore]);
-    // const { data: allDocs, isLoading: isLoadingDocs } = useCollection(docsRef);
+    const docsRef = useMemoFirebase(() => firestore ? collection(firestore, 'documentos') : null, [firestore]);
+    const { data: allDocs, isLoading: isLoadingDocs, error: firestoreError } = useCollection(docsRef);
     
     const [docs, setDocs] = useState([]);
     const [view, setView] = useState('grid');
@@ -72,22 +69,43 @@ export default function DocumentacionPage() {
     const [searchTerm, setSearchTerm] = useState('');
     const [modalDoc, setModalDoc] = useState(null);
     const [uploadModalConfig, setUploadModalConfig] = useState({ isOpen: false, docToEdit: null });
-    const [isLoadingDocs, setIsLoadingDocs] = useState(true);
+
+    // Function to seed initial data to Firestore
+    const seedData = async () => {
+        if (!firestore || !allDocs || allDocs.length > 0) return;
+        console.log("No documents found, seeding initial data...");
+        try {
+            const batch = writeBatch(firestore);
+            const docsToSeed = initialDocs.segmentacion;
+            docsToSeed.forEach(docData => {
+                const docRef = doc(firestore, "documentos", docData.id);
+                batch.set(docRef, { ...docData, createdAt: serverTimestamp(), updatedAt: serverTimestamp() });
+            });
+            await batch.commit();
+            console.log("Initial data seeded successfully.");
+        } catch (error) {
+            console.error("Error seeding data: ", error);
+        }
+    };
+    
+    // Seed data only once if the collection is empty
+    useEffect(() => {
+        if (!isLoadingDocs && allDocs && allDocs.length === 0) {
+            seedData();
+        }
+    }, [isLoadingDocs, allDocs, firestore]);
 
     useEffect(() => {
-        setIsLoadingDocs(true);
-        // Simulate fetching docs
-        const allDocs = initialDocs[activeCategory] || [];
-        
-        const filteredDocs = allDocs.filter(doc => {
-            const typeMatch = activeType === 'all' || doc.type === activeType;
-            const searchMatch = doc.title.toLowerCase().includes(searchTerm.toLowerCase());
-            return typeMatch && searchMatch;
-        });
-
-        setDocs(filteredDocs);
-        setIsLoadingDocs(false);
-    }, [activeCategory, activeType, searchTerm]);
+        if (allDocs) {
+            const filteredDocs = allDocs.filter(doc => {
+                const categoryMatch = doc.category === activeCategory;
+                const typeMatch = activeType === 'all' || doc.type === activeType;
+                const searchMatch = doc.title.toLowerCase().includes(searchTerm.toLowerCase());
+                return categoryMatch && typeMatch && searchMatch;
+            });
+            setDocs(filteredDocs);
+        }
+    }, [allDocs, activeCategory, activeType, searchTerm]);
     
     const openPreviewModal = (doc) => {
         if (!doc.url || doc.url === '#') {
@@ -109,7 +127,6 @@ export default function DocumentacionPage() {
     const closePreviewModal = () => setModalDoc(null);
 
     const openUploadModal = (docToEdit = null) => {
-        // This function now primarily handles editing
         setUploadModalConfig({ isOpen: true, docToEdit });
     };
 
@@ -119,9 +136,7 @@ export default function DocumentacionPage() {
     
     const handleUploadSuccess = () => {
         closeUploadModal();
-        alert("Documento actualizado con éxito (simulación). En un escenario real, la lista se refrescaría.");
-        // To see changes, you would refetch data from Firestore.
-        // For now, we just close the modal.
+        // The useCollection hook will automatically refresh the list.
     }
 
     return (
@@ -172,7 +187,8 @@ export default function DocumentacionPage() {
                             </div>
                         </header>
                         
-                        {isLoadingDocs ? <div className="text-center p-10">Cargando documentos...</div> : (
+                        {isLoadingDocs ? <div className="text-center p-10"><Loader2 className="animate-spin inline-block mr-2" />Cargando documentos...</div> : (
+                           firestoreError ? <div className="text-center p-10 text-red-500">Error: {firestoreError.message}</div> : 
                            docs.length > 0 ? (
                                 <>
                                     {view === 'grid' ? (
@@ -288,9 +304,6 @@ const UploadDocModal = ({ onClose, onUploadSuccess, docToEdit }) => {
     const [file, setFile] = useState<File | null>(null);
     const [isUploading, setIsUploading] = useState(false);
     const [error, setError] = useState('');
-    
-    // This is always an edit in this workflow
-    const isEditMode = true;
 
     useEffect(() => {
         if (docToEdit) {
@@ -314,8 +327,8 @@ const UploadDocModal = ({ onClose, onUploadSuccess, docToEdit }) => {
             setError('Por favor, seleccione un nuevo archivo para actualizar.');
             return;
         }
-        if (!firestore) {
-            setError('Error de conexión con la base de datos.');
+        if (!firestore || !docToEdit?.id) {
+            setError('Error de conexión con la base de datos o documento no válido.');
             return;
         }
 
@@ -349,23 +362,8 @@ const UploadDocModal = ({ onClose, onUploadSuccess, docToEdit }) => {
             };
             
             // 4. Update the document in Firestore
-            // This assumes docToEdit.id is the firestore document ID.
-            // When using real data, ensure the ID from firestore is passed correctly.
-            if (docToEdit.id) {
-                console.log("Simulating update for Firestore doc:", docToEdit.id, docData);
-                // In a real scenario, you would uncomment the following lines:
-                // const docRef = doc(firestore, 'documentos', docToEdit.id);
-                // await updateDoc(docRef, docData);
-            } else {
-                 console.log("Simulating create for Firestore doc:", docData);
-                 // If the doc doesn't exist in Firestore yet, you might want to create it.
-                 // This part of the logic depends on how you initially populate Firestore.
-                 // For now, we assume we are always updating an existing Firestore document.
-                 // await addDoc(collection(firestore, 'documentos'), {
-                 //    ...docData,
-                 //    createdAt: serverTimestamp()
-                 // });
-            }
+            const docRef = doc(firestore, 'documentos', docToEdit.id);
+            await updateDoc(docRef, docData);
             
             onUploadSuccess();
 
