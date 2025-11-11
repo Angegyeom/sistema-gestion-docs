@@ -3,9 +3,9 @@
 import React, { useState, useEffect } from 'react';
 import AppHeader from "@/components/layout/app-header";
 import { useFirestore, useCollection, useMemoFirebase } from "@/firebase";
-import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { collection, addDoc, serverTimestamp, doc, updateDoc, writeBatch } from "firebase/firestore";
 import { supabase } from '@/lib/supabase-client';
-import { Loader2, Upload } from 'lucide-react';
+import { Loader2, Upload, Edit } from 'lucide-react';
 
 const categories = [
   { id: 'segmentacion', name: 'Segmentación y Ruteo', icon: '🗺️' },
@@ -57,7 +57,8 @@ export default function DocumentacionPage() {
     const [activeType, setActiveType] = useState('all');
     const [searchTerm, setSearchTerm] = useState('');
     const [modalDoc, setModalDoc] = useState(null);
-    const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+    const [uploadModalConfig, setUploadModalConfig] = useState({ isOpen: false, docToEdit: null });
+
 
     useEffect(() => {
         if (!allDocs) return;
@@ -72,7 +73,7 @@ export default function DocumentacionPage() {
         setDocs(filteredDocs);
     }, [allDocs, activeCategory, activeType, searchTerm]);
     
-    const openModal = (doc) => {
+    const openPreviewModal = (doc) => {
         let embedUrl = doc.url;
         if (doc.url.includes('drive.google.com')) {
             const fileIdMatch = doc.url.match(/\/d\/([a-zA-Z0-9-_]+)/);
@@ -85,8 +86,15 @@ export default function DocumentacionPage() {
         setModalDoc({ ...doc, embedUrl });
     }
     
-    const closeModal = () => setModalDoc(null);
-    const closeUploadModal = () => setIsUploadModalOpen(false);
+    const closePreviewModal = () => setModalDoc(null);
+
+    const openUploadModal = (docToEdit = null) => {
+        setUploadModalConfig({ isOpen: true, docToEdit });
+    };
+
+    const closeUploadModal = () => {
+        setUploadModalConfig({ isOpen: false, docToEdit: null });
+    };
 
     return (
         <>
@@ -100,7 +108,7 @@ export default function DocumentacionPage() {
                 <div className="bg-white/95 rounded-2xl p-7 mb-8 shadow-lg">
                     <div className="flex flex-col md:flex-row gap-4 mb-5">
                         <input type="text" placeholder="Buscar documentos..." className="flex-grow p-4 border-2 border-gray-200 rounded-xl outline-none focus:border-[#667eea]" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
-                        <button className="bg-gradient-to-r from-[#667eea] to-[#764ba2] text-white p-4 rounded-xl font-semibold hover:-translate-y-0.5 transition-transform flex items-center justify-center gap-2" onClick={() => setIsUploadModalOpen(true)}>
+                        <button className="bg-gradient-to-r from-[#667eea] to-[#764ba2] text-white p-4 rounded-xl font-semibold hover:-translate-y-0.5 transition-transform flex items-center justify-center gap-2" onClick={() => openUploadModal()}>
                             <Upload size={20} /> Subir Documento
                         </button>
                     </div>
@@ -143,11 +151,11 @@ export default function DocumentacionPage() {
                             <>
                                 {view === 'grid' ? (
                                     <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                                        {docs.map(doc => <DocCard key={doc.id} doc={doc} onPreview={openModal} />)}
+                                        {docs.map(doc => <DocCard key={doc.id} doc={doc} onPreview={openPreviewModal} onEdit={openUploadModal} />)}
                                     </div>
                                 ) : (
                                     <div className="space-y-3">
-                                        {docs.map(doc => <DocListItem key={doc.id} doc={doc} onPreview={openModal} />)}
+                                        {docs.map(doc => <DocListItem key={doc.id} doc={doc} onPreview={openPreviewModal} onEdit={openUploadModal} />)}
                                     </div>
                                 )}
                             </>
@@ -156,47 +164,54 @@ export default function DocumentacionPage() {
                     </main>
                 </div>
             </div>
-            {modalDoc && <DocModal doc={modalDoc} onClose={closeModal} />}
-            {isUploadModalOpen && <UploadDocModal onClose={closeUploadModal} onUploadSuccess={closeUploadModal} />}
+            {modalDoc && <DocModal doc={modalDoc} onClose={closePreviewModal} />}
+            {uploadModalConfig.isOpen && <UploadDocModal onClose={closeUploadModal} onUploadSuccess={closeUploadModal} docToEdit={uploadModalConfig.docToEdit} />}
 
         </>
     );
 }
 
-const DocCard = ({ doc, onPreview }) => (
-    <div className={`bg-white rounded-xl p-5 shadow-md border-l-4 ${getDocClass(doc.type)} transition-transform hover:-translate-y-1 cursor-pointer`} onClick={() => onPreview(doc)}>
-        <div className="flex items-center gap-4 mb-4">
+const DocCard = ({ doc, onPreview, onEdit }) => (
+    <div className={`bg-white rounded-xl p-5 shadow-md border-l-4 ${getDocClass(doc.type)} flex flex-col`}>
+        <div className="flex items-center gap-4 mb-4 cursor-pointer" onClick={() => onPreview(doc)}>
             <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-white text-xl ${getDocIconBg(doc.type)}`}>
                 {getDocumentIcon(doc.type)}
             </div>
             <h4 className="font-semibold text-gray-800 flex-1">{doc.title}</h4>
         </div>
-        <p className="text-sm text-gray-600 mb-4 h-12">Documento de tipo {doc.type} para el área de {doc.category}</p>
-        <div className="text-xs text-gray-500 pt-3 border-t">
-            <p>Actualizado: {doc.updatedAt ? new Date(doc.updatedAt.seconds * 1000).toLocaleDateString() : 'N/A'}</p>
+        <p className="text-sm text-gray-600 mb-4 h-12 flex-grow cursor-pointer" onClick={() => onPreview(doc)}>Documento de tipo {doc.type} para el área de {doc.category}</p>
+        <div className="text-xs text-gray-500 pt-3 border-t cursor-pointer" onClick={() => onPreview(doc)}>
+            <p>Actualizado: {doc.updatedAt?.seconds ? new Date(doc.updatedAt.seconds * 1000).toLocaleDateString() : 'N/A'}</p>
             <p>Versión: {doc.version || '1.0'}</p>
         </div>
         <div className="flex gap-2 mt-4">
              <button onClick={(e) => {e.stopPropagation(); window.open(doc.url, '_blank')}} className="text-xs bg-green-100 text-green-700 font-semibold py-1 px-3 rounded-full hover:bg-green-200">Descargar</button>
+             <button onClick={(e) => { e.stopPropagation(); onEdit(doc); }} className="text-xs bg-yellow-100 text-yellow-700 font-semibold py-1 px-3 rounded-full hover:bg-yellow-200 flex items-center gap-1">
+                <Edit size={12} /> Actualizar
+            </button>
         </div>
     </div>
 );
 
-const DocListItem = ({ doc, onPreview }) => (
-    <div className={`flex items-center gap-4 p-4 rounded-lg transition-colors hover:bg-gray-50 cursor-pointer`} onClick={() => onPreview(doc)}>
-         <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-white text-xl shrink-0 ${getDocIconBg(doc.type)}`}>
+const DocListItem = ({ doc, onPreview, onEdit }) => (
+    <div className={`flex items-center gap-4 p-4 rounded-lg transition-colors hover:bg-gray-50`}>
+         <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-white text-xl shrink-0 cursor-pointer ${getDocIconBg(doc.type)}`} onClick={() => onPreview(doc)}>
             {getDocumentIcon(doc.type)}
         </div>
-        <div className="flex-1">
+        <div className="flex-1 cursor-pointer" onClick={() => onPreview(doc)}>
             <h4 className="font-semibold text-gray-800">{doc.title}</h4>
-            <p className="text-xs text-gray-500">Actualizado: {doc.updatedAt ? new Date(doc.updatedAt.seconds * 1000).toLocaleDateString() : 'N/A'} • Versión: {doc.version || '1.0'}</p>
+            <p className="text-xs text-gray-500">Actualizado: {doc.updatedAt?.seconds ? new Date(doc.updatedAt.seconds * 1000).toLocaleDateString() : 'N/A'} • Versión: {doc.version || '1.0'}</p>
         </div>
         <div className="flex gap-2">
             <button onClick={(e) => {e.stopPropagation(); onPreview(doc)}} className="text-xs bg-blue-100 text-blue-700 font-semibold py-1 px-3 rounded-full hover:bg-blue-200">Ver</button>
             <button onClick={(e) => {e.stopPropagation(); window.open(doc.url, '_blank')}} className="text-xs bg-green-100 text-green-700 font-semibold py-1 px-3 rounded-full hover:bg-green-200">Descargar</button>
+            <button onClick={(e) => { e.stopPropagation(); onEdit(doc); }} className="text-xs bg-yellow-100 text-yellow-700 font-semibold py-1 px-3 rounded-full hover:bg-yellow-200 flex items-center gap-1">
+                <Edit size={12} /> Actualizar
+            </button>
         </div>
     </div>
 );
+
 
 const DocModal = ({ doc, onClose }) => {
     useEffect(() => {
@@ -222,14 +237,27 @@ const DocModal = ({ doc, onClose }) => {
     );
 };
 
-const UploadDocModal = ({ onClose, onUploadSuccess }) => {
+const UploadDocModal = ({ onClose, onUploadSuccess, docToEdit }) => {
     const firestore = useFirestore();
     const [title, setTitle] = useState('');
     const [category, setCategory] = useState('segmentacion');
     const [type, setType] = useState('acta');
+    const [version, setVersion] = useState('1.0');
     const [file, setFile] = useState(null);
     const [isUploading, setIsUploading] = useState(false);
     const [error, setError] = useState('');
+    
+    const isEditMode = Boolean(docToEdit);
+
+    useEffect(() => {
+        if (isEditMode && docToEdit) {
+            setTitle(docToEdit.title);
+            setCategory(docToEdit.category);
+            setType(docToEdit.type);
+            setVersion(docToEdit.version || '1.0');
+        }
+    }, [isEditMode, docToEdit]);
+
 
     const handleFileChange = (e) => {
         if (e.target.files) {
@@ -239,8 +267,8 @@ const UploadDocModal = ({ onClose, onUploadSuccess }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!file || !title) {
-            setError('Por favor, complete todos los campos y seleccione un archivo.');
+        if (!title || (!file && !isEditMode)) {
+            setError('Por favor, complete el título y seleccione un archivo.');
             return;
         }
         if (!firestore) {
@@ -252,34 +280,47 @@ const UploadDocModal = ({ onClose, onUploadSuccess }) => {
         setError('');
 
         try {
-            const filePath = `${category}/${Date.now()}-${file.name}`;
-            const { data: uploadData, error: uploadError } = await supabase.storage
-                .from('documentos')
-                .upload(filePath, file);
+            let fileUrl = docToEdit?.url;
 
-            if (uploadError) throw uploadError;
+            if (file) {
+                 const filePath = `${category}/${Date.now()}-${file.name}`;
+                const { data: uploadData, error: uploadError } = await supabase.storage
+                    .from('documentos')
+                    .upload(filePath, file);
 
-            const { data: urlData } = supabase.storage
-                .from('documentos')
-                .getPublicUrl(filePath);
+                if (uploadError) throw uploadError;
 
-            const newDoc = {
+                const { data: urlData } = supabase.storage
+                    .from('documentos')
+                    .getPublicUrl(filePath);
+                
+                fileUrl = urlData.publicUrl;
+            }
+
+            const docData = {
                 title,
                 category,
                 type,
-                url: urlData.publicUrl,
-                createdAt: serverTimestamp(),
+                url: fileUrl,
+                version,
                 updatedAt: serverTimestamp(),
-                version: '1.0'
             };
-
-            await addDoc(collection(firestore, 'documentos'), newDoc);
+            
+            if (isEditMode) {
+                const docRef = doc(firestore, 'documentos', docToEdit.id);
+                await updateDoc(docRef, docData);
+            } else {
+                await addDoc(collection(firestore, 'documentos'), {
+                    ...docData,
+                    createdAt: serverTimestamp()
+                });
+            }
             
             onUploadSuccess();
 
         } catch (err) {
             console.error('Error al subir documento:', err);
-            setError('Hubo un error al subir el documento. ' + err.message);
+            setError('Hubo un error al subir el documento. ' + (err.message || ''));
         } finally {
             setIsUploading(false);
         }
@@ -289,7 +330,7 @@ const UploadDocModal = ({ onClose, onUploadSuccess }) => {
         <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4" onClick={onClose}>
             <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl flex flex-col" onClick={e => e.stopPropagation()}>
                 <header className="flex justify-between items-center p-5 border-b bg-gray-50 rounded-t-2xl">
-                    <h3 className="text-lg font-semibold text-gray-800">Subir Nuevo Documento</h3>
+                    <h3 className="text-lg font-semibold text-gray-800">{isEditMode ? 'Actualizar Documento' : 'Subir Nuevo Documento'}</h3>
                     <button onClick={onClose} className="w-9 h-9 rounded-full bg-red-500 text-white font-bold text-xl hover:bg-red-600 transition-colors">×</button>
                 </header>
                 <form onSubmit={handleSubmit} className="p-8 space-y-6">
@@ -312,14 +353,18 @@ const UploadDocModal = ({ onClose, onUploadSuccess }) => {
                             </select>
                         </div>
                     </div>
+                     <div>
+                        <label htmlFor="version" className="block text-sm font-medium text-gray-700 mb-1">Versión</label>
+                        <input type="text" id="version" value={version} onChange={(e) => setVersion(e.target.value)} required className="w-full p-3 border-2 border-gray-200 rounded-lg outline-none focus:border-[#667eea]" />
+                    </div>
                     <div>
-                        <label htmlFor="file" className="block text-sm font-medium text-gray-700 mb-1">Archivo</label>
-                        <input type="file" id="file" onChange={handleFileChange} required className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"/>
+                        <label htmlFor="file" className="block text-sm font-medium text-gray-700 mb-1">{isEditMode ? 'Reemplazar Archivo (Opcional)' : 'Archivo'}</label>
+                        <input type="file" id="file" onChange={handleFileChange} required={!isEditMode} className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"/>
                     </div>
                     <div className="flex justify-end gap-4 pt-4">
                         <button type="button" onClick={onClose} className="py-2 px-6 bg-gray-200 text-gray-800 rounded-lg font-semibold hover:bg-gray-300">Cancelar</button>
                         <button type="submit" disabled={isUploading} className="py-2 px-6 bg-gradient-to-r from-[#667eea] to-[#764ba2] text-white rounded-lg font-semibold hover:-translate-y-0.5 transition-transform flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
-                            {isUploading ? <><Loader2 className="animate-spin" /> Subiendo...</> : 'Guardar Documento'}
+                            {isUploading ? <><Loader2 className="animate-spin" /> Subiendo...</> : (isEditMode ? 'Actualizar Documento' : 'Guardar Documento')}
                         </button>
                     </div>
                 </form>
