@@ -352,7 +352,14 @@ const UploadDocModal = ({ onClose, onUploadSuccess, docToEdit, activeCategory })
             let newFileUrl = docToEdit?.url;
 
             if (file) {
-                const filePath = `${category}/${Date.now()}-${file.name}`;
+                // Sanitize filename
+                const sanitizedFileName = file.name
+                    .normalize('NFD') // Decompose combined characters (e.g., 'é' -> 'e' + '´')
+                    .replace(/[\u0300-\u036f]/g, '') // Remove diacritical marks
+                    .replace(/[^a-zA-Z0-9.\-_]/g, '_'); // Replace invalid characters with underscore
+
+                const filePath = `${category}/${Date.now()}-${sanitizedFileName}`;
+
                 const { error: uploadError } = await supabase.storage
                     .from('documentos')
                     .upload(filePath, file);
