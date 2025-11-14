@@ -3,8 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import AppHeader from "@/components/layout/app-header";
 import { useFirestore, useCollection, useMemoFirebase, useUser, errorEmitter, FirestorePermissionError } from "@/firebase";
-import { collection, addDoc, serverTimestamp, doc, updateDoc, writeBatch, deleteDoc } from "firebase/firestore";
-import { Loader2, Upload, Edit, Eye, Download, Plus, Trash2, FileText, FileSpreadsheet, FileStack } from 'lucide-react';
+import { collection, addDoc, serverTimestamp, doc, updateDoc, writeBatch } from "firebase/firestore";
+import { Loader2, Upload, Edit, Eye, Download, Plus, FileText, FileSpreadsheet, FileStack } from 'lucide-react';
 import Swal from 'sweetalert2';
 
 const categories = [
@@ -341,53 +341,6 @@ export default function DocumentacionPage() {
         }
     }
 
-    const handleDelete = async (document) => {
-        if (!firestore) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Error de conexión',
-                text: 'Error de conexión con la base de datos.',
-                confirmButtonText: 'Entendido',
-                confirmButtonColor: '#667eea'
-            });
-            return;
-        }
-
-        const result = await Swal.fire({
-            icon: 'question',
-            title: '¿Estás seguro?',
-            text: `¿Deseas eliminar el documento "${document.title}"?`,
-            showCancelButton: true,
-            confirmButtonText: 'Sí, eliminar',
-            cancelButtonText: 'Cancelar',
-            confirmButtonColor: '#ef4444',
-            cancelButtonColor: '#6b7280'
-        });
-
-        if (!result.isConfirmed) return;
-
-        try {
-            const docRef = doc(firestore, 'documentos', document.id);
-            await deleteDoc(docRef);
-            console.log('Documento eliminado:', document.title);
-            Swal.fire({
-                icon: 'success',
-                title: 'Eliminado',
-                text: 'El documento ha sido eliminado exitosamente.',
-                timer: 2000,
-                showConfirmButton: false
-            });
-        } catch (error) {
-            console.error('Error eliminando documento:', error);
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: 'Error al eliminar el documento.',
-                confirmButtonText: 'Entendido',
-                confirmButtonColor: '#667eea'
-            });
-        }
-    }
 
     return (
         <>
@@ -450,11 +403,11 @@ export default function DocumentacionPage() {
                                 <>
                                     {view === 'grid' ? (
                                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-5">
-                                            {docs.map(doc => <DocCard key={doc.id} doc={doc} onPreview={openPreviewModal} onEdit={openUploadModal} onDownloadWord={handleDownloadWord} onDownloadExcel={handleDownloadExcel} onDelete={handleDelete} />)}
+                                            {docs.map(doc => <DocCard key={doc.id} doc={doc} onPreview={openPreviewModal} onEdit={openUploadModal} onDownloadWord={handleDownloadWord} onDownloadExcel={handleDownloadExcel} />)}
                                         </div>
                                     ) : (
                                         <div className="space-y-2 md:space-y-3">
-                                            {docs.map(doc => <DocListItem key={doc.id} doc={doc} onPreview={openPreviewModal} onEdit={openUploadModal} onDownloadWord={handleDownloadWord} onDownloadExcel={handleDownloadExcel} onDelete={handleDelete} />)}
+                                            {docs.map(doc => <DocListItem key={doc.id} doc={doc} onPreview={openPreviewModal} onEdit={openUploadModal} onDownloadWord={handleDownloadWord} onDownloadExcel={handleDownloadExcel} />)}
                                         </div>
                                     )}
                                 </>
@@ -476,7 +429,7 @@ export default function DocumentacionPage() {
     );
 }
 
-const DocCard = ({ doc, onPreview, onEdit, onDownloadWord, onDownloadExcel, onDelete }) => {
+const DocCard = ({ doc, onPreview, onEdit, onDownloadWord, onDownloadExcel }) => {
     const needsExcel = ['lecciones', 'backlog', 'cronograma'].includes(doc.type);
     const needsWord = ['acta', 'manual', 'requerimientos'].includes(doc.type);
 
@@ -493,9 +446,6 @@ const DocCard = ({ doc, onPreview, onEdit, onDownloadWord, onDownloadExcel, onDe
                      <div className="flex gap-1 flex-shrink-0">
                         <button onClick={(e) => { e.stopPropagation(); onEdit(doc); }} className="text-gray-400 hover:text-blue-600 p-1" title="Actualizar documento">
                             <Edit size={14} className="md:w-4 md:h-4" />
-                        </button>
-                        <button onClick={(e) => { e.stopPropagation(); onDelete(doc); }} className="text-gray-400 hover:text-red-600 p-1" title="Eliminar documento">
-                            <Trash2 size={14} className="md:w-4 md:h-4" />
                         </button>
                      </div>
                 </div>
@@ -536,7 +486,7 @@ const DocCard = ({ doc, onPreview, onEdit, onDownloadWord, onDownloadExcel, onDe
     );
 };
 
-const DocListItem = ({ doc, onPreview, onEdit, onDownloadWord, onDownloadExcel, onDelete }) => {
+const DocListItem = ({ doc, onPreview, onEdit, onDownloadWord, onDownloadExcel }) => {
     const needsExcel = ['lecciones', 'backlog', 'cronograma'].includes(doc.type);
     const needsWord = ['acta', 'manual', 'requerimientos'].includes(doc.type);
 
@@ -562,9 +512,6 @@ const DocListItem = ({ doc, onPreview, onEdit, onDownloadWord, onDownloadExcel, 
                 <button onClick={() => onPreview(doc)} className="text-xs bg-blue-100 text-blue-700 font-semibold py-1 px-2 md:px-3 rounded-full hover:bg-blue-200 flex items-center gap-1 whitespace-nowrap"><Eye size={12}/> Ver</button>
                 <button onClick={() => onEdit(doc)} className="text-xs bg-yellow-100 text-yellow-700 font-semibold py-1 px-2 md:px-3 rounded-full hover:bg-yellow-200 flex items-center gap-1 whitespace-nowrap">
                     <Edit size={12} /> <span className="hidden sm:inline">Actualizar</span>
-                </button>
-                <button onClick={() => onDelete(doc)} className="text-xs bg-red-100 text-red-700 font-semibold py-1 px-2 md:px-3 rounded-full hover:bg-red-200 flex items-center gap-1 whitespace-nowrap">
-                    <Trash2 size={12} /> <span className="hidden sm:inline">Eliminar</span>
                 </button>
             </div>
         </div>
