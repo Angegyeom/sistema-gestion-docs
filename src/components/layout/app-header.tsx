@@ -48,7 +48,7 @@ export default function AppHeader() {
 
              {/* Mobile Menu Panel */}
             <div className={cn(
-                "md:hidden absolute top-full left-0 w-full bg-gradient-to-br from-[#667eea] to-[#764ba2] transition-all duration-300 ease-in-out overflow-hidden",
+                "md:hidden absolute top-full left-0 w-full bg-gradient-to-br from-[#7AADCF] to-[#4A7BA7] transition-all duration-300 ease-in-out overflow-hidden",
                 isMenuOpen ? "max-h-screen py-5 border-t border-white/20" : "max-h-0"
             )}>
                 <nav className="flex flex-col items-center gap-4">

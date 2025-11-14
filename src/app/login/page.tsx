@@ -97,7 +97,7 @@ export default function LoginPage() {
 
   return (
     <div
-      className={`bg-gradient-to-br from-[#667eea] to-[#764ba2] min-h-screen flex items-center justify-center font-sans ${
+      className={`bg-gradient-to-br from-[#7AADCF] to-[#4A7BA7] min-h-screen flex items-center justify-center font-sans ${
         isLoading ? "opacity-70 pointer-events-none" : ""
       }`}
     >
@@ -125,7 +125,7 @@ export default function LoginPage() {
           <input
             type="email"
             id="email"
-            className="w-full p-4 border-2 border-gray-200 rounded-xl text-base outline-none transition-colors focus:border-[#667eea]"
+            className="w-full p-4 border-2 border-gray-200 rounded-xl text-base outline-none transition-colors focus:border-[#4A7BA7]"
             placeholder="Ingrese su correo"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -144,7 +144,7 @@ export default function LoginPage() {
           <input
             type="password"
             id="password"
-            className="w-full p-4 border-2 border-gray-200 rounded-xl text-base outline-none transition-colors focus:border-[#667eea]"
+            className="w-full p-4 border-2 border-gray-200 rounded-xl text-base outline-none transition-colors focus:border-[#4A7BA7]"
             placeholder="Ingrese su contraseña"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
@@ -153,7 +153,7 @@ export default function LoginPage() {
         </div>
 
         <button
-          className={`w-full bg-gradient-to-r from-[#667eea] to-[#764ba2] text-white p-4 rounded-xl text-lg font-semibold cursor-pointer transition-all duration-300 mb-5 hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0 ${
+          className={`w-full bg-gradient-to-r from-[#7AADCF] to-[#4A7BA7] text-white p-4 rounded-xl text-lg font-semibold cursor-pointer transition-all duration-300 mb-5 hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0 ${
             isLoading ? "bg-gray-300" : ""
           }`}
           onClick={handleLogin}

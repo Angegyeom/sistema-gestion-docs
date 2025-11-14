@@ -223,14 +223,17 @@ export default function DocumentacionPage() {
             return;
         }
 
-        // Check if there's a PDF to preview
+        // Check if there's a PDF to preview or if it's a prototype without a link
         if (!doc.pdfFilePath && (!doc.url || doc.url === '#')) {
+            const isPrototipo = doc.type === 'prototipo';
             Swal.fire({
                 icon: 'warning',
-                title: 'Documento no disponible',
-                text: 'No hay un documento PDF disponible para previsualizar.',
+                title: isPrototipo ? 'Link no disponible' : 'Documento no disponible',
+                text: isPrototipo
+                    ? 'No se ha ingresado un enlace de Figma para este prototipo.'
+                    : 'No hay un documento PDF disponible para previsualizar.',
                 confirmButtonText: 'Entendido',
-                confirmButtonColor: '#667eea'
+                confirmButtonColor: '#4A7BA7'
             });
             return;
         }
@@ -254,7 +257,7 @@ export default function DocumentacionPage() {
                     title: 'Error',
                     text: 'Error al obtener la URL del archivo PDF.',
                     confirmButtonText: 'Entendido',
-                    confirmButtonColor: '#667eea'
+                    confirmButtonColor: '#4A7BA7'
                 });
                 return;
             }
@@ -284,7 +287,7 @@ export default function DocumentacionPage() {
                 title: 'Archivo no disponible',
                 text: 'No hay un archivo Word disponible para este documento.',
                 confirmButtonText: 'Entendido',
-                confirmButtonColor: '#667eea'
+                confirmButtonColor: '#4A7BA7'
             });
             return;
         }
@@ -304,7 +307,7 @@ export default function DocumentacionPage() {
                 title: 'Error',
                 text: 'Error al obtener la URL de descarga. Verifica que las credenciales de Google Cloud Storage estén configuradas.',
                 confirmButtonText: 'Entendido',
-                confirmButtonColor: '#667eea'
+                confirmButtonColor: '#4A7BA7'
             });
         }
     }
@@ -316,7 +319,7 @@ export default function DocumentacionPage() {
                 title: 'Archivo no disponible',
                 text: 'No hay un archivo Excel disponible para este documento.',
                 confirmButtonText: 'Entendido',
-                confirmButtonColor: '#667eea'
+                confirmButtonColor: '#4A7BA7'
             });
             return;
         }
@@ -336,7 +339,7 @@ export default function DocumentacionPage() {
                 title: 'Error',
                 text: 'Error al obtener la URL de descarga. Verifica que las credenciales de Google Cloud Storage estén configuradas.',
                 confirmButtonText: 'Entendido',
-                confirmButtonColor: '#667eea'
+                confirmButtonColor: '#4A7BA7'
             });
         }
     }
@@ -353,10 +356,10 @@ export default function DocumentacionPage() {
 
                 <div className="bg-white/95 rounded-2xl p-4 md:p-7 mb-6 md:mb-8 shadow-lg">
                     <div className="flex flex-col md:flex-row gap-3 md:gap-4 mb-4 md:mb-5">
-                        <input type="text" placeholder="Buscar documentos..." className="flex-grow p-3 md:p-4 border-2 border-gray-200 rounded-xl outline-none focus:border-[#667eea] text-sm md:text-base" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
+                        <input type="text" placeholder="Buscar documentos..." className="flex-grow p-3 md:p-4 border-2 border-gray-200 rounded-xl outline-none focus:border-[#4A7BA7] text-sm md:text-base" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
                         <button
                             onClick={() => setShowFormatsModal(true)}
-                            className="flex items-center justify-center gap-2 px-4 md:px-6 py-3 md:py-4 bg-gradient-to-r from-[#667eea] to-[#764ba2] text-white rounded-xl font-semibold hover:shadow-lg transition-all hover:-translate-y-0.5 whitespace-nowrap"
+                            className="flex items-center justify-center gap-2 px-4 md:px-6 py-3 md:py-4 bg-gradient-to-r from-[#7AADCF] to-[#4A7BA7] text-white rounded-xl font-semibold hover:shadow-lg transition-all hover:-translate-y-0.5 whitespace-nowrap"
                         >
                             Formatos
                             <FileStack size={18} className="md:w-5 md:h-5" />
@@ -364,7 +367,7 @@ export default function DocumentacionPage() {
                     </div>
                     <div className="flex gap-2 flex-wrap">
                         {['all', 'acta', 'cronograma', 'prototipo', 'manual', 'lecciones', 'requerimientos', 'backlog'].map(type => (
-                            <button key={type} onClick={() => setActiveType(type)} className={`py-1.5 md:py-2 px-3 md:px-4 rounded-full text-xs md:text-sm font-medium border-2 transition-colors ${activeType === type ? 'bg-[#667eea] text-white border-[#667eea]' : 'bg-white border-gray-200 hover:bg-gray-100'}`}>
+                            <button key={type} onClick={() => setActiveType(type)} className={`py-1.5 md:py-2 px-3 md:px-4 rounded-full text-xs md:text-sm font-medium border-2 transition-colors ${activeType === type ? 'bg-[#4A7BA7] text-white border-[#4A7BA7]' : 'bg-white border-gray-200 hover:bg-gray-100'}`}>
                                 {type.charAt(0).toUpperCase() + type.slice(1)}
                             </button>
                         ))}
@@ -755,7 +758,7 @@ const UploadDocModal = ({ onClose, onUploadSuccess, docToEdit, activeCategory, a
                     {error && <p className="text-red-600 bg-red-100 p-3 rounded-md">{error}</p>}
                     <div>
                         <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">Título del Documento</label>
-                        <input type="text" id="title" value={title} onChange={(e) => setTitle(e.target.value)} required className="w-full p-3 border-2 border-gray-200 rounded-lg outline-none focus:border-[#667eea]" />
+                        <input type="text" id="title" value={title} onChange={(e) => setTitle(e.target.value)} required className="w-full p-3 border-2 border-gray-200 rounded-lg outline-none focus:border-[#4A7BA7]" />
                     </div>
                     <div className="grid grid-cols-2 gap-6">
                         <div>
@@ -766,14 +769,14 @@ const UploadDocModal = ({ onClose, onUploadSuccess, docToEdit, activeCategory, a
                         </div>
                         <div>
                             <label htmlFor="type" className="block text-sm font-medium text-gray-700 mb-1">Tipo</label>
-                            <select id="type" value={type} onChange={(e) => setType(e.target.value)} className={`w-full p-3 border-2 border-gray-200 rounded-lg ${isEditMode ? 'bg-gray-100 cursor-not-allowed' : 'outline-none focus:border-[#667eea]'}`} disabled={isEditMode}>
+                            <select id="type" value={type} onChange={(e) => setType(e.target.value)} className={`w-full p-3 border-2 border-gray-200 rounded-lg ${isEditMode ? 'bg-gray-100 cursor-not-allowed' : 'outline-none focus:border-[#4A7BA7]'}`} disabled={isEditMode}>
                                 {Object.keys(docTypes).filter(k => k !== 'default').map(key => <option key={key} value={key}>{key.charAt(0).toUpperCase() + key.slice(1)}</option>)}
                             </select>
                         </div>
                     </div>
                      <div>
                         <label htmlFor="version" className="block text-sm font-medium text-gray-700 mb-1">Versión</label>
-                        <input type="text" id="version" value={version} onChange={(e) => setVersion(e.target.value)} required className="w-full p-3 border-2 border-gray-200 rounded-lg outline-none focus:border-[#667eea]" placeholder="Ej: 1.0"/>
+                        <input type="text" id="version" value={version} onChange={(e) => setVersion(e.target.value)} required className="w-full p-3 border-2 border-gray-200 rounded-lg outline-none focus:border-[#4A7BA7]" placeholder="Ej: 1.0"/>
                     </div>
 
                     {/* Prototipo: solo Figma URL */}
@@ -786,7 +789,7 @@ const UploadDocModal = ({ onClose, onUploadSuccess, docToEdit, activeCategory, a
                                 value={figmaUrl}
                                 onChange={(e) => setFigmaUrl(e.target.value)}
                                 required
-                                className="w-full p-3 border-2 border-gray-200 rounded-lg outline-none focus:border-[#667eea]"
+                                className="w-full p-3 border-2 border-gray-200 rounded-lg outline-none focus:border-[#4A7BA7]"
                                 placeholder="https://figma.com/..."
                             />
                             <p className="text-xs text-gray-500 mt-1">Proporciona el enlace al prototipo en Figma.</p>
@@ -858,7 +861,7 @@ const UploadDocModal = ({ onClose, onUploadSuccess, docToEdit, activeCategory, a
                     )}
                     <div className="flex justify-end gap-4 pt-4">
                         <button type="button" onClick={onClose} className="py-2 px-6 bg-gray-200 text-gray-800 rounded-lg font-semibold hover:bg-gray-300">Cancelar</button>
-                        <button type="submit" disabled={isUploading} className="py-2 px-6 bg-gradient-to-r from-[#667eea] to-[#764ba2] text-white rounded-lg font-semibold hover:-translate-y-0.5 transition-transform flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                        <button type="submit" disabled={isUploading} className="py-2 px-6 bg-gradient-to-r from-[#7AADCF] to-[#4A7BA7] text-white rounded-lg font-semibold hover:-translate-y-0.5 transition-transform flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
                             {isUploading ? <><Loader2 className="animate-spin" /> Procesando...</> : (isEditMode ? 'Actualizar Documento' : 'Subir Documento')}
                         </button>
                     </div>
@@ -890,7 +893,7 @@ const FormatsModal = ({ onClose, onPreview }) => {
     return (
         <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-3 md:p-4" onClick={onClose}>
             <div className="bg-white rounded-2xl shadow-2xl w-full max-w-5xl max-h-[90vh] flex flex-col" onClick={e => e.stopPropagation()}>
-                <header className="flex justify-between items-center p-4 md:p-6 border-b bg-gradient-to-r from-[#667eea] to-[#764ba2] rounded-t-2xl">
+                <header className="flex justify-between items-center p-4 md:p-6 border-b bg-gradient-to-r from-[#7AADCF] to-[#4A7BA7] rounded-t-2xl">
                     <div className="flex items-center gap-2 md:gap-3">
                         <FileStack className="text-white" size={24} />
                         <h3 className="text-lg md:text-2xl font-bold text-white">Formatos y Plantillas</h3>
@@ -903,7 +906,7 @@ const FormatsModal = ({ onClose, onPreview }) => {
                         {formatTemplates.map(template => (
                             <div
                                 key={template.id}
-                                className="bg-white rounded-xl p-4 md:p-5 shadow-md hover:shadow-xl transition-all border-2 border-transparent hover:border-[#667eea]"
+                                className="bg-white rounded-xl p-4 md:p-5 shadow-md hover:shadow-xl transition-all border-2 border-transparent hover:border-[#4A7BA7]"
                             >
                                 <div className="flex items-start justify-between mb-3">
                                     <div className={`w-12 h-12 md:w-14 md:h-14 rounded-lg flex items-center justify-center text-white text-xl md:text-2xl ${template.color}`}>
@@ -1045,7 +1048,7 @@ const TemplatePreviewModal = ({ template, onClose }) => {
 
                                 <button
                                     onClick={handleDownload}
-                                    className="w-full px-6 py-4 bg-gradient-to-r from-[#667eea] to-[#764ba2] text-white rounded-xl font-bold text-lg hover:shadow-lg transition-all hover:-translate-y-0.5 flex items-center justify-center gap-3"
+                                    className="w-full px-6 py-4 bg-gradient-to-r from-[#7AADCF] to-[#4A7BA7] text-white rounded-xl font-bold text-lg hover:shadow-lg transition-all hover:-translate-y-0.5 flex items-center justify-center gap-3"
                                 >
                                     <Download size={24} />
                                     Descargar Plantilla
@@ -1064,7 +1067,7 @@ const TemplatePreviewModal = ({ template, onClose }) => {
                         />
                     ) : (
                         <div className="flex items-center justify-center h-full">
-                            <Loader2 className="animate-spin text-[#667eea]" size={48} />
+                            <Loader2 className="animate-spin text-[#4A7BA7]" size={48} />
                         </div>
                     )}
                 </div>

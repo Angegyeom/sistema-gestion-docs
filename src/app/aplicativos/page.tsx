@@ -74,7 +74,7 @@ const SystemCard = ({ icon, title, description, status, onClick, id }) => {
         <span className={`py-1 px-3 rounded-full text-xs font-medium ${status === 'Activo' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
           {status}
         </span>
-        <button className="bg-gradient-to-r from-[#667eea] to-[#764ba2] text-white py-2 px-4 rounded-full text-sm font-semibold transition-transform hover:scale-105">
+        <button className="bg-gradient-to-r from-[#7AADCF] to-[#4A7BA7] text-white py-2 px-4 rounded-full text-sm font-semibold transition-transform hover:scale-105">
           Acceder
         </button>
       </div>
@@ -148,7 +148,7 @@ const SystemModal = ({ system, onClose }) => {
     return (
         <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-5" onClick={onClose}>
             <div id="modal-content" className="bg-white rounded-xl w-full h-full max-w-7xl flex flex-col overflow-hidden shadow-2xl" onClick={e => e.stopPropagation()}>
-                <header className="bg-gradient-to-r from-[#667eea] to-[#764ba2] text-white p-4 flex justify-between items-center rounded-t-xl">
+                <header className="bg-gradient-to-r from-[#7AADCF] to-[#4A7BA7] text-white p-4 flex justify-between items-center rounded-t-xl">
                     <h3 className="font-semibold text-lg">{system.title}</h3>
                     <div className="flex items-center gap-2">
                         {system.credentials && <button onClick={() => setShowCredentials(!showCredentials)} className="bg-white/20 hover:bg-white/30 p-2 rounded-md transition-colors" title="Credenciales">🔑</button>}
