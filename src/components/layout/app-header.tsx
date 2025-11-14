@@ -20,7 +20,7 @@ export default function AppHeader() {
     return (
         <header className="bg-white/10 backdrop-blur-md py-4 border-b border-white/20 sticky top-0 z-50">
             <div className="max-w-7xl mx-auto px-5 flex justify-between items-center">
-                <div className="relative w-36 h-12">
+                <div className="relative w-40 h-14">
                    <Image src="/images/censo-logo.png" alt="Censo 2025 Logo" fill style={{objectFit: 'contain'}} />
                 </div>
 
@@ -34,7 +34,7 @@ export default function AppHeader() {
                     ))}
                 </nav>
 
-                <div className="hidden md:block relative w-36 h-12">
+                <div className="hidden md:block relative w-40 h-14">
                     <Image src="/images/inei-logo.png" alt="INEI Logo" fill style={{objectFit: 'contain'}} />
                 </div>
                 
