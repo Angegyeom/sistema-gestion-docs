@@ -329,12 +329,61 @@ export default function DocumentacionPage() {
     const allCategories = [
         ...categories,
         ...(customModules || []).map(mod => ({
-            id: mod.id,
+            id: mod.folderId || mod.id, // Use folderId for GCS folder name
             name: mod.name,
             icon: mod.icon || '📁',
-            isCustom: true
+            isCustom: true,
+            firestoreId: mod.id // Keep original ID for Firestore operations
         }))
     ];
+
+    // Migrar módulos antiguos que no tienen folderId
+    useEffect(() => {
+        const migrateModules = async () => {
+            if (!firestore || !customModules || !allDocs) return;
+
+            for (const mod of customModules) {
+                // Si el módulo no tiene folderId, agregarlo
+                if (!mod.folderId && mod.name) {
+                    const folderId = mod.name.trim()
+                        .toLowerCase()
+                        .normalize('NFD')
+                        .replace(/[\u0300-\u036f]/g, '')
+                        .replace(/[^\w\s-]/g, '')
+                        .replace(/\s+/g, '-');
+
+                    try {
+                        // Actualizar el módulo
+                        const moduleRef = doc(firestore, 'custom-modules', mod.id);
+                        await updateDoc(moduleRef, {
+                            folderId: folderId,
+                            updatedAt: serverTimestamp()
+                        });
+                        console.log(`Migrated module "${mod.name}" with folderId: "${folderId}"`);
+
+                        // Actualizar todos los documentos que pertenecen a este módulo
+                        const docsToUpdate = allDocs.filter(d => d.category === mod.id);
+                        for (const document of docsToUpdate) {
+                            try {
+                                const docRef = doc(firestore, 'documentos', document.id);
+                                await updateDoc(docRef, {
+                                    category: folderId,
+                                    updatedAt: serverTimestamp()
+                                });
+                                console.log(`Updated document "${document.title}" category to: "${folderId}"`);
+                            } catch (docError) {
+                                console.error(`Error updating document ${document.title}:`, docError);
+                            }
+                        }
+                    } catch (error) {
+                        console.error(`Error migrating module ${mod.name}:`, error);
+                    }
+                }
+            }
+        };
+
+        migrateModules();
+    }, [firestore, customModules, allDocs]);
 
     const seedData = async () => {
         if (!firestore || !allDocs) return;
@@ -532,15 +581,19 @@ export default function DocumentacionPage() {
         }
     }
 
-    const handleDeleteModule = async (moduleId: string, moduleName: string) => {
-        if (!firestore) return;
+    const handleDeleteModule = async (firestoreId: string, folderId: string, moduleName: string) => {
+        if (!firestore || !allDocs) return;
+
+        // Contar documentos en este módulo (buscar por ambos IDs para capturar documentos antiguos)
+        const docsInModule = allDocs.filter(d => d.category === folderId || d.category === firestoreId);
+        const docCount = docsInModule.length;
 
         const result = await Swal.fire({
             icon: 'warning',
             title: '¿Eliminar módulo?',
-            html: `¿Estás seguro de que deseas eliminar el módulo <strong>"${moduleName}"</strong>?<br><br><span class="text-sm text-gray-600">Esta acción no se puede deshacer.</span>`,
+            html: `¿Estás seguro de que deseas eliminar el módulo <strong>"${moduleName}"</strong>?<br><br>${docCount > 0 ? `<span class="text-sm text-red-600">Se eliminarán ${docCount} documento(s) y todos sus archivos del servidor.</span><br>` : ''}<span class="text-sm text-gray-600">Esta acción no se puede deshacer.</span>`,
             showCancelButton: true,
-            confirmButtonText: 'Sí, eliminar',
+            confirmButtonText: 'Sí, eliminar todo',
             cancelButtonText: 'Cancelar',
             confirmButtonColor: '#dc2626',
             cancelButtonColor: '#6b7280'
@@ -549,17 +602,51 @@ export default function DocumentacionPage() {
         if (!result.isConfirmed) return;
 
         try {
-            await deleteDoc(doc(firestore, 'custom-modules', moduleId));
+            // Mostrar indicador de carga
+            Swal.fire({
+                title: 'Eliminando...',
+                html: 'Eliminando módulo y archivos del servidor',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            // 1. Eliminar todos los documentos de Firestore
+            for (const document of docsInModule) {
+                await deleteDoc(doc(firestore, 'documentos', document.id));
+            }
+
+            // 2. Eliminar la carpeta completa del servidor GCS (incluyendo todos los archivos)
+            // Intentar eliminar ambas carpetas (la vieja con firestoreId y la nueva con folderId)
+            const foldersToDelete = [folderId];
+            if (firestoreId !== folderId) {
+                foldersToDelete.push(firestoreId);
+            }
+
+            for (const folder of foldersToDelete) {
+                try {
+                    await fetch(`/api/storage/delete-folder?folderName=${encodeURIComponent(folder)}`, {
+                        method: 'DELETE'
+                    });
+                    console.log(`Deleted folder: ${folder}/`);
+                } catch (err) {
+                    console.error(`Error deleting folder ${folder}:`, err);
+                }
+            }
+
+            // 3. Eliminar el módulo de Firestore
+            await deleteDoc(doc(firestore, 'custom-modules', firestoreId));
 
             // Si el módulo eliminado era el activo, cambiar a segmentacion
-            if (activeCategory === moduleId) {
+            if (activeCategory === folderId) {
                 setActiveCategory('segmentacion');
             }
 
             Swal.fire({
                 icon: 'success',
                 title: 'Módulo eliminado',
-                text: `El módulo "${moduleName}" ha sido eliminado exitosamente.`,
+                text: `El módulo "${moduleName}" y todos sus archivos han sido eliminados exitosamente.`,
                 timer: 2000,
                 showConfirmButton: false
             });
@@ -568,7 +655,7 @@ export default function DocumentacionPage() {
             Swal.fire({
                 icon: 'error',
                 title: 'Error',
-                text: 'No se pudo eliminar el módulo. Inténtalo de nuevo.',
+                text: 'No se pudo eliminar el módulo completamente. Inténtalo de nuevo.',
                 confirmButtonColor: '#004272'
             });
         }
@@ -591,12 +678,43 @@ export default function DocumentacionPage() {
         if (!result.isConfirmed) return;
 
         try {
+            // Primero, eliminar los archivos físicos de Google Cloud Storage
+            const filesToDelete = [];
+
+            if (document.pdfFilePath) {
+                filesToDelete.push(
+                    fetch(`/api/storage/delete?filePath=${encodeURIComponent(document.pdfFilePath)}`, {
+                        method: 'DELETE'
+                    })
+                );
+            }
+            if (document.wordFilePath) {
+                filesToDelete.push(
+                    fetch(`/api/storage/delete?filePath=${encodeURIComponent(document.wordFilePath)}`, {
+                        method: 'DELETE'
+                    })
+                );
+            }
+            if (document.excelFilePath) {
+                filesToDelete.push(
+                    fetch(`/api/storage/delete?filePath=${encodeURIComponent(document.excelFilePath)}`, {
+                        method: 'DELETE'
+                    })
+                );
+            }
+
+            // Eliminar archivos en paralelo
+            if (filesToDelete.length > 0) {
+                await Promise.allSettled(filesToDelete);
+            }
+
+            // Luego, eliminar el documento de Firestore
             await deleteDoc(doc(firestore, 'documentos', document.id));
 
             Swal.fire({
                 icon: 'success',
                 title: 'Documento eliminado',
-                text: `El documento "${document.title}" ha sido eliminado exitosamente.`,
+                text: `El documento "${document.title}" y sus archivos han sido eliminados exitosamente.`,
                 timer: 2000,
                 showConfirmButton: false
             });
@@ -605,7 +723,7 @@ export default function DocumentacionPage() {
             Swal.fire({
                 icon: 'error',
                 title: 'Error',
-                text: 'No se pudo eliminar el documento. Inténtalo de nuevo.',
+                text: 'No se pudo eliminar el documento completamente. Inténtalo de nuevo.',
                 confirmButtonColor: '#004272'
             });
         }
@@ -655,7 +773,7 @@ export default function DocumentacionPage() {
                                             <button
                                                 onClick={(e) => {
                                                     e.stopPropagation();
-                                                    handleDeleteModule(cat.id, cat.name);
+                                                    handleDeleteModule(cat.firestoreId, cat.id, cat.name);
                                                 }}
                                                 className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
                                                 title="Eliminar módulo"
@@ -1503,14 +1621,27 @@ const ModuleModal = ({ onClose, firestore }) => {
         setError('');
 
         try {
+            // Sanitize module name for use as folder name (remove accents, special chars, convert to lowercase)
+            const folderId = moduleName.trim()
+                .toLowerCase()
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .replace(/[^\w\s-]/g, '')
+                .replace(/\s+/g, '-');
+
             const moduleData = {
                 name: moduleName.trim(),
                 icon: moduleIcon,
+                folderId: folderId, // Store the sanitized name for GCS folder
                 createdAt: serverTimestamp(),
                 updatedAt: serverTimestamp()
             };
 
+            // Create module in Firestore
             await addDoc(collection(firestore, 'custom-modules'), moduleData);
+
+            // Note: Folder in GCS will be created automatically when first file is uploaded
+            // No need to create empty folder with .gitkeep file
 
             Swal.fire({
                 icon: 'success',

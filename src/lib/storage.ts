@@ -147,6 +147,25 @@ export async function deleteFile(filePath: string): Promise<void> {
 }
 
 /**
+ * Delete an entire folder from Google Cloud Storage (all files with the given prefix)
+ * @param folderName - Name of the folder to delete
+ */
+export async function deleteFolder(folderName: string): Promise<void> {
+  try {
+    // List all files in the folder
+    const [files] = await bucket.getFiles({ prefix: `${folderName}/` });
+
+    // Delete all files in parallel
+    await Promise.all(files.map(file => file.delete()));
+
+    console.log(`Deleted ${files.length} files from folder: ${folderName}/`);
+  } catch (error) {
+    console.error('Error deleting folder from GCS:', error);
+    throw new Error(`Failed to delete folder: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
+}
+
+/**
  * List all files in a specific category/folder
  * @param category - Category/folder to list files from
  * @returns Array of file metadata
