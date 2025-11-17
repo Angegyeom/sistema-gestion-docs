@@ -12,7 +12,7 @@ const categories = [
   { id: 'segmentacion', name: 'Segmentación', icon: '🗺️' },
   { id: 'reclutamiento', name: 'Reclutamiento', icon: '👥' },
   { id: 'capacitacion', name: 'Capacitación', icon: '🎓' },
-  { id: 'logistica', name: 'Logística Censal', icon: '📦' },
+  { id: 'logistica', name: 'Logística', icon: '📦' },
   { id: 'capdatos-apk', name: 'Captura Datos APK', icon: '📱' },
   { id: 'censo-linea', name: 'Censo en Línea', icon: '💻' },
   { id: 'consistencia', name: 'Consistencia', icon: '⚙️' },
@@ -574,6 +574,43 @@ export default function DocumentacionPage() {
         }
     };
 
+    const handleDeleteDocument = async (document: any) => {
+        if (!firestore) return;
+
+        const result = await Swal.fire({
+            icon: 'warning',
+            title: '¿Eliminar documento?',
+            html: `¿Estás seguro de que deseas eliminar <strong>"${document.title}"</strong>?<br><br><span class="text-sm text-gray-600">Esta acción no se puede deshacer.</span>`,
+            showCancelButton: true,
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar',
+            confirmButtonColor: '#dc2626',
+            cancelButtonColor: '#6b7280'
+        });
+
+        if (!result.isConfirmed) return;
+
+        try {
+            await deleteDoc(doc(firestore, 'documentos', document.id));
+
+            Swal.fire({
+                icon: 'success',
+                title: 'Documento eliminado',
+                text: `El documento "${document.title}" ha sido eliminado exitosamente.`,
+                timer: 2000,
+                showConfirmButton: false
+            });
+        } catch (error) {
+            console.error('Error deleting document:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'No se pudo eliminar el documento. Inténtalo de nuevo.',
+                confirmButtonColor: '#004272'
+            });
+        }
+    };
+
     return (
         <>
             <AppHeader />
@@ -658,7 +695,7 @@ export default function DocumentacionPage() {
                                 <>
                                     {view === 'grid' ? (
                                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-5">
-                                            {docs.map(doc => <DocCard key={doc.id} doc={doc} onPreview={openPreviewModal} onEdit={openUploadModal} onDownloadWord={handleDownloadWord} onDownloadExcel={handleDownloadExcel} canEdit={canEditCategory(activeCategory)} />)}
+                                            {docs.map(doc => <DocCard key={doc.id} doc={doc} onPreview={openPreviewModal} onEdit={openUploadModal} onDownloadWord={handleDownloadWord} onDownloadExcel={handleDownloadExcel} canEdit={canEditCategory(activeCategory)} isCustomModule={allCategories.find(c => c.id === activeCategory)?.isCustom || false} isAdmin={isAdmin} onDelete={handleDeleteDocument} />)}
                                         </div>
                                     ) : (
                                         <div className="space-y-2 md:space-y-3">
@@ -694,10 +731,14 @@ export default function DocumentacionPage() {
     );
 }
 
-const DocCard = ({ doc, onPreview, onEdit, onDownloadWord, onDownloadExcel, canEdit }) => {
+const DocCard = ({ doc, onPreview, onEdit, onDownloadWord, onDownloadExcel, canEdit, isCustomModule = false, isAdmin = false, onDelete }) => {
     const needsExcel = ['lecciones', 'backlog', 'cronograma'].includes(doc.type);
     const needsWord = ['acta', 'manual', 'requerimientos'].includes(doc.type);
     const status = getDocumentStatus(doc);
+
+    // Para módulos personalizados, verificar qué archivos tiene
+    const hasWord = !!doc.wordFilePath;
+    const hasExcel = !!doc.excelFilePath;
 
     return (
         <div className={`bg-white rounded-xl p-4 md:p-5 shadow-md border-l-4 ${getDocClass(doc.type)} flex flex-col justify-between`}>
@@ -718,6 +759,12 @@ const DocCard = ({ doc, onPreview, onEdit, onDownloadWord, onDownloadExcel, canE
                                 <Edit size={16} />
                             </button>
                         )}
+                        {/* Botón eliminar (solo para módulos personalizados y admin) */}
+                        {isCustomModule && isAdmin && (
+                            <button onClick={(e) => { e.stopPropagation(); onDelete(doc); }} className="text-gray-400 hover:text-red-600 p-1" title="Eliminar documento">
+                                <Trash2 size={16} />
+                            </button>
+                        )}
                      </div>
                 </div>
                 <p className="text-xs md:text-sm text-gray-600 mb-4 line-clamp-2 md:line-clamp-3 min-h-[2.5rem] md:min-h-[3rem]">{doc.description}</p>
@@ -728,7 +775,25 @@ const DocCard = ({ doc, onPreview, onEdit, onDownloadWord, onDownloadExcel, canE
                     <p>Versión: {doc.version || '1.0'}</p>
                 </div>
                 <div className="flex flex-col sm:flex-row gap-2 mt-4">
-                     {needsExcel ? (
+                     {isCustomModule ? (
+                        // Para módulos personalizados: mostrar botones según archivos disponibles
+                        <>
+                            {hasWord && (
+                                <button onClick={() => onDownloadWord(doc)} className="flex-1 text-xs md:text-sm bg-indigo-100 text-indigo-700 font-semibold py-2 px-2 md:px-3 rounded-lg hover:bg-indigo-200 flex items-center justify-center gap-1">
+                                    <FileText size={14}/> <span>Word</span>
+                                </button>
+                            )}
+                            {hasExcel && (
+                                <button onClick={() => onDownloadExcel(doc)} className="flex-1 text-xs md:text-sm bg-green-100 text-green-700 font-semibold py-2 px-2 md:px-3 rounded-lg hover:bg-green-200 flex items-center justify-center gap-1">
+                                    <FileSpreadsheet size={14}/> <span>Excel</span>
+                                </button>
+                            )}
+                            <button onClick={() => onPreview(doc)} className={`${hasWord || hasExcel ? 'flex-1' : 'w-full'} text-xs md:text-sm bg-blue-100 text-blue-700 font-semibold py-2 px-2 md:px-3 rounded-lg hover:bg-blue-200 flex items-center justify-center gap-1`}>
+                                <Eye size={14}/> <span>Ver</span>
+                            </button>
+                        </>
+                     ) : needsExcel ? (
+                        // Para documentos con Excel predefinido
                         <>
                             <button onClick={() => onDownloadExcel(doc)} className="flex-1 text-xs md:text-sm bg-green-100 text-green-700 font-semibold py-2 px-2 md:px-3 rounded-lg hover:bg-green-200 flex items-center justify-center gap-1">
                                 <FileSpreadsheet size={14}/> <span>Excel</span>
@@ -738,6 +803,7 @@ const DocCard = ({ doc, onPreview, onEdit, onDownloadWord, onDownloadExcel, canE
                             </button>
                         </>
                      ) : needsWord ? (
+                        // Para documentos con Word predefinido
                         <>
                             <button onClick={() => onDownloadWord(doc)} className="flex-1 text-xs md:text-sm bg-indigo-100 text-indigo-700 font-semibold py-2 px-2 md:px-3 rounded-lg hover:bg-indigo-200 flex items-center justify-center gap-1">
                                 <FileText size={14}/> <span>Word</span>
@@ -747,6 +813,7 @@ const DocCard = ({ doc, onPreview, onEdit, onDownloadWord, onDownloadExcel, canE
                             </button>
                         </>
                      ) : (
+                        // Solo PDF
                         <button onClick={() => onPreview(doc)} className="w-full text-xs md:text-sm bg-blue-100 text-blue-700 font-semibold py-2 px-2 md:px-3 rounded-lg hover:bg-blue-200 flex items-center justify-center gap-1">
                             <Eye size={14}/> <span>Ver</span>
                         </button>
@@ -907,15 +974,12 @@ const UploadDocModal = ({ onClose, onUploadSuccess, docToEdit, activeCategory, a
                 }
             }
         } else if (!isEditMode && isCustomModule) {
-            // Para módulos personalizados: PDF obligatorio + (Word O Excel)
+            // Para módulos personalizados: PDF obligatorio, Word/Excel opcionales
             if (!pdfFile) {
                 setError('El archivo PDF es obligatorio.');
                 return;
             }
-            if (!wordFile && !excelFile) {
-                setError('Debe subir al menos un archivo Word o Excel.');
-                return;
-            }
+            // Word y Excel son opcionales al crear, se pueden agregar después
         }
 
         setIsUploading(true);
@@ -1166,11 +1230,11 @@ const UploadDocModal = ({ onClose, onUploadSuccess, docToEdit, activeCategory, a
                                 <p className="text-xs text-gray-500 mt-1">Sube el archivo PDF (obligatorio)</p>
                             </div>
                             <div className="bg-blue-50 border-l-4 border-blue-500 p-3 rounded">
-                                <p className="text-xs text-blue-700 font-medium mb-2">Sube al menos uno de los siguientes archivos:</p>
+                                <p className="text-xs text-blue-700 font-medium mb-2">Archivos adicionales (opcionales, puedes agregar ahora o después):</p>
                                 <div className="space-y-3">
                                     <div>
                                         <label htmlFor="customWordFile" className="block text-sm font-medium text-gray-700 mb-1">
-                                            Archivo Word <span className="text-gray-400 text-xs">(Word o Excel)</span>
+                                            Archivo Word <span className="text-gray-400 text-xs">(Opcional)</span>
                                         </label>
                                         <input
                                             type="file"
@@ -1183,7 +1247,7 @@ const UploadDocModal = ({ onClose, onUploadSuccess, docToEdit, activeCategory, a
                                     </div>
                                     <div>
                                         <label htmlFor="customExcelFile" className="block text-sm font-medium text-gray-700 mb-1">
-                                            Archivo Excel <span className="text-gray-400 text-xs">(Word o Excel)</span>
+                                            Archivo Excel <span className="text-gray-400 text-xs">(Opcional)</span>
                                         </label>
                                         <input
                                             type="file"

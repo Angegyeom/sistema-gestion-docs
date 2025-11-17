@@ -10,7 +10,7 @@ import AppHeader from "@/components/layout/app-header";
 const systems = {
   preparacion: [
     { id: 'segmentacion', icon: '🗺️', title: 'SEGMENTACIÓN', description: 'Sistema para la división territorial y definición de rutas de empadronamiento', status: 'Activo', url: 'https://multiproyectos.inei.gob.pe/cpv2025-segmentacion/home', credentials: { user: 'admin_seg', password: 'Seg2025!' } },
-    { id: 'logistica', icon: '📦', title: 'LOGÍSTICA CENSAL', description: 'Control de materiales, equipos y distribución logística del operativo', status: 'Activo', url: 'https://campo.censos2025.com.pe/dashboard/menu_modulos', credentials: { user: 'log_admin', password: 'Log2025!' } },
+    { id: 'logistica', icon: '📦', title: 'LOGÍSTICA', description: 'Control de materiales, equipos y distribución logística del operativo', status: 'Activo', url: 'https://campo.censos2025.com.pe/dashboard/menu_modulos', credentials: { user: 'log_admin', password: 'Log2025!' } },
     { id: 'capacitacion', icon: '🎓', title: 'CAPACITACIÓN', description: 'Plataforma de formación y capacitación del personal operativo', status: 'Activo', url: 'https://monitoreo.censos2025.com.pe/public/modulo-gerencial/capacitacion/censos-nacionales/informe-progreso?menu_id_est=374' },
   ],
   ejecucion: [

@@ -37,7 +37,7 @@ export default function AdministradorPage() {
                 { name: 'SEGMENTACION', description: 'Acceso al módulo de Segmentación y Ruteo' },
                 { name: 'RECLUTAMIENTO', description: 'Acceso al módulo de Reclutamiento de personal' },
                 { name: 'CAPACITACION', description: 'Acceso al módulo de Capacitación' },
-                { name: 'LOGISTICA', description: 'Acceso al módulo de Logística Censal' },
+                { name: 'LOGISTICA', description: 'Acceso al módulo de Logística' },
                 { name: 'CAPDATOS-APK', description: 'Acceso al módulo de Captura de Datos APK' },
                 { name: 'CENSO-LINEA', description: 'Acceso al módulo de Censo en Línea' },
                 { name: 'CONSISTENCIA', description: 'Acceso al módulo de Consistencia de Datos' },
