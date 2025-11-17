@@ -80,10 +80,10 @@ export default function LoginPage() {
 
       toast({
         title: "Inicio de sesión exitoso",
-        description: `¡Bienvenido! Redirigiendo al panel de control...`,
+        description: `¡Bienvenido! Redirigiendo a Documentación...`,
       });
 
-      router.push("/aplicativos");
+      router.push("/documentacion");
 
     } catch (error: any) {
       console.error("Failed to sign in", error);

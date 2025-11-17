@@ -13,7 +13,6 @@ const baseNavItems = [
     { href: '/aplicativos', label: '📱 Aplicativos' },
     { href: '/documentacion', label: '📄 Documentación' },
     { href: '/presentaciones', label: '📊 Presentaciones' },
-    { href: '/monitoreo', label: '📈 Monitoreo' },
 ];
 
 export default function AppHeader() {

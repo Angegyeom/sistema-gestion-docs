@@ -4,43 +4,55 @@ import React, { useState, useEffect } from 'react';
 import AppHeader from "@/components/layout/app-header";
 import { useFirestore, useCollection, useMemoFirebase, useUser, errorEmitter, FirestorePermissionError } from "@/firebase";
 import { collection, addDoc, serverTimestamp, doc, updateDoc, writeBatch } from "firebase/firestore";
-import { Loader2, Upload, Edit, Eye, Download, Plus, FileText, FileSpreadsheet, FileStack } from 'lucide-react';
+import { Loader2, Upload, Edit, Eye, Download, Plus, FileText, FileSpreadsheet, FileStack, CheckCircle2, AlertCircle, XCircle } from 'lucide-react';
 import Swal from 'sweetalert2';
 import { usePermissions } from '@/hooks/use-permissions';
 
 const categories = [
-  { id: 'segmentacion', name: 'Segmentación y Ruteo', icon: '🗺️' },
-  { id: 'rrhh', name: 'Consecución RRHH', icon: '👥' },
-  { id: 'logistica', name: 'Logística Censal', icon: '📦' },
+  { id: 'segmentacion', name: 'Segmentación', icon: '🗺️' },
+  { id: 'reclutamiento', name: 'Reclutamiento', icon: '👥' },
   { id: 'capacitacion', name: 'Capacitación', icon: '🎓' },
-  { id: 'operacion', name: 'Operación de Campo', icon: '📱' },
-  { id: 'procesamiento', name: 'Procesamiento', icon: '⚙️' },
-  { id: 'postcensal', name: 'Post Censal', icon: '📊' },
-  { id: 'generales', name: 'Documentos Generales', icon: '📋' },
+  { id: 'logistica', name: 'Logística Censal', icon: '📦' },
+  { id: 'capdatos-apk', name: 'Captura Datos APK', icon: '📱' },
+  { id: 'censo-linea', name: 'Censo en Línea', icon: '💻' },
+  { id: 'consistencia', name: 'Consistencia', icon: '⚙️' },
+  { id: 'monitoreo', name: 'Monitoreo', icon: '📊' },
+  { id: 'yanapaq', name: 'Yanapaq', icon: '🤝' },
 ];
 
 const initialDocs = {
     segmentacion: [
-        { id: 'seg-1', title: 'Acta de Constitución', description: 'Acta de constitución del proyecto para el área de segmentación', type: 'acta', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'segmentacion' },
-        { id: 'seg-2', title: 'Cronograma', description: 'Cronograma detallado de actividades para segmentación', type: 'cronograma', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'segmentacion' },
-        { id: 'seg-3', title: 'Prototipo', description: 'Prototipo y diseño del sistema de segmentación', type: 'prototipo', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'segmentacion' },
-        { id: 'seg-4', title: 'Manual de Usuario', description: 'Manual de usuario del sistema de segmentación', type: 'manual', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'segmentacion' },
-        { id: 'seg-5', title: 'Manual de Sistema', description: 'Manual técnico del sistema de segmentación', type: 'manual', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'segmentacion' },
-        { id: 'seg-6', title: 'Lecciones Aprendidas', description: 'Lecciones aprendidas durante el desarrollo del sistema de segmentación', type: 'lecciones', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'segmentacion' },
-        { id: 'seg-7', title: 'Requerimientos Funcionales', description: 'Especificación de requerimientos funcionales del sistema de segmentación', type: 'requerimientos', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'segmentacion' },
-        { id: 'seg-8', title: 'Product Backlog', description: 'Product Backlog del sistema de segmentación', type: 'backlog', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'segmentacion' },
-        { id: 'seg-9', title: 'Acta de Conformidad', description: 'Acta de conformidad del sistema de segmentación', type: 'acta', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'segmentacion' },
+        { id: 'seg-1', title: 'Acta de Constitución', description: 'Acta de constitución del proyecto de Segmentación', type: 'acta', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'segmentacion' },
+        { id: 'seg-2', title: 'Cronograma', description: 'Cronograma detallado de actividades de Segmentación', type: 'cronograma', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'segmentacion' },
+        { id: 'seg-3', title: 'Prototipo', description: 'Prototipo y diseño del sistema de Segmentación', type: 'prototipo', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'segmentacion' },
+        { id: 'seg-4', title: 'Manual de Usuario', description: 'Manual de usuario del sistema de Segmentación', type: 'manual', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'segmentacion' },
+        { id: 'seg-5', title: 'Manual de Sistema', description: 'Manual técnico del sistema de Segmentación', type: 'manual', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'segmentacion' },
+        { id: 'seg-6', title: 'Lecciones Aprendidas', description: 'Lecciones aprendidas del desarrollo de Segmentación', type: 'lecciones', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'segmentacion' },
+        { id: 'seg-7', title: 'Requerimientos Funcionales', description: 'Requerimientos funcionales de Segmentación', type: 'requerimientos', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'segmentacion' },
+        { id: 'seg-8', title: 'Product Backlog', description: 'Product Backlog de Segmentación', type: 'backlog', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'segmentacion' },
+        { id: 'seg-9', title: 'Acta de Conformidad', description: 'Acta de conformidad de Segmentación', type: 'acta', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'segmentacion' },
     ],
-    rrhh: [
-        { id: 'rrhh-1', title: 'Acta de Constitución', description: 'Acta de constitución del proyecto para el área de RRHH', type: 'acta', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'rrhh' },
-        { id: 'rrhh-2', title: 'Cronograma', description: 'Cronograma detallado de actividades para RRHH', type: 'cronograma', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'rrhh' },
-        { id: 'rrhh-3', title: 'Prototipo', description: 'Prototipo y diseño del sistema de RRHH', type: 'prototipo', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'rrhh' },
-        { id: 'rrhh-4', title: 'Manual de Usuario', description: 'Manual de usuario del sistema de RRHH', type: 'manual', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'rrhh' },
-        { id: 'rrhh-5', title: 'Manual de Sistema', description: 'Manual técnico del sistema de RRHH', type: 'manual', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'rrhh' },
-        { id: 'rrhh-6', title: 'Lecciones Aprendidas', description: 'Lecciones aprendidas durante el desarrollo del sistema de RRHH', type: 'lecciones', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'rrhh' },
-        { id: 'rrhh-7', title: 'Requerimientos Funcionales', description: 'Especificación de requerimientos funcionales del sistema de RRHH', type: 'requerimientos', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'rrhh' },
-        { id: 'rrhh-8', title: 'Product Backlog', description: 'Product Backlog del sistema de RRHH', type: 'backlog', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'rrhh' },
-        { id: 'rrhh-9', title: 'Acta de Conformidad', description: 'Acta de conformidad del sistema de RRHH', type: 'acta', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'rrhh' },
+    reclutamiento: [
+        { id: 'rec-1', title: 'Acta de Constitución', description: 'Acta de constitución del proyecto de Reclutamiento', type: 'acta', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'reclutamiento' },
+        { id: 'rec-2', title: 'Cronograma', description: 'Cronograma detallado de actividades de Reclutamiento', type: 'cronograma', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'reclutamiento' },
+        { id: 'rec-3', title: 'Prototipo', description: 'Prototipo y diseño del sistema de Reclutamiento', type: 'prototipo', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'reclutamiento' },
+        { id: 'rec-4', title: 'Manual de Usuario', description: 'Manual de usuario del sistema de Reclutamiento', type: 'manual', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'reclutamiento' },
+        { id: 'rec-5', title: 'Manual de Sistema', description: 'Manual técnico del sistema de Reclutamiento', type: 'manual', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'reclutamiento' },
+        { id: 'rec-6', title: 'Lecciones Aprendidas', description: 'Lecciones aprendidas del desarrollo de Reclutamiento', type: 'lecciones', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'reclutamiento' },
+        { id: 'rec-7', title: 'Requerimientos Funcionales', description: 'Requerimientos funcionales de Reclutamiento', type: 'requerimientos', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'reclutamiento' },
+        { id: 'rec-8', title: 'Product Backlog', description: 'Product Backlog de Reclutamiento', type: 'backlog', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'reclutamiento' },
+        { id: 'rec-9', title: 'Acta de Conformidad', description: 'Acta de conformidad de Reclutamiento', type: 'acta', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'reclutamiento' },
+    ],
+    capacitacion: [
+        { id: 'cap-1', title: 'Acta de Constitución', description: 'Acta de constitución del proyecto de Capacitación', type: 'acta', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'capacitacion' },
+        { id: 'cap-2', title: 'Cronograma', description: 'Cronograma detallado de actividades de Capacitación', type: 'cronograma', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'capacitacion' },
+        { id: 'cap-3', title: 'Prototipo', description: 'Prototipo y diseño del sistema de Capacitación', type: 'prototipo', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'capacitacion' },
+        { id: 'cap-4', title: 'Manual de Usuario', description: 'Manual de usuario del sistema de Capacitación', type: 'manual', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'capacitacion' },
+        { id: 'cap-5', title: 'Manual de Sistema', description: 'Manual técnico del sistema de Capacitación', type: 'manual', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'capacitacion' },
+        { id: 'cap-6', title: 'Lecciones Aprendidas', description: 'Lecciones aprendidas del desarrollo de Capacitación', type: 'lecciones', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'capacitacion' },
+        { id: 'cap-7', title: 'Requerimientos Funcionales', description: 'Requerimientos funcionales de Capacitación', type: 'requerimientos', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'capacitacion' },
+        { id: 'cap-8', title: 'Product Backlog', description: 'Product Backlog de Capacitación', type: 'backlog', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'capacitacion' },
+        { id: 'cap-9', title: 'Acta de Conformidad', description: 'Acta de conformidad de Capacitación', type: 'acta', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'capacitacion' },
     ],
     logistica: [
         { id: 'log-1', title: 'Acta de Constitución', description: 'Acta de constitución del proyecto para el área de logística', type: 'acta', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'logistica' },
@@ -53,60 +65,60 @@ const initialDocs = {
         { id: 'log-8', title: 'Product Backlog', description: 'Product Backlog del sistema de logística', type: 'backlog', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'logistica' },
         { id: 'log-9', title: 'Acta de Conformidad', description: 'Acta de conformidad del sistema de logística', type: 'acta', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'logistica' },
     ],
-    capacitacion: [
-        { id: 'cap-1', title: 'Acta de Constitución', description: 'Acta de constitución del proyecto para el área de capacitación', type: 'acta', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'capacitacion' },
-        { id: 'cap-2', title: 'Cronograma', description: 'Cronograma detallado de actividades para capacitación', type: 'cronograma', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'capacitacion' },
-        { id: 'cap-3', title: 'Prototipo', description: 'Prototipo y diseño del sistema de capacitación', type: 'prototipo', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'capacitacion' },
-        { id: 'cap-4', title: 'Manual de Usuario', description: 'Manual de usuario del sistema de capacitación', type: 'manual', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'capacitacion' },
-        { id: 'cap-5', title: 'Manual de Sistema', description: 'Manual técnico del sistema de capacitación', type: 'manual', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'capacitacion' },
-        { id: 'cap-6', title: 'Lecciones Aprendidas', description: 'Lecciones aprendidas durante el desarrollo del sistema de capacitación', type: 'lecciones', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'capacitacion' },
-        { id: 'cap-7', title: 'Requerimientos Funcionales', description: 'Especificación de requerimientos funcionales del sistema de capacitación', type: 'requerimientos', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'capacitacion' },
-        { id: 'cap-8', title: 'Product Backlog', description: 'Product Backlog del sistema de capacitación', type: 'backlog', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'capacitacion' },
-        { id: 'cap-9', title: 'Acta de Conformidad', description: 'Acta de conformidad del sistema de capacitación', type: 'acta', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'capacitacion' },
+    'capdatos-apk': [
+        { id: 'apk-1', title: 'Acta de Constitución', description: 'Acta de constitución del proyecto de Captura Datos APK', type: 'acta', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'capdatos-apk' },
+        { id: 'apk-2', title: 'Cronograma', description: 'Cronograma detallado de actividades de Captura Datos APK', type: 'cronograma', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'capdatos-apk' },
+        { id: 'apk-3', title: 'Prototipo', description: 'Prototipo y diseño del sistema de Captura Datos APK', type: 'prototipo', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'capdatos-apk' },
+        { id: 'apk-4', title: 'Manual de Usuario', description: 'Manual de usuario del sistema de Captura Datos APK', type: 'manual', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'capdatos-apk' },
+        { id: 'apk-5', title: 'Manual de Sistema', description: 'Manual técnico del sistema de Captura Datos APK', type: 'manual', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'capdatos-apk' },
+        { id: 'apk-6', title: 'Lecciones Aprendidas', description: 'Lecciones aprendidas del desarrollo de Captura Datos APK', type: 'lecciones', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'capdatos-apk' },
+        { id: 'apk-7', title: 'Requerimientos Funcionales', description: 'Requerimientos funcionales de Captura Datos APK', type: 'requerimientos', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'capdatos-apk' },
+        { id: 'apk-8', title: 'Product Backlog', description: 'Product Backlog de Captura Datos APK', type: 'backlog', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'capdatos-apk' },
+        { id: 'apk-9', title: 'Acta de Conformidad', description: 'Acta de conformidad de Captura Datos APK', type: 'acta', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'capdatos-apk' },
     ],
-    operacion: [
-        { id: 'ope-1', title: 'Acta de Constitución', description: 'Acta de constitución del proyecto para el área de operación de campo', type: 'acta', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'operacion' },
-        { id: 'ope-2', title: 'Cronograma', description: 'Cronograma detallado de actividades para operación de campo', type: 'cronograma', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'operacion' },
-        { id: 'ope-3', title: 'Prototipo', description: 'Prototipo y diseño del sistema de operación de campo', type: 'prototipo', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'operacion' },
-        { id: 'ope-4', title: 'Manual de Usuario', description: 'Manual de usuario del sistema de operación de campo', type: 'manual', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'operacion' },
-        { id: 'ope-5', title: 'Manual de Sistema', description: 'Manual técnico del sistema de operación de campo', type: 'manual', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'operacion' },
-        { id: 'ope-6', title: 'Lecciones Aprendidas', description: 'Lecciones aprendidas durante el desarrollo del sistema de operación de campo', type: 'lecciones', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'operacion' },
-        { id: 'ope-7', title: 'Requerimientos Funcionales', description: 'Especificación de requerimientos funcionales del sistema de operación de campo', type: 'requerimientos', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'operacion' },
-        { id: 'ope-8', title: 'Product Backlog', description: 'Product Backlog del sistema de operación de campo', type: 'backlog', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'operacion' },
-        { id: 'ope-9', title: 'Acta de Conformidad', description: 'Acta de conformidad del sistema de operación de campo', type: 'acta', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'operacion' },
+    'censo-linea': [
+        { id: 'cen-1', title: 'Acta de Constitución', description: 'Acta de constitución del proyecto de Censo en Línea', type: 'acta', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'censo-linea' },
+        { id: 'cen-2', title: 'Cronograma', description: 'Cronograma detallado de actividades de Censo en Línea', type: 'cronograma', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'censo-linea' },
+        { id: 'cen-3', title: 'Prototipo', description: 'Prototipo y diseño del sistema de Censo en Línea', type: 'prototipo', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'censo-linea' },
+        { id: 'cen-4', title: 'Manual de Usuario', description: 'Manual de usuario del sistema de Censo en Línea', type: 'manual', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'censo-linea' },
+        { id: 'cen-5', title: 'Manual de Sistema', description: 'Manual técnico del sistema de Censo en Línea', type: 'manual', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'censo-linea' },
+        { id: 'cen-6', title: 'Lecciones Aprendidas', description: 'Lecciones aprendidas del desarrollo de Censo en Línea', type: 'lecciones', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'censo-linea' },
+        { id: 'cen-7', title: 'Requerimientos Funcionales', description: 'Requerimientos funcionales de Censo en Línea', type: 'requerimientos', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'censo-linea' },
+        { id: 'cen-8', title: 'Product Backlog', description: 'Product Backlog de Censo en Línea', type: 'backlog', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'censo-linea' },
+        { id: 'cen-9', title: 'Acta de Conformidad', description: 'Acta de conformidad de Censo en Línea', type: 'acta', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'censo-linea' },
     ],
-    procesamiento: [
-        { id: 'pro-1', title: 'Acta de Constitución', description: 'Acta de constitución del proyecto para el área de procesamiento', type: 'acta', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'procesamiento' },
-        { id: 'pro-2', title: 'Cronograma', description: 'Cronograma detallado de actividades para procesamiento', type: 'cronograma', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'procesamiento' },
-        { id: 'pro-3', title: 'Prototipo', description: 'Prototipo y diseño del sistema de procesamiento', type: 'prototipo', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'procesamiento' },
-        { id: 'pro-4', title: 'Manual de Usuario', description: 'Manual de usuario del sistema de procesamiento', type: 'manual', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'procesamiento' },
-        { id: 'pro-5', title: 'Manual de Sistema', description: 'Manual técnico del sistema de procesamiento', type: 'manual', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'procesamiento' },
-        { id: 'pro-6', title: 'Lecciones Aprendidas', description: 'Lecciones aprendidas durante el desarrollo del sistema de procesamiento', type: 'lecciones', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'procesamiento' },
-        { id: 'pro-7', title: 'Requerimientos Funcionales', description: 'Especificación de requerimientos funcionales del sistema de procesamiento', type: 'requerimientos', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'procesamiento' },
-        { id: 'pro-8', title: 'Product Backlog', description: 'Product Backlog del sistema de procesamiento', type: 'backlog', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'procesamiento' },
-        { id: 'pro-9', title: 'Acta de Conformidad', description: 'Acta de conformidad del sistema de procesamiento', type: 'acta', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'procesamiento' },
+    consistencia: [
+        { id: 'con-1', title: 'Acta de Constitución', description: 'Acta de constitución del proyecto de Consistencia', type: 'acta', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'consistencia' },
+        { id: 'con-2', title: 'Cronograma', description: 'Cronograma detallado de actividades de Consistencia', type: 'cronograma', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'consistencia' },
+        { id: 'con-3', title: 'Prototipo', description: 'Prototipo y diseño del sistema de Consistencia', type: 'prototipo', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'consistencia' },
+        { id: 'con-4', title: 'Manual de Usuario', description: 'Manual de usuario del sistema de Consistencia', type: 'manual', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'consistencia' },
+        { id: 'con-5', title: 'Manual de Sistema', description: 'Manual técnico del sistema de Consistencia', type: 'manual', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'consistencia' },
+        { id: 'con-6', title: 'Lecciones Aprendidas', description: 'Lecciones aprendidas del desarrollo de Consistencia', type: 'lecciones', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'consistencia' },
+        { id: 'con-7', title: 'Requerimientos Funcionales', description: 'Requerimientos funcionales de Consistencia', type: 'requerimientos', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'consistencia' },
+        { id: 'con-8', title: 'Product Backlog', description: 'Product Backlog de Consistencia', type: 'backlog', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'consistencia' },
+        { id: 'con-9', title: 'Acta de Conformidad', description: 'Acta de conformidad de Consistencia', type: 'acta', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'consistencia' },
     ],
-    postcensal: [
-        { id: 'pos-1', title: 'Acta de Constitución', description: 'Acta de constitución del proyecto para el área post censal', type: 'acta', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'postcensal' },
-        { id: 'pos-2', title: 'Cronograma', description: 'Cronograma detallado de actividades para post censal', type: 'cronograma', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'postcensal' },
-        { id: 'pos-3', title: 'Prototipo', description: 'Prototipo y diseño del sistema post censal', type: 'prototipo', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'postcensal' },
-        { id: 'pos-4', title: 'Manual de Usuario', description: 'Manual de usuario del sistema post censal', type: 'manual', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'postcensal' },
-        { id: 'pos-5', title: 'Manual de Sistema', description: 'Manual técnico del sistema post censal', type: 'manual', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'postcensal' },
-        { id: 'pos-6', title: 'Lecciones Aprendidas', description: 'Lecciones aprendidas durante el desarrollo del sistema post censal', type: 'lecciones', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'postcensal' },
-        { id: 'pos-7', title: 'Requerimientos Funcionales', description: 'Especificación de requerimientos funcionales del sistema post censal', type: 'requerimientos', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'postcensal' },
-        { id: 'pos-8', title: 'Product Backlog', description: 'Product Backlog del sistema post censal', type: 'backlog', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'postcensal' },
-        { id: 'pos-9', title: 'Acta de Conformidad', description: 'Acta de conformidad del sistema post censal', type: 'acta', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'postcensal' },
+    monitoreo: [
+        { id: 'mon-1', title: 'Acta de Constitución', description: 'Acta de constitución del proyecto de Monitoreo', type: 'acta', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'monitoreo' },
+        { id: 'mon-2', title: 'Cronograma', description: 'Cronograma detallado de actividades de Monitoreo', type: 'cronograma', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'monitoreo' },
+        { id: 'mon-3', title: 'Prototipo', description: 'Prototipo y diseño del sistema de Monitoreo', type: 'prototipo', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'monitoreo' },
+        { id: 'mon-4', title: 'Manual de Usuario', description: 'Manual de usuario del sistema de Monitoreo', type: 'manual', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'monitoreo' },
+        { id: 'mon-5', title: 'Manual de Sistema', description: 'Manual técnico del sistema de Monitoreo', type: 'manual', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'monitoreo' },
+        { id: 'mon-6', title: 'Lecciones Aprendidas', description: 'Lecciones aprendidas del desarrollo de Monitoreo', type: 'lecciones', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'monitoreo' },
+        { id: 'mon-7', title: 'Requerimientos Funcionales', description: 'Requerimientos funcionales de Monitoreo', type: 'requerimientos', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'monitoreo' },
+        { id: 'mon-8', title: 'Product Backlog', description: 'Product Backlog de Monitoreo', type: 'backlog', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'monitoreo' },
+        { id: 'mon-9', title: 'Acta de Conformidad', description: 'Acta de conformidad de Monitoreo', type: 'acta', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'monitoreo' },
     ],
-    generales: [
-        { id: 'gen-1', title: 'Acta de Constitución', description: 'Acta de constitución del proyecto general CPV 2025', type: 'acta', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'generales' },
-        { id: 'gen-2', title: 'Cronograma', description: 'Cronograma detallado de actividades del proyecto CPV 2025', type: 'cronograma', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'generales' },
-        { id: 'gen-3', title: 'Prototipo', description: 'Prototipo y diseño del sistema general CPV 2025', type: 'prototipo', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'generales' },
-        { id: 'gen-4', title: 'Manual de Usuario', description: 'Manual de usuario general del CPV 2025', type: 'manual', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'generales' },
-        { id: 'gen-5', title: 'Manual de Sistema', description: 'Manual técnico general del CPV 2025', type: 'manual', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'generales' },
-        { id: 'gen-6', title: 'Lecciones Aprendidas', description: 'Lecciones aprendidas durante el desarrollo del proyecto CPV 2025', type: 'lecciones', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'generales' },
-        { id: 'gen-7', title: 'Requerimientos Funcionales', description: 'Especificación de requerimientos funcionales del proyecto CPV 2025', type: 'requerimientos', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'generales' },
-        { id: 'gen-8', title: 'Product Backlog', description: 'Product Backlog del proyecto CPV 2025', type: 'backlog', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'generales' },
-        { id: 'gen-9', title: 'Acta de Conformidad', description: 'Acta de conformidad del proyecto CPV 2025', type: 'acta', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'generales' },
+    yanapaq: [
+        { id: 'yan-1', title: 'Acta de Constitución', description: 'Acta de constitución del proyecto Yanapaq', type: 'acta', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'yanapaq' },
+        { id: 'yan-2', title: 'Cronograma', description: 'Cronograma detallado de actividades de Yanapaq', type: 'cronograma', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'yanapaq' },
+        { id: 'yan-3', title: 'Prototipo', description: 'Prototipo y diseño del sistema Yanapaq', type: 'prototipo', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'yanapaq' },
+        { id: 'yan-4', title: 'Manual de Usuario', description: 'Manual de usuario del sistema Yanapaq', type: 'manual', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'yanapaq' },
+        { id: 'yan-5', title: 'Manual de Sistema', description: 'Manual técnico del sistema Yanapaq', type: 'manual', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'yanapaq' },
+        { id: 'yan-6', title: 'Lecciones Aprendidas', description: 'Lecciones aprendidas del desarrollo de Yanapaq', type: 'lecciones', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'yanapaq' },
+        { id: 'yan-7', title: 'Requerimientos Funcionales', description: 'Requerimientos funcionales de Yanapaq', type: 'requerimientos', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'yanapaq' },
+        { id: 'yan-8', title: 'Product Backlog', description: 'Product Backlog de Yanapaq', type: 'backlog', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'yanapaq' },
+        { id: 'yan-9', title: 'Acta de Conformidad', description: 'Acta de conformidad de Yanapaq', type: 'acta', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'yanapaq' },
     ]
 };
 
@@ -150,6 +162,136 @@ const docTypeIconBg = {
 const getDocumentIcon = (type) => docTypes[type] || docTypes.default;
 const getDocClass = (type) => docTypeClasses[type] || docTypeClasses.default;
 const getDocIconBg = (type) => docTypeIconBg[type] || docTypeIconBg.default;
+
+// Función para determinar el estado del documento basado en archivos subidos
+const getDocumentStatus = (doc) => {
+    const needsExcel = ['lecciones', 'backlog', 'cronograma'].includes(doc.type);
+    const needsWord = ['acta', 'manual', 'requerimientos'].includes(doc.type);
+    const isPrototipo = doc.type === 'prototipo';
+
+    // Prototipos solo necesitan Figma URL
+    if (isPrototipo) {
+        return doc.figmaUrl ? 'complete' : 'pending';
+    }
+
+    // Verificar archivos según el tipo de documento
+    if (needsExcel) {
+        const hasExcel = !!doc.excelFilePath;
+        const hasPdf = !!doc.pdfFilePath;
+
+        if (hasExcel && hasPdf) return 'complete';
+        if (hasExcel || hasPdf) return 'incomplete';
+        return 'pending';
+    }
+
+    if (needsWord) {
+        const hasWord = !!doc.wordFilePath;
+        const hasPdf = !!doc.pdfFilePath;
+
+        if (hasWord && hasPdf) return 'complete';
+        if (hasWord || hasPdf) return 'incomplete';
+        return 'pending';
+    }
+
+    // Para otros tipos, verificar si tiene PDF
+    return doc.pdfFilePath ? 'complete' : 'pending';
+};
+
+// Componente de badge de estado
+const StatusBadge = ({ status, type, compact = false, doc = null }) => {
+    const needsExcel = ['lecciones', 'backlog', 'cronograma'].includes(type);
+    const needsWord = ['acta', 'manual', 'requerimientos'].includes(type);
+    const isPrototipo = type === 'prototipo';
+
+    // Función para generar el tooltip personalizado
+    const getTooltipMessage = () => {
+        if (!doc) return null;
+
+        const hasPdf = !!doc.pdfFilePath;
+        const hasWord = !!doc.wordFilePath;
+        const hasExcel = !!doc.excelFilePath;
+
+        // Si es prototipo, solo verificar Figma
+        if (isPrototipo) {
+            return doc.figmaUrl ? 'Completado' : 'Pendiente';
+        }
+
+        // Si necesita Excel
+        if (needsExcel) {
+            if (hasExcel && hasPdf) return 'Completado';
+            if (!hasExcel && !hasPdf) return 'Pendiente';
+            if (hasExcel && !hasPdf) return 'Falta PDF';
+            if (!hasExcel && hasPdf) return 'Falta Excel';
+        }
+
+        // Si necesita Word
+        if (needsWord) {
+            if (hasWord && hasPdf) return 'Completado';
+            if (!hasWord && !hasPdf) return 'Pendiente';
+            if (hasWord && !hasPdf) return 'Falta PDF';
+            if (!hasWord && hasPdf) return 'Falta Word';
+        }
+
+        // Para otros tipos que solo necesitan PDF
+        return hasPdf ? 'Completado' : 'Pendiente';
+    };
+
+    const getStatusConfig = () => {
+        switch (status) {
+            case 'complete':
+                return {
+                    icon: <CheckCircle2 size={14} />,
+                    color: 'bg-green-500',
+                    text: 'Completo',
+                    textColor: 'text-green-700'
+                };
+            case 'incomplete':
+                let missingFile = '';
+                if (needsExcel) missingFile = 'Excel o PDF';
+                else if (needsWord) missingFile = 'Word o PDF';
+
+                return {
+                    icon: <AlertCircle size={14} />,
+                    color: 'bg-yellow-500',
+                    text: `Falta ${missingFile}`,
+                    textColor: 'text-yellow-700'
+                };
+            case 'pending':
+            default:
+                let requiredFiles = '';
+                if (isPrototipo) requiredFiles = 'Figma URL';
+                else if (needsExcel) requiredFiles = 'Excel y PDF';
+                else if (needsWord) requiredFiles = 'Word y PDF';
+                else requiredFiles = 'Archivos';
+
+                return {
+                    icon: <XCircle size={14} />,
+                    color: 'bg-red-500',
+                    text: `Pendiente`,
+                    textColor: 'text-red-700'
+                };
+        }
+    };
+
+    const config = getStatusConfig();
+    const tooltipMessage = getTooltipMessage() || config.text;
+
+    if (compact) {
+        // Versión compacta - solo ícono para las tarjetas
+        return (
+            <div className={`flex items-center justify-center w-6 h-6 rounded-full ${config.color} bg-opacity-15 border border-current ${config.textColor}`} title={tooltipMessage}>
+                {config.icon}
+            </div>
+        );
+    }
+
+    return (
+        <div className={`flex items-center gap-1 px-2 py-1 rounded-full ${config.color} bg-opacity-10 border border-current ${config.textColor}`} title={tooltipMessage}>
+            {config.icon}
+            <span className="text-xs font-semibold hidden sm:inline">{config.text}</span>
+        </div>
+    );
+};
 
 // Plantillas de formatos
 const formatTemplates = [
@@ -408,7 +550,7 @@ export default function DocumentacionPage() {
 
                 <div className="grid md:grid-cols-[280px_1fr] gap-4 md:gap-8">
                     <aside className="bg-white/95 rounded-2xl p-4 md:p-6 shadow-lg h-fit">
-                        <h3 className="text-base md:text-lg font-semibold text-gray-800 mb-4 md:mb-5">📂 Categorías</h3>
+                        <h3 className="text-base md:text-lg font-semibold text-gray-800 mb-4 md:mb-5">📂 Módulos</h3>
                         <ul className="space-y-1.5 md:space-y-2">
                             {categories.map(cat => (
                                 <li key={cat.id}>
@@ -448,7 +590,7 @@ export default function DocumentacionPage() {
                                 </>
                             ) : (
                                 <div className="text-center p-10 text-gray-500">
-                                    <p>No hay documentos en esta categoría.</p>
+                                    <p>No hay documentos en este módulo.</p>
                                 </div>
                             )
                         )}
@@ -467,6 +609,7 @@ export default function DocumentacionPage() {
 const DocCard = ({ doc, onPreview, onEdit, onDownloadWord, onDownloadExcel, canEdit }) => {
     const needsExcel = ['lecciones', 'backlog', 'cronograma'].includes(doc.type);
     const needsWord = ['acta', 'manual', 'requerimientos'].includes(doc.type);
+    const status = getDocumentStatus(doc);
 
     return (
         <div className={`bg-white rounded-xl p-4 md:p-5 shadow-md border-l-4 ${getDocClass(doc.type)} flex flex-col justify-between`}>
@@ -478,13 +621,16 @@ const DocCard = ({ doc, onPreview, onEdit, onDownloadWord, onDownloadExcel, canE
                         </div>
                         <h4 className="font-semibold text-sm md:text-base text-gray-800 leading-tight mt-0.5">{doc.title}</h4>
                      </div>
-                     {canEdit && (
-                         <div className="flex gap-1 flex-shrink-0">
+                     <div className="flex items-center gap-2 flex-shrink-0">
+                        {/* Badge de estado compacto */}
+                        <StatusBadge status={status} type={doc.type} compact={true} doc={doc} />
+                        {/* Botón editar */}
+                        {canEdit && (
                             <button onClick={(e) => { e.stopPropagation(); onEdit(doc); }} className="text-gray-400 hover:text-blue-600 p-1" title="Actualizar documento">
-                                <Edit size={14} className="md:w-4 md:h-4" />
+                                <Edit size={16} />
                             </button>
-                         </div>
-                     )}
+                        )}
+                     </div>
                 </div>
                 <p className="text-xs md:text-sm text-gray-600 mb-4 line-clamp-2 md:line-clamp-3 min-h-[2.5rem] md:min-h-[3rem]">{doc.description}</p>
             </div>
@@ -526,6 +672,7 @@ const DocCard = ({ doc, onPreview, onEdit, onDownloadWord, onDownloadExcel, canE
 const DocListItem = ({ doc, onPreview, onEdit, onDownloadWord, onDownloadExcel, canEdit }) => {
     const needsExcel = ['lecciones', 'backlog', 'cronograma'].includes(doc.type);
     const needsWord = ['acta', 'manual', 'requerimientos'].includes(doc.type);
+    const status = getDocumentStatus(doc);
 
     return (
         <div className={`flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 p-3 md:p-4 rounded-lg transition-colors hover:bg-gray-50`}>
@@ -533,7 +680,10 @@ const DocListItem = ({ doc, onPreview, onEdit, onDownloadWord, onDownloadExcel, 
                 {getDocumentIcon(doc.type)}
             </div>
             <div className="flex-1 cursor-pointer min-w-0" onClick={() => onPreview(doc)}>
-                <h4 className="font-semibold text-sm md:text-base text-gray-800">{doc.title}</h4>
+                <div className="flex items-center gap-2 mb-1">
+                    <h4 className="font-semibold text-sm md:text-base text-gray-800">{doc.title}</h4>
+                    <StatusBadge status={status} type={doc.type} doc={doc} />
+                </div>
                 <p className="text-xs text-gray-500 truncate">Actualizado: {doc.updatedAt?.seconds ? new Date(doc.updatedAt.seconds * 1000).toLocaleDateString() : doc.updatedAt} • Versión: {doc.version || '1.0'}</p>
             </div>
             <div className="flex flex-wrap gap-2 w-full sm:w-auto">
@@ -798,7 +948,7 @@ const UploadDocModal = ({ onClose, onUploadSuccess, docToEdit, activeCategory, a
                     </div>
                     <div className="grid grid-cols-2 gap-6">
                         <div>
-                            <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">Categoría</label>
+                            <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">Módulo</label>
                              <select id="category" value={category} onChange={(e) => setCategory(e.target.value)} className="w-full p-3 bg-gray-100 border-2 border-gray-200 rounded-lg" disabled={isEditMode}>
                                 {categories.map(cat => <option key={cat.id} value={cat.id}>{cat.name}</option>)}
                             </select>

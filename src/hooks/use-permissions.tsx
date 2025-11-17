@@ -6,13 +6,14 @@ import { useUser } from '@/firebase';
 // Mapeo de categorías de documentación con roles que pueden editar
 export const CATEGORY_ROLE_MAP = {
   segmentacion: 'SEGMENTACION',
-  rrhh: 'RRHH',
-  logistica: 'LOGISTICA',
+  reclutamiento: 'RECLUTAMIENTO',
   capacitacion: 'CAPACITACION',
-  operacion: 'OPERACION',
-  procesamiento: 'PROCESAMIENTO',
-  postcensal: 'POSTCENSAL',
-  generales: 'GENERALES',
+  logistica: 'LOGISTICA',
+  'capdatos-apk': 'CAPDATOS-APK',
+  'censo-linea': 'CENSO-LINEA',
+  consistencia: 'CONSISTENCIA',
+  monitoreo: 'MONITOREO',
+  yanapaq: 'YANAPAQ',
 };
 
 export function usePermissions() {

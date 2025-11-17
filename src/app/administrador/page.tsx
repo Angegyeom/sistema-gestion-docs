@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import AppHeader from "@/components/layout/app-header";
 import { useFirestore, useCollection, useMemoFirebase, useAuth } from "@/firebase";
-import { collection, updateDoc, doc, serverTimestamp } from "firebase/firestore";
+import { collection, updateDoc, doc, serverTimestamp, addDoc, deleteDoc } from "firebase/firestore";
 import { Loader2, Shield, Edit, UserX, UserCheck } from 'lucide-react';
 import Swal from 'sweetalert2';
 import { usePermissions } from '@/hooks/use-permissions';
@@ -27,43 +27,56 @@ export default function AdministradorPage() {
     const { data: users, isLoading: isLoadingUsers } = useCollection(usersRef);
     const { data: roles, isLoading: isLoadingRoles } = useCollection(rolesRef);
 
-    // Seed inicial de roles si no existen
+    // Seed y actualización de roles
     useEffect(() => {
-        const seedRoles = async () => {
+        const seedAndUpdateRoles = async () => {
             if (!firestore || !roles || isLoadingRoles) return;
-
-            // Si ya hay roles, no hacer nada
-            if (roles.length > 0) return;
-
-            console.log("Creando roles iniciales...");
 
             const initialRoles = [
                 { name: 'ADMIN', description: 'Administrador del sistema con acceso completo' },
-                { name: 'SEGMENTACION', description: 'Puede editar documentos de Segmentación y Ruteo' },
-                { name: 'RRHH', description: 'Puede editar documentos de Consecución RRHH' },
-                { name: 'LOGISTICA', description: 'Puede editar documentos de Logística Censal' },
-                { name: 'CAPACITACION', description: 'Puede editar documentos de Capacitación' },
-                { name: 'OPERACION', description: 'Puede editar documentos de Operación de Campo' },
-                { name: 'PROCESAMIENTO', description: 'Puede editar documentos de Procesamiento' },
-                { name: 'POSTCENSAL', description: 'Puede editar documentos de Post Censal' },
-                { name: 'GENERALES', description: 'Puede editar documentos de Documentos Generales' },
+                { name: 'SEGMENTACION', description: 'Acceso al módulo de Segmentación y Ruteo' },
+                { name: 'RECLUTAMIENTO', description: 'Acceso al módulo de Reclutamiento de personal' },
+                { name: 'CAPACITACION', description: 'Acceso al módulo de Capacitación' },
+                { name: 'LOGISTICA', description: 'Acceso al módulo de Logística Censal' },
+                { name: 'CAPDATOS-APK', description: 'Acceso al módulo de Captura de Datos APK' },
+                { name: 'CENSO-LINEA', description: 'Acceso al módulo de Censo en Línea' },
+                { name: 'CONSISTENCIA', description: 'Acceso al módulo de Consistencia de Datos' },
+                { name: 'MONITOREO', description: 'Acceso al módulo de Monitoreo y Supervisión' },
+                { name: 'YANAPAQ', description: 'Acceso al módulo Yanapaq' },
             ];
 
+            // Roles obsoletos que deben eliminarse
+            const obsoleteRoles = ['RRHH', 'OPERACION', 'PROCESAMIENTO', 'POSTCENSAL', 'GENERALES'];
+
             try {
-                for (const role of initialRoles) {
-                    await addDoc(collection(firestore, 'roles'), {
-                        ...role,
-                        createdAt: serverTimestamp(),
-                        updatedAt: serverTimestamp()
-                    });
+                // Obtener roles existentes
+                const existingRoleNames = roles.map(r => r.name?.toUpperCase());
+
+                // 1. Eliminar roles obsoletos
+                for (const role of roles) {
+                    if (obsoleteRoles.includes(role.name?.toUpperCase())) {
+                        await deleteDoc(doc(firestore, 'roles', role.id));
+                        console.log(`🗑️ Rol obsoleto eliminado: ${role.name}`);
+                    }
                 }
-                //console.log("Roles iniciales creados exitosamente");
+
+                // 2. Agregar roles faltantes
+                for (const role of initialRoles) {
+                    if (!existingRoleNames.includes(role.name.toUpperCase())) {
+                        await addDoc(collection(firestore, 'roles'), {
+                            ...role,
+                            createdAt: serverTimestamp(),
+                            updatedAt: serverTimestamp()
+                        });
+                        console.log(`✅ Rol creado: ${role.name}`);
+                    }
+                }
             } catch (error) {
-                console.error("Error creando roles iniciales:", error);
+                console.error("Error actualizando roles:", error);
             }
         };
 
-        seedRoles();
+        seedAndUpdateRoles();
     }, [firestore, roles, isLoadingRoles]);
 
     // Proteger la página - solo accesible para admin
@@ -90,7 +103,7 @@ export default function AdministradorPage() {
                 text: 'No tienes permisos para acceder a esta sección.',
                 confirmButtonColor: '#004272'
             });
-            router.push('/aplicativos');
+            router.push('/documentacion');
         }
     }, [isUserDataLoading, userData, router]);
 
@@ -352,7 +365,11 @@ const RolesSection = ({ roles, isLoading, onEditRole, firestore }) => {
                 </div>
             ) : roles.length > 0 ? (
                 <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {roles.map(role => (
+                    {roles
+                        .filter((r, index, self) =>
+                            index === self.findIndex(t => t.name?.toUpperCase() === r.name?.toUpperCase())
+                        )
+                        .map(role => (
                         <div key={role.id} className="bg-white border-2 border-gray-200 rounded-xl p-5 hover:shadow-md transition-all">
                             <div className="flex items-start justify-between mb-3">
                                 <div>
@@ -372,7 +389,8 @@ const RolesSection = ({ roles, isLoading, onEditRole, firestore }) => {
                                 </button>
                             </div>
                         </div>
-                    ))}
+                    ))
+                    }
                 </div>
             ) : (
                 <div className="text-center p-10 text-gray-500">
@@ -485,9 +503,15 @@ const UserModal = ({ user, roles, onClose, firestore, auth, userData }) => {
                             className="w-full p-3 border-2 border-gray-200 rounded-lg outline-none focus:border-[#4A7BA7]"
                         >
                             <option value="">Seleccione un rol</option>
-                            {roles.map(r => (
-                                <option key={r.id} value={r.name}>{r.name}</option>
-                            ))}
+                            {roles
+                                .filter(r => r.name?.toUpperCase() !== 'ADMIN') // Excluir ADMIN
+                                .filter((r, index, self) =>
+                                    index === self.findIndex(t => t.name?.toUpperCase() === r.name?.toUpperCase()) // Eliminar duplicados
+                                )
+                                .map(r => (
+                                    <option key={r.id} value={r.name}>{r.name}</option>
+                                ))
+                            }
                         </select>
                     </div>
 

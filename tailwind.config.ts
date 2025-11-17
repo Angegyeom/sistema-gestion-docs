@@ -9,6 +9,9 @@ export default {
   ],
   theme: {
     extend: {
+      spacing: {
+        '10': '2rem',
+      },
       fontFamily: {
         sans: ['Segoe UI', 'Tahoma', 'Geneva', 'Verdana', 'sans-serif'],
         body: ['Inter', 'sans-serif'],

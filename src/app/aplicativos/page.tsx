@@ -9,8 +9,7 @@ import AppHeader from "@/components/layout/app-header";
 
 const systems = {
   preparacion: [
-    { id: 'segmentacion', icon: '🗺️', title: 'SEGMENTACIÓN Y RUTEO', description: 'Sistema para la división territorial y definición de rutas de empadronamiento', status: 'Activo', url: 'https://multiproyectos.inei.gob.pe/cpv2025-segmentacion/home', credentials: { user: 'admin_seg', password: 'Seg2025!' } },
-    { id: 'rrhh', icon: '👥', title: 'CONSECUCIÓN DE RRHH', description: 'Gestión de recursos humanos, selección y asignación de personal censal', status: 'Activo', url: 'https://unete.censos2025.com.pe/public/' },
+    { id: 'segmentacion', icon: '🗺️', title: 'SEGMENTACIÓN', description: 'Sistema para la división territorial y definición de rutas de empadronamiento', status: 'Activo', url: 'https://multiproyectos.inei.gob.pe/cpv2025-segmentacion/home', credentials: { user: 'admin_seg', password: 'Seg2025!' } },
     { id: 'logistica', icon: '📦', title: 'LOGÍSTICA CENSAL', description: 'Control de materiales, equipos y distribución logística del operativo', status: 'Activo', url: 'https://campo.censos2025.com.pe/dashboard/menu_modulos', credentials: { user: 'log_admin', password: 'Log2025!' } },
     { id: 'capacitacion', icon: '🎓', title: 'CAPACITACIÓN', description: 'Plataforma de formación y capacitación del personal operativo', status: 'Activo', url: 'https://monitoreo.censos2025.com.pe/public/modulo-gerencial/capacitacion/censos-nacionales/informe-progreso?menu_id_est=374' },
   ],
@@ -42,7 +41,6 @@ const Phase = ({ title, number, systems, onSystemClick, color }) => (
 const SystemCard = ({ icon, title, description, status, onClick, id }) => {
     const borderColorClass = {
         segmentacion: 'border-purple-500',
-        rrhh: 'border-indigo-500',
         logistica: 'border-cyan-500',
         capacitacion: 'border-green-500',
         operacion: 'border-blue-500',
@@ -52,7 +50,6 @@ const SystemCard = ({ icon, title, description, status, onClick, id }) => {
 
     const iconBgClass = {
         segmentacion: 'bg-purple-500',
-        rrhh: 'bg-indigo-500',
         logistica: 'bg-cyan-500',
         capacitacion: 'bg-green-500',
         operacion: 'bg-blue-500',
