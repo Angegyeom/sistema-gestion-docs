@@ -3,8 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import AppHeader from "@/components/layout/app-header";
 import { useFirestore, useCollection, useMemoFirebase, useUser, errorEmitter, FirestorePermissionError } from "@/firebase";
-import { collection, addDoc, serverTimestamp, doc, updateDoc, writeBatch } from "firebase/firestore";
-import { Loader2, Upload, Edit, Eye, Download, Plus, FileText, FileSpreadsheet, FileStack, CheckCircle2, AlertCircle, XCircle } from 'lucide-react';
+import { collection, addDoc, serverTimestamp, doc, updateDoc, writeBatch, deleteDoc } from "firebase/firestore";
+import { Loader2, Upload, Edit, Eye, Download, Plus, FileText, FileSpreadsheet, FileStack, CheckCircle2, AlertCircle, XCircle, Trash2 } from 'lucide-react';
 import Swal from 'sweetalert2';
 import { usePermissions } from '@/hooks/use-permissions';
 
@@ -309,8 +309,10 @@ const formatTemplates = [
 export default function DocumentacionPage() {
     const firestore = useFirestore();
     const docsRef = useMemoFirebase(() => firestore ? collection(firestore, 'documentos') : null, [firestore]);
+    const customModulesRef = useMemoFirebase(() => firestore ? collection(firestore, 'custom-modules') : null, [firestore]);
     const { data: allDocs, isLoading: isLoadingDocs, error: firestoreError } = useCollection(docsRef);
-    const { canEditCategory } = usePermissions();
+    const { data: customModules, isLoading: isLoadingModules } = useCollection(customModulesRef);
+    const { canEditCategory, isAdmin } = usePermissions();
 
     const [docs, setDocs] = useState([]);
     const [view, setView] = useState('grid');
@@ -321,6 +323,18 @@ export default function DocumentacionPage() {
     const [uploadModalConfig, setUploadModalConfig] = useState({ isOpen: false, docToEdit: null });
     const [showFormatsModal, setShowFormatsModal] = useState(false);
     const [previewTemplate, setPreviewTemplate] = useState(null);
+    const [showModuleModal, setShowModuleModal] = useState(false);
+
+    // Combinar categorías estáticas con módulos personalizados
+    const allCategories = [
+        ...categories,
+        ...(customModules || []).map(mod => ({
+            id: mod.id,
+            name: mod.name,
+            icon: mod.icon || '📁',
+            isCustom: true
+        }))
+    ];
 
     const seedData = async () => {
         if (!firestore || !allDocs) return;
@@ -518,6 +532,47 @@ export default function DocumentacionPage() {
         }
     }
 
+    const handleDeleteModule = async (moduleId: string, moduleName: string) => {
+        if (!firestore) return;
+
+        const result = await Swal.fire({
+            icon: 'warning',
+            title: '¿Eliminar módulo?',
+            html: `¿Estás seguro de que deseas eliminar el módulo <strong>"${moduleName}"</strong>?<br><br><span class="text-sm text-gray-600">Esta acción no se puede deshacer.</span>`,
+            showCancelButton: true,
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar',
+            confirmButtonColor: '#dc2626',
+            cancelButtonColor: '#6b7280'
+        });
+
+        if (!result.isConfirmed) return;
+
+        try {
+            await deleteDoc(doc(firestore, 'custom-modules', moduleId));
+
+            // Si el módulo eliminado era el activo, cambiar a segmentacion
+            if (activeCategory === moduleId) {
+                setActiveCategory('segmentacion');
+            }
+
+            Swal.fire({
+                icon: 'success',
+                title: 'Módulo eliminado',
+                text: `El módulo "${moduleName}" ha sido eliminado exitosamente.`,
+                timer: 2000,
+                showConfirmButton: false
+            });
+        } catch (error) {
+            console.error('Error deleting module:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'No se pudo eliminar el módulo. Inténtalo de nuevo.',
+                confirmButtonColor: '#004272'
+            });
+        }
+    };
 
     return (
         <>
@@ -552,21 +607,44 @@ export default function DocumentacionPage() {
                     <aside className="bg-white/95 rounded-2xl p-4 md:p-6 shadow-lg h-fit">
                         <h3 className="text-base md:text-lg font-semibold text-gray-800 mb-4 md:mb-5">📂 Módulos</h3>
                         <ul className="space-y-1.5 md:space-y-2">
-                            {categories.map(cat => (
-                                <li key={cat.id}>
-                                    <a href="#" onClick={(e) => { e.preventDefault(); setActiveCategory(cat.id); }} className={`flex items-center gap-2 md:gap-3 p-2 md:p-3 rounded-lg transition-all text-sm md:text-base ${activeCategory === cat.id ? 'bg-indigo-100 text-indigo-700 font-semibold' : 'hover:bg-gray-100'}`}>
-                                        <span className="text-lg md:text-xl">{cat.icon}</span>
-                                        <span>{cat.name}</span>
-                                    </a>
+                            {allCategories.map(cat => (
+                                <li key={cat.id} className="relative group">
+                                    <div className="flex items-center gap-1">
+                                        <a href="#" onClick={(e) => { e.preventDefault(); setActiveCategory(cat.id); }} className={`flex-1 flex items-center gap-2 md:gap-3 p-2 md:p-3 rounded-lg transition-all text-sm md:text-base ${activeCategory === cat.id ? 'bg-indigo-100 text-indigo-700 font-semibold' : 'hover:bg-gray-100'}`}>
+                                            <span className="text-lg md:text-xl">{cat.icon}</span>
+                                            <span className="truncate">{cat.name}</span>
+                                        </a>
+                                        {isAdmin && cat.isCustom && (
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleDeleteModule(cat.id, cat.name);
+                                                }}
+                                                className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
+                                                title="Eliminar módulo"
+                                            >
+                                                <Trash2 size={16} />
+                                            </button>
+                                        )}
+                                    </div>
                                 </li>
                             ))}
                         </ul>
+                        {isAdmin && (
+                            <button
+                                onClick={() => setShowModuleModal(true)}
+                                className="w-full mt-4 flex items-center justify-center gap-2 px-4 py-2.5 bg-[#004272] text-white rounded-lg font-semibold hover:shadow-lg transition-all text-sm"
+                            >
+                                <Plus size={16} />
+                                Agregar Módulo
+                            </button>
+                        )}
                     </aside>
 
                     <main className="bg-white/95 rounded-2xl p-4 md:p-7 shadow-lg">
                         <header className="flex justify-between items-center mb-4 md:mb-6">
                             <h2 className="text-base md:text-xl font-semibold text-gray-800 truncate pr-2">
-                                {categories.find(c => c.id === activeCategory)?.name}
+                                {allCategories.find(c => c.id === activeCategory)?.name}
                             </h2>
                             <div className="bg-gray-100 p-1 rounded-lg flex gap-1 flex-shrink-0">
                                 <button onClick={() => setView('grid')} className={`p-1.5 md:p-2 rounded-md text-sm md:text-base ${view === 'grid' ? 'bg-white shadow' : ''}`}>⊞</button>
@@ -590,7 +668,16 @@ export default function DocumentacionPage() {
                                 </>
                             ) : (
                                 <div className="text-center p-10 text-gray-500">
-                                    <p>No hay documentos en este módulo.</p>
+                                    <p className="mb-4">No hay documentos en este módulo.</p>
+                                    {canEditCategory(activeCategory) && (
+                                        <button
+                                            onClick={() => setUploadModalConfig({ isOpen: true, docToEdit: null })}
+                                            className="inline-flex items-center gap-2 px-6 py-3 bg-[#004272] text-white rounded-lg font-semibold hover:shadow-lg transition-all"
+                                        >
+                                            <Plus size={18} />
+                                            Agregar Documento
+                                        </button>
+                                    )}
                                 </div>
                             )
                         )}
@@ -599,9 +686,10 @@ export default function DocumentacionPage() {
                 </div>
             </div>
             {modalDoc && <DocModal doc={modalDoc} onClose={closePreviewModal} />}
-            {uploadModalConfig.isOpen && <UploadDocModal onClose={closeUploadModal} onUploadSuccess={handleUploadSuccess} docToEdit={uploadModalConfig.docToEdit} activeCategory={activeCategory} allDocs={allDocs} />}
+            {uploadModalConfig.isOpen && <UploadDocModal onClose={closeUploadModal} onUploadSuccess={handleUploadSuccess} docToEdit={uploadModalConfig.docToEdit} activeCategory={activeCategory} allDocs={allDocs} allCategories={allCategories} />}
             {showFormatsModal && <FormatsModal onClose={() => setShowFormatsModal(false)} onPreview={setPreviewTemplate} />}
             {previewTemplate && <TemplatePreviewModal template={previewTemplate} onClose={() => setPreviewTemplate(null)} />}
+            {showModuleModal && <ModuleModal onClose={() => setShowModuleModal(false)} firestore={firestore} />}
         </>
     );
 }
@@ -732,7 +820,7 @@ const DocModal = ({ doc, onClose }) => {
     );
 };
 
-const UploadDocModal = ({ onClose, onUploadSuccess, docToEdit, activeCategory, allDocs }) => {
+const UploadDocModal = ({ onClose, onUploadSuccess, docToEdit, activeCategory, allDocs, allCategories }) => {
     const firestore = useFirestore();
     const { user } = useUser();
     const [title, setTitle] = useState('');
@@ -747,6 +835,9 @@ const UploadDocModal = ({ onClose, onUploadSuccess, docToEdit, activeCategory, a
     const [error, setError] = useState('');
 
     const isEditMode = Boolean(docToEdit);
+
+    // Verificar si es un módulo personalizado
+    const isCustomModule = allCategories.find(cat => cat.id === category)?.isCustom || false;
 
     // Determine which file types are needed based on document type
     const needsExcel = ['lecciones', 'backlog', 'cronograma'].includes(type);
@@ -802,8 +893,8 @@ const UploadDocModal = ({ onClose, onUploadSuccess, docToEdit, activeCategory, a
                 setError('Por favor, proporcione un enlace válido de Figma.');
                 return;
             }
-        } else if (!isEditMode) {
-            // Para nuevos documentos, validar que ambos archivos estén presentes
+        } else if (!isEditMode && !isCustomModule) {
+            // Para nuevos documentos (no personalizados), validar que ambos archivos estén presentes
             if (needsExcel) {
                 if (!excelFile || !pdfFile) {
                     setError('Debe subir tanto el archivo Excel como el PDF.');
@@ -815,6 +906,16 @@ const UploadDocModal = ({ onClose, onUploadSuccess, docToEdit, activeCategory, a
                     return;
                 }
             }
+        } else if (!isEditMode && isCustomModule) {
+            // Para módulos personalizados: PDF obligatorio + (Word O Excel)
+            if (!pdfFile) {
+                setError('El archivo PDF es obligatorio.');
+                return;
+            }
+            if (!wordFile && !excelFile) {
+                setError('Debe subir al menos un archivo Word o Excel.');
+                return;
+            }
         }
 
         setIsUploading(true);
@@ -824,7 +925,7 @@ const UploadDocModal = ({ onClose, onUploadSuccess, docToEdit, activeCategory, a
             const docData: any = {
                 title,
                 category,
-                type,
+                type: isCustomModule ? 'default' : type, // Para módulos personalizados, usar tipo 'default'
                 version,
                 updatedAt: serverTimestamp(),
             };
@@ -946,19 +1047,21 @@ const UploadDocModal = ({ onClose, onUploadSuccess, docToEdit, activeCategory, a
                         <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">Título del Documento</label>
                         <input type="text" id="title" value={title} onChange={(e) => setTitle(e.target.value)} required className="w-full p-3 border-2 border-gray-200 rounded-lg outline-none focus:border-[#004272]" />
                     </div>
-                    <div className="grid grid-cols-2 gap-6">
+                    <div className={`grid ${isCustomModule ? 'grid-cols-1' : 'grid-cols-2'} gap-6`}>
                         <div>
                             <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">Módulo</label>
                              <select id="category" value={category} onChange={(e) => setCategory(e.target.value)} className="w-full p-3 bg-gray-100 border-2 border-gray-200 rounded-lg" disabled={isEditMode}>
-                                {categories.map(cat => <option key={cat.id} value={cat.id}>{cat.name}</option>)}
+                                {allCategories.map(cat => <option key={cat.id} value={cat.id}>{cat.name}</option>)}
                             </select>
                         </div>
-                        <div>
-                            <label htmlFor="type" className="block text-sm font-medium text-gray-700 mb-1">Tipo</label>
-                            <select id="type" value={type} onChange={(e) => setType(e.target.value)} className={`w-full p-3 border-2 border-gray-200 rounded-lg ${isEditMode ? 'bg-gray-100 cursor-not-allowed' : 'outline-none focus:border-[#004272]'}`} disabled={isEditMode}>
-                                {Object.keys(docTypes).filter(k => k !== 'default').map(key => <option key={key} value={key}>{key.charAt(0).toUpperCase() + key.slice(1)}</option>)}
-                            </select>
-                        </div>
+                        {!isCustomModule && (
+                            <div>
+                                <label htmlFor="type" className="block text-sm font-medium text-gray-700 mb-1">Tipo</label>
+                                <select id="type" value={type} onChange={(e) => setType(e.target.value)} className={`w-full p-3 border-2 border-gray-200 rounded-lg ${isEditMode ? 'bg-gray-100 cursor-not-allowed' : 'outline-none focus:border-[#004272]'}`} disabled={isEditMode}>
+                                    {Object.keys(docTypes).filter(k => k !== 'default').map(key => <option key={key} value={key}>{key.charAt(0).toUpperCase() + key.slice(1)}</option>)}
+                                </select>
+                            </div>
+                        )}
                     </div>
                      <div>
                         <label htmlFor="version" className="block text-sm font-medium text-gray-700 mb-1">Versión</label>
@@ -983,7 +1086,7 @@ const UploadDocModal = ({ onClose, onUploadSuccess, docToEdit, activeCategory, a
                     )}
 
                     {/* Documentos que requieren Excel + PDF */}
-                    {needsExcel && !isPrototipo && (
+                    {needsExcel && !isPrototipo && !isCustomModule && (
                         <>
                             <div>
                                 <label htmlFor="excelFile" className="block text-sm font-medium text-gray-700 mb-1">
@@ -1015,7 +1118,7 @@ const UploadDocModal = ({ onClose, onUploadSuccess, docToEdit, activeCategory, a
                     )}
 
                     {/* Documentos que requieren Word + PDF */}
-                    {needsWord && !isPrototipo && (
+                    {needsWord && !isPrototipo && !isCustomModule && (
                         <>
                             <div>
                                 <label htmlFor="wordFile" className="block text-sm font-medium text-gray-700 mb-1">
@@ -1042,6 +1145,56 @@ const UploadDocModal = ({ onClose, onUploadSuccess, docToEdit, activeCategory, a
                                     className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-red-50 file:text-red-700 hover:file:bg-red-100"
                                 />
                                 <p className="text-xs text-gray-500 mt-1">Sube el archivo PDF</p>
+                            </div>
+                        </>
+                    )}
+
+                    {/* Módulos personalizados: PDF obligatorio + (Word O Excel) */}
+                    {isCustomModule && (
+                        <>
+                            <div>
+                                <label htmlFor="customPdfFile" className="block text-sm font-medium text-gray-700 mb-1">
+                                    Archivo PDF <span className="text-red-500">*</span>
+                                </label>
+                                <input
+                                    type="file"
+                                    id="customPdfFile"
+                                    onChange={handlePdfFileChange}
+                                    accept=".pdf"
+                                    className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-red-50 file:text-red-700 hover:file:bg-red-100"
+                                />
+                                <p className="text-xs text-gray-500 mt-1">Sube el archivo PDF (obligatorio)</p>
+                            </div>
+                            <div className="bg-blue-50 border-l-4 border-blue-500 p-3 rounded">
+                                <p className="text-xs text-blue-700 font-medium mb-2">Sube al menos uno de los siguientes archivos:</p>
+                                <div className="space-y-3">
+                                    <div>
+                                        <label htmlFor="customWordFile" className="block text-sm font-medium text-gray-700 mb-1">
+                                            Archivo Word <span className="text-gray-400 text-xs">(Word o Excel)</span>
+                                        </label>
+                                        <input
+                                            type="file"
+                                            id="customWordFile"
+                                            onChange={handleWordFileChange}
+                                            accept=".doc,.docx"
+                                            className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                                        />
+                                        <p className="text-xs text-gray-500 mt-1">Sube el archivo Word (.doc o .docx)</p>
+                                    </div>
+                                    <div>
+                                        <label htmlFor="customExcelFile" className="block text-sm font-medium text-gray-700 mb-1">
+                                            Archivo Excel <span className="text-gray-400 text-xs">(Word o Excel)</span>
+                                        </label>
+                                        <input
+                                            type="file"
+                                            id="customExcelFile"
+                                            onChange={handleExcelFileChange}
+                                            accept=".xlsx,.xls"
+                                            className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100"
+                                        />
+                                        <p className="text-xs text-gray-500 mt-1">Sube el archivo Excel (.xlsx o .xls)</p>
+                                    </div>
+                                </div>
                             </div>
                         </>
                     )}
@@ -1257,6 +1410,139 @@ const TemplatePreviewModal = ({ template, onClose }) => {
                         </div>
                     )}
                 </div>
+            </div>
+        </div>
+    );
+};
+
+// Modal para agregar nuevos módulos personalizados
+const ModuleModal = ({ onClose, firestore }) => {
+    const [moduleName, setModuleName] = useState('');
+    const [moduleIcon, setModuleIcon] = useState('📁');
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [error, setError] = useState('');
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+
+        if (!moduleName.trim()) {
+            setError('El nombre del módulo es requerido.');
+            return;
+        }
+
+        if (!firestore) {
+            setError('Error de conexión con la base de datos.');
+            return;
+        }
+
+        setIsSubmitting(true);
+        setError('');
+
+        try {
+            const moduleData = {
+                name: moduleName.trim(),
+                icon: moduleIcon,
+                createdAt: serverTimestamp(),
+                updatedAt: serverTimestamp()
+            };
+
+            await addDoc(collection(firestore, 'custom-modules'), moduleData);
+
+            Swal.fire({
+                icon: 'success',
+                title: 'Módulo creado',
+                text: `El módulo "${moduleName}" ha sido creado exitosamente.`,
+                timer: 2000,
+                showConfirmButton: false
+            });
+
+            onClose();
+        } catch (err: any) {
+            console.error('Error creating module:', err);
+            setError('No se pudo crear el módulo. ' + (err.message || ''));
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    const commonIcons = ['📁', '📂', '📊', '📈', '🔧', '⚙️', '🎯', '💼', '📋', '🗂️', '📌', '🔔', '⭐', '🌟', '💡', '🎓', '📚', '📝'];
+
+    return (
+        <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4" onClick={onClose}>
+            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md" onClick={e => e.stopPropagation()}>
+                <header className="flex justify-between items-center p-5 border-b bg-gray-50 rounded-t-2xl">
+                    <h3 className="text-lg font-semibold text-gray-800">Agregar Nuevo Módulo</h3>
+                    <button onClick={onClose} className="w-9 h-9 rounded-full bg-red-500 text-white font-bold text-xl hover:bg-red-600 transition-colors">×</button>
+                </header>
+                <form onSubmit={handleSubmit} className="p-6 space-y-4">
+                    {error && <p className="text-red-600 bg-red-100 p-3 rounded-md text-sm">{error}</p>}
+
+                    <div>
+                        <label htmlFor="moduleName" className="block text-sm font-medium text-gray-700 mb-1">
+                            Nombre del Módulo <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                            type="text"
+                            id="moduleName"
+                            value={moduleName}
+                            onChange={(e) => setModuleName(e.target.value)}
+                            required
+                            className="w-full p-3 border-2 border-gray-200 rounded-lg outline-none focus:border-[#004272]"
+                            placeholder="Ej: Control de Calidad"
+                            maxLength={50}
+                        />
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Icono del Módulo
+                        </label>
+                        <div className="grid grid-cols-9 gap-2">
+                            {commonIcons.map(icon => (
+                                <button
+                                    key={icon}
+                                    type="button"
+                                    onClick={() => setModuleIcon(icon)}
+                                    className={`w-10 h-10 text-2xl flex items-center justify-center rounded-lg border-2 transition-all hover:scale-110 ${
+                                        moduleIcon === icon
+                                            ? 'border-[#004272] bg-blue-50'
+                                            : 'border-gray-200 hover:border-gray-300'
+                                    }`}
+                                >
+                                    {icon}
+                                </button>
+                            ))}
+                        </div>
+                        <p className="text-xs text-gray-500 mt-2">Selecciona un icono para tu módulo</p>
+                    </div>
+
+                    <div className="flex gap-3 pt-4">
+                        <button
+                            type="button"
+                            onClick={onClose}
+                            className="flex-1 py-2 px-4 bg-gray-200 text-gray-800 rounded-lg font-semibold hover:bg-gray-300 transition-colors"
+                        >
+                            Cancelar
+                        </button>
+                        <button
+                            type="submit"
+                            disabled={isSubmitting}
+                            className="flex-1 py-2 px-4 bg-[#004272] text-white rounded-lg font-semibold hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                        >
+                            {isSubmitting ? (
+                                <>
+                                    <Loader2 className="animate-spin" size={16} />
+                                    Creando...
+                                </>
+                            ) : (
+                                <>
+                                    <Plus size={16} />
+                                    Crear Módulo
+                                </>
+                            )}
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     );
