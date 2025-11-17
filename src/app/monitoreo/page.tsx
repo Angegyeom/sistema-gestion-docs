@@ -141,7 +141,7 @@ const IframeView = ({ system, showHome, toggleSidebar }) => {
             <div className="flex-1">
                  {system.id === 'capacitacion' ? (
                      <div className="w-full h-full bg-no-repeat bg-contain bg-center cursor-pointer" style={{backgroundImage: "url('/images/Sistemas/capacitacion.png')"}} onClick={() => window.open(system.url, '_blank')}>
-                         <div className="w-full h-full bg-[#4A7BA7]/90 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+                         <div className="w-full h-full bg-[#004272]/90 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
                              <div className="text-white text-center">
                                  <div className="text-4xl mb-2">🖱️</div>
                                  <div className="font-bold">Haz clic para abrir el sistema</div>

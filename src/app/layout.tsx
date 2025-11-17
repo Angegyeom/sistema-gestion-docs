@@ -31,7 +31,7 @@ export default function RootLayout({
       <body
         className={cn(
           "font-sans antialiased",
-          "min-h-screen bg-gradient-to-br from-[#7AADCF] to-[#4A7BA7]"
+          "min-h-screen bg-[#004272]"
         )}
       >
         <FirebaseClientProvider>{children}</FirebaseClientProvider>

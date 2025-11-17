@@ -6,6 +6,7 @@ import { useFirestore, useCollection, useMemoFirebase, useUser, errorEmitter, Fi
 import { collection, addDoc, serverTimestamp, doc, updateDoc, writeBatch } from "firebase/firestore";
 import { Loader2, Upload, Edit, Eye, Download, Plus, FileText, FileSpreadsheet, FileStack } from 'lucide-react';
 import Swal from 'sweetalert2';
+import { usePermissions } from '@/hooks/use-permissions';
 
 const categories = [
   { id: 'segmentacion', name: 'Segmentación y Ruteo', icon: '🗺️' },
@@ -28,6 +29,7 @@ const initialDocs = {
         { id: 'seg-6', title: 'Lecciones Aprendidas', description: 'Lecciones aprendidas durante el desarrollo del sistema de segmentación', type: 'lecciones', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'segmentacion' },
         { id: 'seg-7', title: 'Requerimientos Funcionales', description: 'Especificación de requerimientos funcionales del sistema de segmentación', type: 'requerimientos', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'segmentacion' },
         { id: 'seg-8', title: 'Product Backlog', description: 'Product Backlog del sistema de segmentación', type: 'backlog', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'segmentacion' },
+        { id: 'seg-9', title: 'Acta de Conformidad', description: 'Acta de conformidad del sistema de segmentación', type: 'acta', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'segmentacion' },
     ],
     rrhh: [
         { id: 'rrhh-1', title: 'Acta de Constitución', description: 'Acta de constitución del proyecto para el área de RRHH', type: 'acta', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'rrhh' },
@@ -38,6 +40,7 @@ const initialDocs = {
         { id: 'rrhh-6', title: 'Lecciones Aprendidas', description: 'Lecciones aprendidas durante el desarrollo del sistema de RRHH', type: 'lecciones', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'rrhh' },
         { id: 'rrhh-7', title: 'Requerimientos Funcionales', description: 'Especificación de requerimientos funcionales del sistema de RRHH', type: 'requerimientos', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'rrhh' },
         { id: 'rrhh-8', title: 'Product Backlog', description: 'Product Backlog del sistema de RRHH', type: 'backlog', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'rrhh' },
+        { id: 'rrhh-9', title: 'Acta de Conformidad', description: 'Acta de conformidad del sistema de RRHH', type: 'acta', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'rrhh' },
     ],
     logistica: [
         { id: 'log-1', title: 'Acta de Constitución', description: 'Acta de constitución del proyecto para el área de logística', type: 'acta', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'logistica' },
@@ -48,6 +51,7 @@ const initialDocs = {
         { id: 'log-6', title: 'Lecciones Aprendidas', description: 'Lecciones aprendidas durante el desarrollo del sistema de logística', type: 'lecciones', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'logistica' },
         { id: 'log-7', title: 'Requerimientos Funcionales', description: 'Especificación de requerimientos funcionales del sistema de logística', type: 'requerimientos', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'logistica' },
         { id: 'log-8', title: 'Product Backlog', description: 'Product Backlog del sistema de logística', type: 'backlog', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'logistica' },
+        { id: 'log-9', title: 'Acta de Conformidad', description: 'Acta de conformidad del sistema de logística', type: 'acta', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'logistica' },
     ],
     capacitacion: [
         { id: 'cap-1', title: 'Acta de Constitución', description: 'Acta de constitución del proyecto para el área de capacitación', type: 'acta', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'capacitacion' },
@@ -58,6 +62,7 @@ const initialDocs = {
         { id: 'cap-6', title: 'Lecciones Aprendidas', description: 'Lecciones aprendidas durante el desarrollo del sistema de capacitación', type: 'lecciones', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'capacitacion' },
         { id: 'cap-7', title: 'Requerimientos Funcionales', description: 'Especificación de requerimientos funcionales del sistema de capacitación', type: 'requerimientos', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'capacitacion' },
         { id: 'cap-8', title: 'Product Backlog', description: 'Product Backlog del sistema de capacitación', type: 'backlog', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'capacitacion' },
+        { id: 'cap-9', title: 'Acta de Conformidad', description: 'Acta de conformidad del sistema de capacitación', type: 'acta', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'capacitacion' },
     ],
     operacion: [
         { id: 'ope-1', title: 'Acta de Constitución', description: 'Acta de constitución del proyecto para el área de operación de campo', type: 'acta', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'operacion' },
@@ -68,6 +73,7 @@ const initialDocs = {
         { id: 'ope-6', title: 'Lecciones Aprendidas', description: 'Lecciones aprendidas durante el desarrollo del sistema de operación de campo', type: 'lecciones', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'operacion' },
         { id: 'ope-7', title: 'Requerimientos Funcionales', description: 'Especificación de requerimientos funcionales del sistema de operación de campo', type: 'requerimientos', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'operacion' },
         { id: 'ope-8', title: 'Product Backlog', description: 'Product Backlog del sistema de operación de campo', type: 'backlog', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'operacion' },
+        { id: 'ope-9', title: 'Acta de Conformidad', description: 'Acta de conformidad del sistema de operación de campo', type: 'acta', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'operacion' },
     ],
     procesamiento: [
         { id: 'pro-1', title: 'Acta de Constitución', description: 'Acta de constitución del proyecto para el área de procesamiento', type: 'acta', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'procesamiento' },
@@ -78,6 +84,7 @@ const initialDocs = {
         { id: 'pro-6', title: 'Lecciones Aprendidas', description: 'Lecciones aprendidas durante el desarrollo del sistema de procesamiento', type: 'lecciones', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'procesamiento' },
         { id: 'pro-7', title: 'Requerimientos Funcionales', description: 'Especificación de requerimientos funcionales del sistema de procesamiento', type: 'requerimientos', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'procesamiento' },
         { id: 'pro-8', title: 'Product Backlog', description: 'Product Backlog del sistema de procesamiento', type: 'backlog', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'procesamiento' },
+        { id: 'pro-9', title: 'Acta de Conformidad', description: 'Acta de conformidad del sistema de procesamiento', type: 'acta', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'procesamiento' },
     ],
     postcensal: [
         { id: 'pos-1', title: 'Acta de Constitución', description: 'Acta de constitución del proyecto para el área post censal', type: 'acta', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'postcensal' },
@@ -88,6 +95,7 @@ const initialDocs = {
         { id: 'pos-6', title: 'Lecciones Aprendidas', description: 'Lecciones aprendidas durante el desarrollo del sistema post censal', type: 'lecciones', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'postcensal' },
         { id: 'pos-7', title: 'Requerimientos Funcionales', description: 'Especificación de requerimientos funcionales del sistema post censal', type: 'requerimientos', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'postcensal' },
         { id: 'pos-8', title: 'Product Backlog', description: 'Product Backlog del sistema post censal', type: 'backlog', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'postcensal' },
+        { id: 'pos-9', title: 'Acta de Conformidad', description: 'Acta de conformidad del sistema post censal', type: 'acta', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'postcensal' },
     ],
     generales: [
         { id: 'gen-1', title: 'Acta de Constitución', description: 'Acta de constitución del proyecto general CPV 2025', type: 'acta', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'generales' },
@@ -98,6 +106,7 @@ const initialDocs = {
         { id: 'gen-6', title: 'Lecciones Aprendidas', description: 'Lecciones aprendidas durante el desarrollo del proyecto CPV 2025', type: 'lecciones', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'generales' },
         { id: 'gen-7', title: 'Requerimientos Funcionales', description: 'Especificación de requerimientos funcionales del proyecto CPV 2025', type: 'requerimientos', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'generales' },
         { id: 'gen-8', title: 'Product Backlog', description: 'Product Backlog del proyecto CPV 2025', type: 'backlog', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'generales' },
+        { id: 'gen-9', title: 'Acta de Conformidad', description: 'Acta de conformidad del proyecto CPV 2025', type: 'acta', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'generales' },
     ]
 };
 
@@ -110,6 +119,7 @@ const docTypes = {
   lecciones: '💡',
   requerimientos: '📋',
   backlog: '📊',
+  conformidad: '✅',
   default: '📄',
 };
 
@@ -121,6 +131,7 @@ const docTypeClasses = {
     lecciones: 'border-orange-500',
     requerimientos: 'border-pink-500',
     backlog: 'border-teal-500',
+    conformidad: 'border-cyan-500',
     default: 'border-gray-500',
 };
 
@@ -132,6 +143,7 @@ const docTypeIconBg = {
     lecciones: 'bg-orange-500',
     requerimientos: 'bg-pink-500',
     backlog: 'bg-teal-500',
+    conformidad: 'bg-cyan-500',
     default: 'bg-gray-500',
 }
 
@@ -142,6 +154,7 @@ const getDocIconBg = (type) => docTypeIconBg[type] || docTypeIconBg.default;
 // Plantillas de formatos
 const formatTemplates = [
     { id: 'acta', name: 'Acta de Constitución', file: 'Plantilla_Acta_Constitucion.docx', type: 'word', icon: '📝', color: 'bg-blue-500' },
+    { id: 'conformidad', name: 'Acta de Conformidad', file: 'Plantilla_Acta_Conformidad.docx', type: 'word', icon: '📝', color: 'bg-blue-500' },
     { id: 'manual-sistema', name: 'Manual de Sistema', file: 'Plantilla_Manual_Sistema.docx', type: 'word', icon: '📖', color: 'bg-green-500' },
     { id: 'manual-usuario', name: 'Manual de Usuario', file: 'Plantilla_Manual_Usuario.docx', type: 'word', icon: '📖', color: 'bg-green-500' },
     { id: 'requerimientos', name: 'Requerimientos Funcionales', file: 'REQUERMIENTOS_CPV.docx', type: 'word', icon: '📋', color: 'bg-pink-500' },
@@ -155,7 +168,8 @@ export default function DocumentacionPage() {
     const firestore = useFirestore();
     const docsRef = useMemoFirebase(() => firestore ? collection(firestore, 'documentos') : null, [firestore]);
     const { data: allDocs, isLoading: isLoadingDocs, error: firestoreError } = useCollection(docsRef);
-    
+    const { canEditCategory } = usePermissions();
+
     const [docs, setDocs] = useState([]);
     const [view, setView] = useState('grid');
     const [activeCategory, setActiveCategory] = useState('segmentacion');
@@ -169,30 +183,48 @@ export default function DocumentacionPage() {
     const seedData = async () => {
         if (!firestore || !allDocs) return;
 
-        console.log("Checking for missing documents...");
         try {
-            // Get existing document IDs
-            const existingIds = new Set(allDocs.map(doc => doc.id));
+            // Get existing documents as a map
+            const existingDocsMap = new Map(allDocs.map(doc => [doc.id, doc]));
 
-            // Find missing documents across all categories
+            // Find missing and outdated documents
             const allInitialDocs = Object.values(initialDocs).flat();
-            const missingDocs = allInitialDocs.filter(docData => !existingIds.has(docData.id));
+            const missingDocs = [];
+            const docsToUpdate = [];
 
-            if (missingDocs.length === 0) {
-                console.log("All documents already exist.");
+            allInitialDocs.forEach(docData => {
+                const existingDoc = existingDocsMap.get(docData.id);
+                if (!existingDoc) {
+                    missingDocs.push(docData);
+                } else if (existingDoc.type !== docData.type) {
+                    // Document exists but type is different - update it
+                    docsToUpdate.push(docData);
+                }
+            });
+
+            if (missingDocs.length === 0 && docsToUpdate.length === 0) {
                 return;
             }
 
-            console.log(`Found ${missingDocs.length} missing documents. Seeding...`);
             const batch = writeBatch(firestore);
 
-            missingDocs.forEach(docData => {
-                const docRef = doc(firestore, "documentos", docData.id);
-                batch.set(docRef, { ...docData, createdAt: serverTimestamp(), updatedAt: serverTimestamp() });
-            });
+            // Add missing documents
+            if (missingDocs.length > 0) {
+                missingDocs.forEach(docData => {
+                    const docRef = doc(firestore, "documentos", docData.id);
+                    batch.set(docRef, { ...docData, createdAt: serverTimestamp(), updatedAt: serverTimestamp() });
+                });
+            }
+
+            // Update documents with incorrect type
+            if (docsToUpdate.length > 0) {
+                docsToUpdate.forEach(docData => {
+                    const docRef = doc(firestore, "documentos", docData.id);
+                    batch.update(docRef, { type: docData.type, updatedAt: serverTimestamp() });
+                });
+            }
 
             await batch.commit();
-            console.log("Missing documents seeded successfully.");
         } catch (error) {
             console.error("Error seeding data: ", error);
         }
@@ -356,10 +388,10 @@ export default function DocumentacionPage() {
 
                 <div className="bg-white/95 rounded-2xl p-4 md:p-7 mb-6 md:mb-8 shadow-lg">
                     <div className="flex flex-col md:flex-row gap-3 md:gap-4 mb-4 md:mb-5">
-                        <input type="text" placeholder="Buscar documentos..." className="flex-grow p-3 md:p-4 border-2 border-gray-200 rounded-xl outline-none focus:border-[#4A7BA7] text-sm md:text-base" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
+                        <input type="text" placeholder="Buscar documentos..." className="flex-grow p-3 md:p-4 border-2 border-gray-200 rounded-xl outline-none focus:border-[#004272] text-sm md:text-base" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
                         <button
                             onClick={() => setShowFormatsModal(true)}
-                            className="flex items-center justify-center gap-2 px-4 md:px-6 py-3 md:py-4 bg-gradient-to-r from-[#7AADCF] to-[#4A7BA7] text-white rounded-xl font-semibold hover:shadow-lg transition-all hover:-translate-y-0.5 whitespace-nowrap"
+                            className="flex items-center justify-center gap-2 px-4 md:px-6 py-3 md:py-4 bg-[#004272] text-white rounded-xl font-semibold hover:shadow-lg transition-all hover:-translate-y-0.5 whitespace-nowrap"
                         >
                             Formatos
                             <FileStack size={18} className="md:w-5 md:h-5" />
@@ -367,7 +399,7 @@ export default function DocumentacionPage() {
                     </div>
                     <div className="flex gap-2 flex-wrap">
                         {['all', 'acta', 'cronograma', 'prototipo', 'manual', 'lecciones', 'requerimientos', 'backlog'].map(type => (
-                            <button key={type} onClick={() => setActiveType(type)} className={`py-1.5 md:py-2 px-3 md:px-4 rounded-full text-xs md:text-sm font-medium border-2 transition-colors ${activeType === type ? 'bg-[#4A7BA7] text-white border-[#4A7BA7]' : 'bg-white border-gray-200 hover:bg-gray-100'}`}>
+                            <button key={type} onClick={() => setActiveType(type)} className={`py-1.5 md:py-2 px-3 md:px-4 rounded-full text-xs md:text-sm font-medium border-2 transition-colors ${activeType === type ? 'bg-[#004272] text-white border-[#004272]' : 'bg-white border-gray-200 hover:bg-gray-100'}`}>
                                 {type.charAt(0).toUpperCase() + type.slice(1)}
                             </button>
                         ))}
@@ -406,11 +438,11 @@ export default function DocumentacionPage() {
                                 <>
                                     {view === 'grid' ? (
                                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-5">
-                                            {docs.map(doc => <DocCard key={doc.id} doc={doc} onPreview={openPreviewModal} onEdit={openUploadModal} onDownloadWord={handleDownloadWord} onDownloadExcel={handleDownloadExcel} />)}
+                                            {docs.map(doc => <DocCard key={doc.id} doc={doc} onPreview={openPreviewModal} onEdit={openUploadModal} onDownloadWord={handleDownloadWord} onDownloadExcel={handleDownloadExcel} canEdit={canEditCategory(activeCategory)} />)}
                                         </div>
                                     ) : (
                                         <div className="space-y-2 md:space-y-3">
-                                            {docs.map(doc => <DocListItem key={doc.id} doc={doc} onPreview={openPreviewModal} onEdit={openUploadModal} onDownloadWord={handleDownloadWord} onDownloadExcel={handleDownloadExcel} />)}
+                                            {docs.map(doc => <DocListItem key={doc.id} doc={doc} onPreview={openPreviewModal} onEdit={openUploadModal} onDownloadWord={handleDownloadWord} onDownloadExcel={handleDownloadExcel} canEdit={canEditCategory(activeCategory)} />)}
                                         </div>
                                     )}
                                 </>
@@ -432,7 +464,7 @@ export default function DocumentacionPage() {
     );
 }
 
-const DocCard = ({ doc, onPreview, onEdit, onDownloadWord, onDownloadExcel }) => {
+const DocCard = ({ doc, onPreview, onEdit, onDownloadWord, onDownloadExcel, canEdit }) => {
     const needsExcel = ['lecciones', 'backlog', 'cronograma'].includes(doc.type);
     const needsWord = ['acta', 'manual', 'requerimientos'].includes(doc.type);
 
@@ -446,11 +478,13 @@ const DocCard = ({ doc, onPreview, onEdit, onDownloadWord, onDownloadExcel }) =>
                         </div>
                         <h4 className="font-semibold text-sm md:text-base text-gray-800 leading-tight mt-0.5">{doc.title}</h4>
                      </div>
-                     <div className="flex gap-1 flex-shrink-0">
-                        <button onClick={(e) => { e.stopPropagation(); onEdit(doc); }} className="text-gray-400 hover:text-blue-600 p-1" title="Actualizar documento">
-                            <Edit size={14} className="md:w-4 md:h-4" />
-                        </button>
-                     </div>
+                     {canEdit && (
+                         <div className="flex gap-1 flex-shrink-0">
+                            <button onClick={(e) => { e.stopPropagation(); onEdit(doc); }} className="text-gray-400 hover:text-blue-600 p-1" title="Actualizar documento">
+                                <Edit size={14} className="md:w-4 md:h-4" />
+                            </button>
+                         </div>
+                     )}
                 </div>
                 <p className="text-xs md:text-sm text-gray-600 mb-4 line-clamp-2 md:line-clamp-3 min-h-[2.5rem] md:min-h-[3rem]">{doc.description}</p>
             </div>
@@ -489,7 +523,7 @@ const DocCard = ({ doc, onPreview, onEdit, onDownloadWord, onDownloadExcel }) =>
     );
 };
 
-const DocListItem = ({ doc, onPreview, onEdit, onDownloadWord, onDownloadExcel }) => {
+const DocListItem = ({ doc, onPreview, onEdit, onDownloadWord, onDownloadExcel, canEdit }) => {
     const needsExcel = ['lecciones', 'backlog', 'cronograma'].includes(doc.type);
     const needsWord = ['acta', 'manual', 'requerimientos'].includes(doc.type);
 
@@ -513,9 +547,11 @@ const DocListItem = ({ doc, onPreview, onEdit, onDownloadWord, onDownloadExcel }
                     </button>
                 ) : null}
                 <button onClick={() => onPreview(doc)} className="text-xs bg-blue-100 text-blue-700 font-semibold py-1 px-2 md:px-3 rounded-full hover:bg-blue-200 flex items-center gap-1 whitespace-nowrap"><Eye size={12}/> Ver</button>
-                <button onClick={() => onEdit(doc)} className="text-xs bg-yellow-100 text-yellow-700 font-semibold py-1 px-2 md:px-3 rounded-full hover:bg-yellow-200 flex items-center gap-1 whitespace-nowrap">
-                    <Edit size={12} /> <span className="hidden sm:inline">Actualizar</span>
-                </button>
+                {canEdit && (
+                    <button onClick={() => onEdit(doc)} className="text-xs bg-yellow-100 text-yellow-700 font-semibold py-1 px-2 md:px-3 rounded-full hover:bg-yellow-200 flex items-center gap-1 whitespace-nowrap">
+                        <Edit size={12} /> <span className="hidden sm:inline">Actualizar</span>
+                    </button>
+                )}
             </div>
         </div>
     );
@@ -758,7 +794,7 @@ const UploadDocModal = ({ onClose, onUploadSuccess, docToEdit, activeCategory, a
                     {error && <p className="text-red-600 bg-red-100 p-3 rounded-md">{error}</p>}
                     <div>
                         <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">Título del Documento</label>
-                        <input type="text" id="title" value={title} onChange={(e) => setTitle(e.target.value)} required className="w-full p-3 border-2 border-gray-200 rounded-lg outline-none focus:border-[#4A7BA7]" />
+                        <input type="text" id="title" value={title} onChange={(e) => setTitle(e.target.value)} required className="w-full p-3 border-2 border-gray-200 rounded-lg outline-none focus:border-[#004272]" />
                     </div>
                     <div className="grid grid-cols-2 gap-6">
                         <div>
@@ -769,14 +805,14 @@ const UploadDocModal = ({ onClose, onUploadSuccess, docToEdit, activeCategory, a
                         </div>
                         <div>
                             <label htmlFor="type" className="block text-sm font-medium text-gray-700 mb-1">Tipo</label>
-                            <select id="type" value={type} onChange={(e) => setType(e.target.value)} className={`w-full p-3 border-2 border-gray-200 rounded-lg ${isEditMode ? 'bg-gray-100 cursor-not-allowed' : 'outline-none focus:border-[#4A7BA7]'}`} disabled={isEditMode}>
+                            <select id="type" value={type} onChange={(e) => setType(e.target.value)} className={`w-full p-3 border-2 border-gray-200 rounded-lg ${isEditMode ? 'bg-gray-100 cursor-not-allowed' : 'outline-none focus:border-[#004272]'}`} disabled={isEditMode}>
                                 {Object.keys(docTypes).filter(k => k !== 'default').map(key => <option key={key} value={key}>{key.charAt(0).toUpperCase() + key.slice(1)}</option>)}
                             </select>
                         </div>
                     </div>
                      <div>
                         <label htmlFor="version" className="block text-sm font-medium text-gray-700 mb-1">Versión</label>
-                        <input type="text" id="version" value={version} onChange={(e) => setVersion(e.target.value)} required className="w-full p-3 border-2 border-gray-200 rounded-lg outline-none focus:border-[#4A7BA7]" placeholder="Ej: 1.0"/>
+                        <input type="text" id="version" value={version} onChange={(e) => setVersion(e.target.value)} required className="w-full p-3 border-2 border-gray-200 rounded-lg outline-none focus:border-[#004272]" placeholder="Ej: 1.0"/>
                     </div>
 
                     {/* Prototipo: solo Figma URL */}
@@ -789,7 +825,7 @@ const UploadDocModal = ({ onClose, onUploadSuccess, docToEdit, activeCategory, a
                                 value={figmaUrl}
                                 onChange={(e) => setFigmaUrl(e.target.value)}
                                 required
-                                className="w-full p-3 border-2 border-gray-200 rounded-lg outline-none focus:border-[#4A7BA7]"
+                                className="w-full p-3 border-2 border-gray-200 rounded-lg outline-none focus:border-[#004272]"
                                 placeholder="https://figma.com/..."
                             />
                             <p className="text-xs text-gray-500 mt-1">Proporciona el enlace al prototipo en Figma.</p>
@@ -861,7 +897,7 @@ const UploadDocModal = ({ onClose, onUploadSuccess, docToEdit, activeCategory, a
                     )}
                     <div className="flex justify-end gap-4 pt-4">
                         <button type="button" onClick={onClose} className="py-2 px-6 bg-gray-200 text-gray-800 rounded-lg font-semibold hover:bg-gray-300">Cancelar</button>
-                        <button type="submit" disabled={isUploading} className="py-2 px-6 bg-gradient-to-r from-[#7AADCF] to-[#4A7BA7] text-white rounded-lg font-semibold hover:-translate-y-0.5 transition-transform flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                        <button type="submit" disabled={isUploading} className="py-2 px-6 bg-[#004272] text-white rounded-lg font-semibold hover:-translate-y-0.5 transition-transform flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
                             {isUploading ? <><Loader2 className="animate-spin" /> Procesando...</> : (isEditMode ? 'Actualizar Documento' : 'Subir Documento')}
                         </button>
                     </div>
@@ -893,7 +929,7 @@ const FormatsModal = ({ onClose, onPreview }) => {
     return (
         <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-3 md:p-4" onClick={onClose}>
             <div className="bg-white rounded-2xl shadow-2xl w-full max-w-5xl max-h-[90vh] flex flex-col" onClick={e => e.stopPropagation()}>
-                <header className="flex justify-between items-center p-4 md:p-6 border-b bg-gradient-to-r from-[#7AADCF] to-[#4A7BA7] rounded-t-2xl">
+                <header className="flex justify-between items-center p-4 md:p-6 border-b bg-[#004272] rounded-t-2xl">
                     <div className="flex items-center gap-2 md:gap-3">
                         <FileStack className="text-white" size={24} />
                         <h3 className="text-lg md:text-2xl font-bold text-white">Formatos y Plantillas</h3>
@@ -906,7 +942,7 @@ const FormatsModal = ({ onClose, onPreview }) => {
                         {formatTemplates.map(template => (
                             <div
                                 key={template.id}
-                                className="bg-white rounded-xl p-4 md:p-5 shadow-md hover:shadow-xl transition-all border-2 border-transparent hover:border-[#4A7BA7]"
+                                className="bg-white rounded-xl p-4 md:p-5 shadow-md hover:shadow-xl transition-all border-2 border-transparent hover:border-[#004272]"
                             >
                                 <div className="flex items-start justify-between mb-3">
                                     <div className={`w-12 h-12 md:w-14 md:h-14 rounded-lg flex items-center justify-center text-white text-xl md:text-2xl ${template.color}`}>
@@ -1048,7 +1084,7 @@ const TemplatePreviewModal = ({ template, onClose }) => {
 
                                 <button
                                     onClick={handleDownload}
-                                    className="w-full px-6 py-4 bg-gradient-to-r from-[#7AADCF] to-[#4A7BA7] text-white rounded-xl font-bold text-lg hover:shadow-lg transition-all hover:-translate-y-0.5 flex items-center justify-center gap-3"
+                                    className="w-full px-6 py-4 bg-[#004272] text-white rounded-xl font-bold text-lg hover:shadow-lg transition-all hover:-translate-y-0.5 flex items-center justify-center gap-3"
                                 >
                                     <Download size={24} />
                                     Descargar Plantilla

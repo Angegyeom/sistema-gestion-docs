@@ -43,25 +43,46 @@ export default function LoginPage() {
       if (!userDocSnap.exists()) {
         // El documento del usuario no existe, así que lo creamos.
         console.warn(`User document for ${user.uid} not found. Creating it.`);
-        
+
         await setDoc(userDocRef, {
           uid: user.uid,
           email: user.email,
-          role: email === 'admin@inei.gob.pe' ? 'admin' : 'consulta', // Default role
+          role: email === 'admin@inei.gob.pe' ? 'ADMIN' : 'CONSULTA', // Default role
+          active: true,
           createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
         }, { merge: true });
 
          toast({
             title: "Perfil creado",
             description: "Hemos creado tu perfil de usuario automáticamente."
         });
+      } else {
+        // Verificar si el usuario está activo
+        const userData = userDocSnap.data();
+
+        // Actualizar el rol a ADMIN si es admin@inei.gob.pe y no tiene el rol correcto
+        if (email === 'admin@inei.gob.pe' && userData.role !== 'ADMIN') {
+          console.log('Actualizando rol del administrador...');
+          await setDoc(userDocRef, {
+            role: 'ADMIN',
+            active: true,
+            updatedAt: serverTimestamp(),
+          }, { merge: true });
+        }
+
+        if (userData.active === false) {
+          showError("❌ Tu cuenta ha sido desactivada. Contacta al administrador.");
+          setIsLoading(false);
+          return;
+        }
       }
 
       toast({
         title: "Inicio de sesión exitoso",
         description: `¡Bienvenido! Redirigiendo al panel de control...`,
       });
-      
+
       router.push("/aplicativos");
 
     } catch (error: any) {
@@ -97,7 +118,7 @@ export default function LoginPage() {
 
   return (
     <div
-      className={`bg-gradient-to-br from-[#7AADCF] to-[#4A7BA7] min-h-screen flex items-center justify-center font-sans ${
+      className={`bg-[#004272] min-h-screen flex items-center justify-center font-sans ${
         isLoading ? "opacity-70 pointer-events-none" : ""
       }`}
     >
@@ -125,7 +146,7 @@ export default function LoginPage() {
           <input
             type="email"
             id="email"
-            className="w-full p-4 border-2 border-gray-200 rounded-xl text-base outline-none transition-colors focus:border-[#4A7BA7]"
+            className="w-full p-4 border-2 border-gray-200 rounded-xl text-base outline-none transition-colors focus:border-[#004272]"
             placeholder="Ingrese su correo"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -144,7 +165,7 @@ export default function LoginPage() {
           <input
             type="password"
             id="password"
-            className="w-full p-4 border-2 border-gray-200 rounded-xl text-base outline-none transition-colors focus:border-[#4A7BA7]"
+            className="w-full p-4 border-2 border-gray-200 rounded-xl text-base outline-none transition-colors focus:border-[#004272]"
             placeholder="Ingrese su contraseña"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
@@ -153,7 +174,7 @@ export default function LoginPage() {
         </div>
 
         <button
-          className={`w-full bg-gradient-to-r from-[#7AADCF] to-[#4A7BA7] text-white p-4 rounded-xl text-lg font-semibold cursor-pointer transition-all duration-300 mb-5 hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0 ${
+          className={`w-full bg-[#004272] text-white p-4 rounded-xl text-lg font-semibold cursor-pointer transition-all duration-300 mb-5 hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0 ${
             isLoading ? "bg-gray-300" : ""
           }`}
           onClick={handleLogin}

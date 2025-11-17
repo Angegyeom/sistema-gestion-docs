@@ -50,7 +50,7 @@ export default function PresentacionesPage() {
                   <span>🔗</span>
                   Abrir en Google Slides
                 </a>
-                <a href={presentation.presentUrl} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 bg-gradient-to-r from-[#7AADCF] to-[#4A7BA7] text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
+                <a href={presentation.presentUrl} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 bg-[#004272] text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
                   <span>📱</span>
                   Modo Presentación
                 </a>

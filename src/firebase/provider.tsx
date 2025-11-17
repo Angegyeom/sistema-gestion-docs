@@ -47,6 +47,8 @@ export interface UserHookResult { // Renamed from UserAuthHookResult for consist
   user: User | null;
   isUserLoading: boolean;
   userError: Error | null;
+  userData: any; // Datos del documento del usuario desde Firestore
+  isUserDataLoading: boolean; // Estado de carga del documento de Firestore
 }
 
 // React Context
@@ -167,10 +169,44 @@ export function useMemoFirebase<T>(factory: () => T, deps: DependencyList): T | 
 
 /**
  * Hook specifically for accessing the authenticated user's state.
- * This provides the User object, loading status, and any auth errors.
- * @returns {UserHookResult} Object with user, isUserLoading, userError.
+ * This provides the User object, loading status, any auth errors, and user data from Firestore.
+ * @returns {UserHookResult} Object with user, isUserLoading, userError, userData.
  */
 export const useUser = (): UserHookResult => { // Renamed from useAuthUser
-  const { user, isUserLoading, userError } = useFirebase(); // Leverages the main hook
-  return { user, isUserLoading, userError };
+  const { user, isUserLoading, userError, firestore } = useFirebase(); // Leverages the main hook
+  const [userData, setUserData] = useState<any>(null);
+  const [isUserDataLoading, setIsUserDataLoading] = useState(true);
+
+  useEffect(() => {
+    if (!user || !firestore) {
+      setUserData(null);
+      setIsUserDataLoading(false);
+      return;
+    }
+
+    setIsUserDataLoading(true);
+
+    // Import necesario para Firestore
+    import('firebase/firestore').then(({ doc, onSnapshot }) => {
+      const userDocRef = doc(firestore, 'users', user.uid);
+      const unsubscribe = onSnapshot(userDocRef, (docSnap) => {
+        if (docSnap.exists()) {
+          const data = { id: docSnap.id, ...docSnap.data() };
+          setUserData(data);
+          setIsUserDataLoading(false);
+        } else {
+          setUserData(null);
+          setIsUserDataLoading(false);
+        }
+      }, (error) => {
+        console.error('Error fetching user data:', error);
+        setUserData(null);
+        setIsUserDataLoading(false);
+      });
+
+      return () => unsubscribe();
+    });
+  }, [user, firestore]);
+
+  return { user, isUserLoading, userError, userData, isUserDataLoading };
 };
