@@ -562,6 +562,7 @@ const UserModal = ({ user, roles, onClose, firestore, auth, userData }) => {
     const isEditMode = Boolean(user);
     const [email, setEmail] = useState(user?.email || '');
     const [password, setPassword] = useState('');
+    const [showPasswordField, setShowPasswordField] = useState(false);
     const [selectedRoles, setSelectedRoles] = useState<string[]>(
         user?.roles && Array.isArray(user.roles) ? user.roles : (user?.role ? [user.role] : [])
     );
@@ -650,13 +651,40 @@ const UserModal = ({ user, roles, onClose, firestore, auth, userData }) => {
                     updatedAt: serverTimestamp()
                 });
 
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Usuario actualizado',
-                    html: `<strong>Roles asignados:</strong><br>${selectedRoles.join(', ')}`,
-                    timer: 3000,
-                    showConfirmButton: false
-                });
+                // Si se ingresó una nueva contraseña, actualizarla
+                if (password && password.trim() !== '') {
+                    const passwordResponse = await fetch('/api/auth/update-password', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            uid: user.id,
+                            password: password
+                        })
+                    });
+
+                    const passwordResult = await passwordResponse.json();
+
+                    if (!passwordResponse.ok) {
+                        throw new Error(passwordResult.error || 'Error al actualizar contraseña');
+                    }
+
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Usuario actualizado',
+                        html: `<strong>Roles asignados:</strong><br>${selectedRoles.join(', ')}<br><br><strong>Nueva contraseña:</strong> ${password}<br><br><small>Guarde esta información, la contraseña no se mostrará nuevamente.</small>`,
+                        confirmButtonColor: '#004272'
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Usuario actualizado',
+                        html: `<strong>Roles asignados:</strong><br>${selectedRoles.join(', ')}`,
+                        timer: 3000,
+                        showConfirmButton: false
+                    });
+                }
             } else {
                 // Crear nuevo usuario
                 const response = await fetch('/api/auth/create-user', {
@@ -726,7 +754,7 @@ const UserModal = ({ user, roles, onClose, firestore, auth, userData }) => {
                         />
                     </div>
 
-                    {!isEditMode && (
+                    {!isEditMode ? (
                         <div>
                             <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
                                 Contraseña <span className="text-red-500">*</span>
@@ -749,6 +777,56 @@ const UserModal = ({ user, roles, onClose, firestore, auth, userData }) => {
                                     Generar
                                 </button>
                             </div>
+                        </div>
+                    ) : (
+                        <div>
+                            {!showPasswordField ? (
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPasswordField(true)}
+                                    className="w-full px-4 py-3 bg-amber-50 border-2 border-amber-200 text-amber-700 rounded-lg font-semibold hover:bg-amber-100 transition-colors"
+                                >
+                                    Cambiar Contraseña
+                                </button>
+                            ) : (
+                                <div className="space-y-2">
+                                    <div className="flex justify-between items-center">
+                                        <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                                            Nueva Contraseña
+                                        </label>
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setShowPasswordField(false);
+                                                setPassword('');
+                                            }}
+                                            className="text-xs text-gray-500 hover:text-gray-700 underline"
+                                        >
+                                            Cancelar cambio
+                                        </button>
+                                    </div>
+                                    <div className="flex gap-2">
+                                        <input
+                                            type="text"
+                                            id="password"
+                                            value={password}
+                                            onChange={(e) => setPassword(e.target.value)}
+                                            className="flex-1 p-3 border-2 border-gray-200 rounded-lg outline-none focus:border-[#4A7BA7]"
+                                            placeholder="Nueva contraseña"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={generatePassword}
+                                            className="px-4 py-2 bg-blue-500 text-white rounded-lg font-semibold hover:bg-blue-600 transition-colors whitespace-nowrap"
+                                        >
+                                            Generar
+                                        </button>
+                                    </div>
+                                    <p className="text-xs text-gray-500">
+                                        Deja este campo vacío si no deseas cambiar la contraseña
+                                    </p>
+                                </div>
+                            )}
                         </div>
                     )}
 
