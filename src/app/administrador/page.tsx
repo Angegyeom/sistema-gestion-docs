@@ -68,7 +68,7 @@ export default function AdministradorPage() {
                             createdAt: serverTimestamp(),
                             updatedAt: serverTimestamp()
                         });
-                        console.log(`✅ Rol creado: ${role.name}`);
+                        console.log(`✅ Role creado: ${role.name}`);
                     }
                 }
             } catch (error) {
