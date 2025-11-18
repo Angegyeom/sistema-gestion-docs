@@ -8,12 +8,15 @@ import { useAuth, useFirestore } from "@/firebase";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
+import PasswordResetModal from "@/components/PasswordResetModal";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("admin@inei.gob.pe");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [showPasswordResetModal, setShowPasswordResetModal] = useState(false);
+  const [currentUser, setCurrentUser] = useState<any>(null);
   const router = useRouter();
   const auth = useAuth();
   const firestore = useFirestore();

@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import AppHeader from "@/components/layout/app-header";
 import { useFirestore, useCollection, useMemoFirebase, useUser, errorEmitter, FirestorePermissionError } from "@/firebase";
-import { collection, addDoc, serverTimestamp, doc, updateDoc, writeBatch, deleteDoc } from "firebase/firestore";
+import { collection, addDoc, serverTimestamp, doc, updateDoc, writeBatch, deleteDoc, getDocs } from "firebase/firestore";
 import { Loader2, Upload, Edit, Eye, Download, Plus, FileText, FileSpreadsheet, FileStack, CheckCircle2, AlertCircle, XCircle, Trash2 } from 'lucide-react';
 import Swal from 'sweetalert2';
 import { usePermissions } from '@/hooks/use-permissions';
@@ -635,7 +635,22 @@ export default function DocumentacionPage() {
                 }
             }
 
-            // 3. Eliminar el módulo de Firestore
+            // 3. Eliminar el rol correspondiente de Firestore
+            try {
+                const rolesSnapshot = await getDocs(collection(firestore, 'roles'));
+                const roleToDelete = rolesSnapshot.docs.find(
+                    doc => doc.data().name?.toUpperCase() === folderId.toUpperCase()
+                );
+
+                if (roleToDelete) {
+                    await deleteDoc(doc(firestore, 'roles', roleToDelete.id));
+                    console.log(`Deleted role: ${roleToDelete.data().name}`);
+                }
+            } catch (roleErr) {
+                console.error('Error deleting role:', roleErr);
+            }
+
+            // 4. Eliminar el módulo de Firestore
             await deleteDoc(doc(firestore, 'custom-modules', firestoreId));
 
             // Si el módulo eliminado era el activo, cambiar a segmentacion
@@ -1640,8 +1655,40 @@ const ModuleModal = ({ onClose, firestore }) => {
             // Create module in Firestore
             await addDoc(collection(firestore, 'custom-modules'), moduleData);
 
-            // Note: Folder in GCS will be created automatically when first file is uploaded
-            // No need to create empty folder with .gitkeep file
+            // Create corresponding role in Firestore
+            try {
+                const roleName = folderId.toUpperCase();
+                const roleDescription = `Acceso al módulo de ${moduleName}`;
+
+                await addDoc(collection(firestore, 'roles'), {
+                    name: roleName,
+                    description: roleDescription,
+                    isCustom: true,
+                    createdAt: serverTimestamp(),
+                    updatedAt: serverTimestamp()
+                });
+                console.log(`Created role: ${roleName}`);
+            } catch (roleErr) {
+                console.error('Error creating role:', roleErr);
+                // Don't fail the entire operation if role creation fails
+            }
+
+            // Create folder in GCS immediately
+            try {
+                await fetch('/api/storage/create-folder', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        folderName: folderId
+                    })
+                });
+                console.log(`Created folder in GCS: ${folderId}/`);
+            } catch (folderErr) {
+                console.error('Error creating folder in GCS:', folderErr);
+                // Don't fail the entire operation if folder creation fails
+            }
 
             Swal.fire({
                 icon: 'success',

@@ -147,6 +147,33 @@ export async function deleteFile(filePath: string): Promise<void> {
 }
 
 /**
+ * Create a folder in Google Cloud Storage
+ * @param folderName - Name of the folder to create
+ */
+export async function createFolder(folderName: string): Promise<void> {
+  try {
+    // Create a .placeholder file to represent the folder
+    const filePath = `${folderName}/.placeholder`;
+    const fileBlob = bucket.file(filePath);
+
+    // Upload a small placeholder file
+    await fileBlob.save('This folder was created automatically', {
+      metadata: {
+        contentType: 'text/plain',
+        metadata: {
+          createdAt: new Date().toISOString(),
+          purpose: 'folder-placeholder',
+        },
+      },
+      public: false,
+    });
+  } catch (error) {
+    console.error('Error creating folder in GCS:', error);
+    throw new Error(`Failed to create folder: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
+}
+
+/**
  * Delete an entire folder from Google Cloud Storage (all files with the given prefix)
  * @param folderName - Name of the folder to delete
  */
