@@ -223,6 +223,20 @@ export default function AdministradorPage() {
 
 // Componente de sección de usuarios
 const UsersSection = ({ users, isLoading, onEditUser, firestore }) => {
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10;
+
+    // Calcular índices de paginación
+    const totalPages = Math.ceil(users.length / itemsPerPage);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const currentUsers = users.slice(startIndex, endIndex);
+
+    // Reset a la primera página cuando cambian los usuarios
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [users.length]);
+
     const handleToggleActive = async (user) => {
         // Prevenir desactivar al administrador principal
         if (user.email === 'admin@inei.gob.pe' && user.role?.toUpperCase() === 'ADMIN') {
@@ -344,18 +358,19 @@ const UsersSection = ({ users, isLoading, onEditUser, firestore }) => {
                     Cargando usuarios...
                 </div>
             ) : users.length > 0 ? (
-                <div className="overflow-x-auto">
-                    <table className="w-full">
-                        <thead className="bg-gray-50 border-b-2 border-gray-200">
-                            <tr>
-                                <th className="text-left p-3 text-sm md:text-base font-semibold text-gray-700">Email</th>
-                                <th className="text-left p-3 text-sm md:text-base font-semibold text-gray-700">Rol</th>
-                                <th className="text-left p-3 text-sm md:text-base font-semibold text-gray-700">Estado</th>
-                                <th className="text-right p-3 text-sm md:text-base font-semibold text-gray-700">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {users.map(user => (
+                <>
+                    <div className="overflow-x-auto">
+                        <table className="w-full">
+                            <thead className="bg-gray-50 border-b-2 border-gray-200">
+                                <tr>
+                                    <th className="text-left p-3 text-sm md:text-base font-semibold text-gray-700">Email</th>
+                                    <th className="text-left p-3 text-sm md:text-base font-semibold text-gray-700">Rol</th>
+                                    <th className="text-left p-3 text-sm md:text-base font-semibold text-gray-700">Estado</th>
+                                    <th className="text-right p-3 text-sm md:text-base font-semibold text-gray-700">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {currentUsers.map(user => (
                                 <tr key={user.id} className="border-b hover:bg-gray-50">
                                     <td className="p-3 text-sm md:text-base">{user.email}</td>
                                     <td className="p-3">
@@ -440,6 +455,47 @@ const UsersSection = ({ users, isLoading, onEditUser, firestore }) => {
                         </tbody>
                     </table>
                 </div>
+
+                {/* Controles de paginación */}
+                {totalPages > 1 && (
+                    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-6 pt-4 border-t border-gray-200">
+                        <div className="text-sm text-gray-600">
+                            Mostrando {startIndex + 1} - {Math.min(endIndex, users.length)} de {users.length} usuarios
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <button
+                                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                                disabled={currentPage === 1}
+                                className="px-4 py-2 rounded-lg border-2 border-gray-300 text-gray-700 font-medium hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                            >
+                                Anterior
+                            </button>
+                            <div className="flex items-center gap-1">
+                                {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                                    <button
+                                        key={page}
+                                        onClick={() => setCurrentPage(page)}
+                                        className={`w-10 h-10 rounded-lg font-medium transition-colors ${
+                                            currentPage === page
+                                                ? 'bg-[#004272] text-white'
+                                                : 'bg-white border-2 border-gray-300 text-gray-700 hover:bg-gray-50'
+                                        }`}
+                                    >
+                                        {page}
+                                    </button>
+                                ))}
+                            </div>
+                            <button
+                                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                                disabled={currentPage === totalPages}
+                                className="px-4 py-2 rounded-lg border-2 border-gray-300 text-gray-700 font-medium hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                            >
+                                Siguiente
+                            </button>
+                        </div>
+                    </div>
+                )}
+                </>
             ) : (
                 <div className="text-center p-10 text-gray-500">
                     <p>No hay usuarios registrados.</p>

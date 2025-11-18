@@ -816,9 +816,21 @@ export default function DocumentacionPage() {
                             <h2 className="text-base md:text-xl font-semibold text-gray-800 truncate pr-2">
                                 {allCategories.find(c => c.id === activeCategory)?.name}
                             </h2>
-                            <div className="bg-gray-100 p-1 rounded-lg flex gap-1 flex-shrink-0">
-                                <button onClick={() => setView('grid')} className={`p-1.5 md:p-2 rounded-md text-sm md:text-base ${view === 'grid' ? 'bg-white shadow' : ''}`}>⊞</button>
-                                <button onClick={() => setView('list')} className={`p-1.5 md:p-2 rounded-md text-sm md:text-base ${view === 'list' ? 'bg-white shadow' : ''}`}>☰</button>
+                            <div className="flex items-center gap-2 md:gap-3">
+                                {canEditCategory(activeCategory) && (
+                                    <button
+                                        onClick={() => setUploadModalConfig({ isOpen: true, docToEdit: null })}
+                                        className="flex items-center gap-1.5 px-3 py-2 md:px-4 md:py-2.5 bg-[#004272] text-white rounded-lg font-semibold hover:shadow-lg transition-all text-xs md:text-sm"
+                                    >
+                                        <Upload size={16} />
+                                        <span className="hidden sm:inline">Subir Documento</span>
+                                        <span className="sm:hidden">Subir</span>
+                                    </button>
+                                )}
+                                <div className="bg-gray-100 p-1 rounded-lg flex gap-1 flex-shrink-0">
+                                    <button onClick={() => setView('grid')} className={`p-1.5 md:p-2 rounded-md text-sm md:text-base ${view === 'grid' ? 'bg-white shadow' : ''}`}>⊞</button>
+                                    <button onClick={() => setView('list')} className={`p-1.5 md:p-2 rounded-md text-sm md:text-base ${view === 'list' ? 'bg-white shadow' : ''}`}>☰</button>
+                                </div>
                             </div>
                         </header>
 
@@ -892,8 +904,8 @@ const DocCard = ({ doc, onPreview, onEdit, onDownloadWord, onDownloadExcel, canE
                                 <Edit size={16} />
                             </button>
                         )}
-                        {/* Botón eliminar (solo para módulos personalizados y admin) */}
-                        {isCustomModule && isAdmin && (
+                        {/* Botón eliminar (para módulos personalizados: admin o usuario con rol correspondiente) */}
+                        {isCustomModule && (isAdmin || canEdit) && (
                             <button onClick={(e) => { e.stopPropagation(); onDelete(doc); }} className="text-gray-400 hover:text-red-600 p-1" title="Eliminar documento">
                                 <Trash2 size={16} />
                             </button>
