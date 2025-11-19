@@ -31,6 +31,10 @@ const initialDocs = {
         { id: 'seg-7', title: 'Requerimientos Funcionales', description: 'Requerimientos funcionales de Segmentación', type: 'requerimientos', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'segmentacion' },
         { id: 'seg-8', title: 'Product Backlog', description: 'Product Backlog de Segmentación', type: 'backlog', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'segmentacion' },
         { id: 'seg-9', title: 'Acta de Conformidad', description: 'Acta de conformidad de Segmentación', type: 'acta', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'segmentacion' },
+        { id: 'seg-10', title: 'Arquitectura de Software', description: 'Arquitectura de software del sistema de Segmentación', type: 'arquitectura', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'segmentacion' },
+        { id: 'seg-11', title: 'Diagrama de Flujo', description: 'Diagrama de flujo del sistema de Segmentación', type: 'diagrama', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'segmentacion' },
+        { id: 'seg-12', title: 'Diagrama de Proceso', description: 'Diagrama de proceso del sistema de Segmentación', type: 'diagrama', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'segmentacion' },
+        { id: 'seg-13', title: 'Repositorios', description: 'Repositorios de código del sistema de Segmentación', type: 'repositorios', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'segmentacion' },
     ],
     reclutamiento: [
         { id: 'rec-1', title: 'Acta de Constitución', description: 'Acta de constitución del proyecto de Reclutamiento', type: 'acta', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'reclutamiento' },
@@ -42,6 +46,10 @@ const initialDocs = {
         { id: 'rec-7', title: 'Requerimientos Funcionales', description: 'Requerimientos funcionales de Reclutamiento', type: 'requerimientos', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'reclutamiento' },
         { id: 'rec-8', title: 'Product Backlog', description: 'Product Backlog de Reclutamiento', type: 'backlog', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'reclutamiento' },
         { id: 'rec-9', title: 'Acta de Conformidad', description: 'Acta de conformidad de Reclutamiento', type: 'acta', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'reclutamiento' },
+        { id: 'rec-10', title: 'Arquitectura de Software', description: 'Arquitectura de software del sistema de Reclutamiento', type: 'arquitectura', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'reclutamiento' },
+        { id: 'rec-11', title: 'Diagrama de Flujo', description: 'Diagrama de flujo del sistema de Reclutamiento', type: 'diagrama', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'reclutamiento' },
+        { id: 'rec-12', title: 'Diagrama de Proceso', description: 'Diagrama de proceso del sistema de Reclutamiento', type: 'diagrama', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'reclutamiento' },
+        { id: 'rec-13', title: 'Repositorios', description: 'Repositorios de código del sistema de Reclutamiento', type: 'repositorios', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'reclutamiento' },
     ],
     capacitacion: [
         { id: 'cap-1', title: 'Acta de Constitución', description: 'Acta de constitución del proyecto de Capacitación', type: 'acta', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'capacitacion' },
@@ -53,6 +61,10 @@ const initialDocs = {
         { id: 'cap-7', title: 'Requerimientos Funcionales', description: 'Requerimientos funcionales de Capacitación', type: 'requerimientos', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'capacitacion' },
         { id: 'cap-8', title: 'Product Backlog', description: 'Product Backlog de Capacitación', type: 'backlog', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'capacitacion' },
         { id: 'cap-9', title: 'Acta de Conformidad', description: 'Acta de conformidad de Capacitación', type: 'acta', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'capacitacion' },
+        { id: 'cap-10', title: 'Arquitectura de Software', description: 'Arquitectura de software del sistema de Capacitación', type: 'arquitectura', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'capacitacion' },
+        { id: 'cap-11', title: 'Diagrama de Flujo', description: 'Diagrama de flujo del sistema de Capacitación', type: 'diagrama', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'capacitacion' },
+        { id: 'cap-12', title: 'Diagrama de Proceso', description: 'Diagrama de proceso del sistema de Capacitación', type: 'diagrama', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'capacitacion' },
+        { id: 'cap-13', title: 'Repositorios', description: 'Repositorios de código del sistema de Capacitación', type: 'repositorios', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'capacitacion' },
     ],
     logistica: [
         { id: 'log-1', title: 'Acta de Constitución', description: 'Acta de constitución del proyecto para el área de logística', type: 'acta', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'logistica' },
@@ -64,6 +76,10 @@ const initialDocs = {
         { id: 'log-7', title: 'Requerimientos Funcionales', description: 'Especificación de requerimientos funcionales del sistema de logística', type: 'requerimientos', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'logistica' },
         { id: 'log-8', title: 'Product Backlog', description: 'Product Backlog del sistema de logística', type: 'backlog', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'logistica' },
         { id: 'log-9', title: 'Acta de Conformidad', description: 'Acta de conformidad del sistema de logística', type: 'acta', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'logistica' },
+        { id: 'log-10', title: 'Arquitectura de Software', description: 'Arquitectura de software del sistema de logística', type: 'arquitectura', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'logistica' },
+        { id: 'log-11', title: 'Diagrama de Flujo', description: 'Diagrama de flujo del sistema de logística', type: 'diagrama', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'logistica' },
+        { id: 'log-12', title: 'Diagrama de Proceso', description: 'Diagrama de proceso del sistema de logística', type: 'diagrama', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'logistica' },
+        { id: 'log-13', title: 'Repositorios', description: 'Repositorios de código del sistema de logística', type: 'repositorios', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'logistica' },
     ],
     'capdatos-apk': [
         { id: 'apk-1', title: 'Acta de Constitución', description: 'Acta de constitución del proyecto de Captura Datos APK', type: 'acta', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'capdatos-apk' },
@@ -75,6 +91,10 @@ const initialDocs = {
         { id: 'apk-7', title: 'Requerimientos Funcionales', description: 'Requerimientos funcionales de Captura Datos APK', type: 'requerimientos', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'capdatos-apk' },
         { id: 'apk-8', title: 'Product Backlog', description: 'Product Backlog de Captura Datos APK', type: 'backlog', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'capdatos-apk' },
         { id: 'apk-9', title: 'Acta de Conformidad', description: 'Acta de conformidad de Captura Datos APK', type: 'acta', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'capdatos-apk' },
+        { id: 'apk-10', title: 'Arquitectura de Software', description: 'Arquitectura de software del sistema de Captura Datos APK', type: 'arquitectura', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'capdatos-apk' },
+        { id: 'apk-11', title: 'Diagrama de Flujo', description: 'Diagrama de flujo del sistema de Captura Datos APK', type: 'diagrama', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'capdatos-apk' },
+        { id: 'apk-12', title: 'Diagrama de Proceso', description: 'Diagrama de proceso del sistema de Captura Datos APK', type: 'diagrama', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'capdatos-apk' },
+        { id: 'apk-13', title: 'Repositorios', description: 'Repositorios de código del sistema de Captura Datos APK', type: 'repositorios', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'capdatos-apk' },
     ],
     'censo-linea': [
         { id: 'cen-1', title: 'Acta de Constitución', description: 'Acta de constitución del proyecto de Censo en Línea', type: 'acta', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'censo-linea' },
@@ -86,6 +106,10 @@ const initialDocs = {
         { id: 'cen-7', title: 'Requerimientos Funcionales', description: 'Requerimientos funcionales de Censo en Línea', type: 'requerimientos', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'censo-linea' },
         { id: 'cen-8', title: 'Product Backlog', description: 'Product Backlog de Censo en Línea', type: 'backlog', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'censo-linea' },
         { id: 'cen-9', title: 'Acta de Conformidad', description: 'Acta de conformidad de Censo en Línea', type: 'acta', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'censo-linea' },
+        { id: 'cen-10', title: 'Arquitectura de Software', description: 'Arquitectura de software del sistema de Censo en Línea', type: 'arquitectura', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'censo-linea' },
+        { id: 'cen-11', title: 'Diagrama de Flujo', description: 'Diagrama de flujo del sistema de Censo en Línea', type: 'diagrama', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'censo-linea' },
+        { id: 'cen-12', title: 'Diagrama de Proceso', description: 'Diagrama de proceso del sistema de Censo en Línea', type: 'diagrama', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'censo-linea' },
+        { id: 'cen-13', title: 'Repositorios', description: 'Repositorios de código del sistema de Censo en Línea', type: 'repositorios', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'censo-linea' },
     ],
     consistencia: [
         { id: 'con-1', title: 'Acta de Constitución', description: 'Acta de constitución del proyecto de Consistencia', type: 'acta', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'consistencia' },
@@ -97,6 +121,10 @@ const initialDocs = {
         { id: 'con-7', title: 'Requerimientos Funcionales', description: 'Requerimientos funcionales de Consistencia', type: 'requerimientos', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'consistencia' },
         { id: 'con-8', title: 'Product Backlog', description: 'Product Backlog de Consistencia', type: 'backlog', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'consistencia' },
         { id: 'con-9', title: 'Acta de Conformidad', description: 'Acta de conformidad de Consistencia', type: 'acta', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'consistencia' },
+        { id: 'con-10', title: 'Arquitectura de Software', description: 'Arquitectura de software del sistema de Consistencia', type: 'arquitectura', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'consistencia' },
+        { id: 'con-11', title: 'Diagrama de Flujo', description: 'Diagrama de flujo del sistema de Consistencia', type: 'diagrama', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'consistencia' },
+        { id: 'con-12', title: 'Diagrama de Proceso', description: 'Diagrama de proceso del sistema de Consistencia', type: 'diagrama', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'consistencia' },
+        { id: 'con-13', title: 'Repositorios', description: 'Repositorios de código del sistema de Consistencia', type: 'repositorios', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'consistencia' },
     ],
     monitoreo: [
         { id: 'mon-1', title: 'Acta de Constitución', description: 'Acta de constitución del proyecto de Monitoreo', type: 'acta', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'monitoreo' },
@@ -108,6 +136,10 @@ const initialDocs = {
         { id: 'mon-7', title: 'Requerimientos Funcionales', description: 'Requerimientos funcionales de Monitoreo', type: 'requerimientos', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'monitoreo' },
         { id: 'mon-8', title: 'Product Backlog', description: 'Product Backlog de Monitoreo', type: 'backlog', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'monitoreo' },
         { id: 'mon-9', title: 'Acta de Conformidad', description: 'Acta de conformidad de Monitoreo', type: 'acta', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'monitoreo' },
+        { id: 'mon-10', title: 'Arquitectura de Software', description: 'Arquitectura de software del sistema de Monitoreo', type: 'arquitectura', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'monitoreo' },
+        { id: 'mon-11', title: 'Diagrama de Flujo', description: 'Diagrama de flujo del sistema de Monitoreo', type: 'diagrama', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'monitoreo' },
+        { id: 'mon-12', title: 'Diagrama de Proceso', description: 'Diagrama de proceso del sistema de Monitoreo', type: 'diagrama', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'monitoreo' },
+        { id: 'mon-13', title: 'Repositorios', description: 'Repositorios de código del sistema de Monitoreo', type: 'repositorios', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'monitoreo' },
     ],
     yanapaq: [
         { id: 'yan-1', title: 'Acta de Constitución', description: 'Acta de constitución del proyecto Yanapaq', type: 'acta', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'yanapaq' },
@@ -119,6 +151,10 @@ const initialDocs = {
         { id: 'yan-7', title: 'Requerimientos Funcionales', description: 'Requerimientos funcionales de Yanapaq', type: 'requerimientos', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'yanapaq' },
         { id: 'yan-8', title: 'Product Backlog', description: 'Product Backlog de Yanapaq', type: 'backlog', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'yanapaq' },
         { id: 'yan-9', title: 'Acta de Conformidad', description: 'Acta de conformidad de Yanapaq', type: 'acta', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'yanapaq' },
+        { id: 'yan-10', title: 'Arquitectura de Software', description: 'Arquitectura de software del sistema Yanapaq', type: 'arquitectura', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'yanapaq' },
+        { id: 'yan-11', title: 'Diagrama de Flujo', description: 'Diagrama de flujo del sistema Yanapaq', type: 'diagrama', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'yanapaq' },
+        { id: 'yan-12', title: 'Diagrama de Proceso', description: 'Diagrama de proceso del sistema Yanapaq', type: 'diagrama', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'yanapaq' },
+        { id: 'yan-13', title: 'Repositorios', description: 'Repositorios de código del sistema Yanapaq', type: 'repositorios', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'yanapaq' },
     ]
 };
 
@@ -132,6 +168,9 @@ const docTypes = {
   requerimientos: '📋',
   backlog: '📊',
   conformidad: '✅',
+  arquitectura: '🏛️',
+  diagrama: '🔀',
+  repositorios: '📁',
   default: '📄',
 };
 
@@ -144,6 +183,9 @@ const docTypeClasses = {
     requerimientos: 'border-pink-500',
     backlog: 'border-teal-500',
     conformidad: 'border-cyan-500',
+    arquitectura: 'border-indigo-500',
+    diagrama: 'border-rose-500',
+    repositorios: 'border-slate-500',
     default: 'border-gray-500',
 };
 
@@ -156,6 +198,9 @@ const docTypeIconBg = {
     requerimientos: 'bg-pink-500',
     backlog: 'bg-teal-500',
     conformidad: 'bg-cyan-500',
+    arquitectura: 'bg-indigo-500',
+    diagrama: 'bg-rose-500',
+    repositorios: 'bg-slate-500',
     default: 'bg-gray-500',
 }
 
@@ -166,12 +211,23 @@ const getDocIconBg = (type) => docTypeIconBg[type] || docTypeIconBg.default;
 // Función para determinar el estado del documento basado en archivos subidos
 const getDocumentStatus = (doc) => {
     const needsExcel = ['lecciones', 'backlog', 'cronograma'].includes(doc.type);
-    const needsWord = ['acta', 'manual', 'requerimientos'].includes(doc.type);
+    const needsWord = ['acta', 'manual', 'requerimientos', 'arquitectura', 'diagrama'].includes(doc.type);
     const isPrototipo = doc.type === 'prototipo';
+    const isRepositorios = doc.type === 'repositorios';
 
-    // Prototipos solo necesitan Figma URL
+    // Prototipos necesitan Figma URL (obligatorio), PDF es opcional
     if (isPrototipo) {
         return doc.figmaUrl ? 'complete' : 'pending';
+    }
+
+    // Repositorios necesitan dos links (frontend y backend)
+    if (isRepositorios) {
+        const hasFrontend = !!doc.frontendUrl;
+        const hasBackend = !!doc.backendUrl;
+
+        if (hasFrontend && hasBackend) return 'complete';
+        if (hasFrontend || hasBackend) return 'incomplete';
+        return 'pending';
     }
 
     // Verificar archivos según el tipo de documento
@@ -200,8 +256,9 @@ const getDocumentStatus = (doc) => {
 // Componente de badge de estado
 const StatusBadge = ({ status, type, compact = false, doc = null }) => {
     const needsExcel = ['lecciones', 'backlog', 'cronograma'].includes(type);
-    const needsWord = ['acta', 'manual', 'requerimientos'].includes(type);
+    const needsWord = ['acta', 'manual', 'requerimientos', 'arquitectura', 'diagrama'].includes(type);
     const isPrototipo = type === 'prototipo';
+    const isRepositorios = type === 'repositorios';
 
     // Función para generar el tooltip personalizado
     const getTooltipMessage = () => {
@@ -210,10 +267,23 @@ const StatusBadge = ({ status, type, compact = false, doc = null }) => {
         const hasPdf = !!doc.pdfFilePath;
         const hasWord = !!doc.wordFilePath;
         const hasExcel = !!doc.excelFilePath;
+        const hasFrontend = !!doc.frontendUrl;
+        const hasBackend = !!doc.backendUrl;
 
-        // Si es prototipo, solo verificar Figma
+        // Si es prototipo, verificar Figma URL (obligatorio)
         if (isPrototipo) {
-            return doc.figmaUrl ? 'Completado' : 'Pendiente';
+            const hasFigmaUrl = !!doc.figmaUrl;
+            if (hasFigmaUrl && hasPdf) return 'Completado (con PDF)';
+            if (hasFigmaUrl) return 'Completado';
+            return 'Pendiente (falta Figma URL)';
+        }
+
+        // Si es repositorios, verificar ambos links
+        if (isRepositorios) {
+            if (hasFrontend && hasBackend) return 'Completado';
+            if (!hasFrontend && !hasBackend) return 'Pendiente';
+            if (hasFrontend && !hasBackend) return 'Falta Backend URL';
+            if (!hasFrontend && hasBackend) return 'Falta Frontend URL';
         }
 
         // Si necesita Excel
@@ -249,6 +319,7 @@ const StatusBadge = ({ status, type, compact = false, doc = null }) => {
                 let missingFile = '';
                 if (needsExcel) missingFile = 'Excel o PDF';
                 else if (needsWord) missingFile = 'Word o PDF';
+                else if (isRepositorios) missingFile = 'Frontend o Backend URL';
 
                 return {
                     icon: <AlertCircle size={14} />,
@@ -260,6 +331,7 @@ const StatusBadge = ({ status, type, compact = false, doc = null }) => {
             default:
                 let requiredFiles = '';
                 if (isPrototipo) requiredFiles = 'Figma URL';
+                else if (isRepositorios) requiredFiles = 'Frontend y Backend URLs';
                 else if (needsExcel) requiredFiles = 'Excel y PDF';
                 else if (needsWord) requiredFiles = 'Word y PDF';
                 else requiredFiles = 'Archivos';
@@ -454,21 +526,103 @@ export default function DocumentacionPage() {
     }, [allDocs, activeCategory, activeType, searchTerm]);
     
     const openPreviewModal = async (doc) => {
-        // For Figma links, open in new tab
-        if (doc.figmaUrl || (doc.url && doc.url.includes('figma.com'))) {
-            window.open(doc.figmaUrl || doc.url, '_blank');
+        const isPrototipo = doc.type === 'prototipo';
+        const isRepositorios = doc.type === 'repositorios';
+        const hasFigmaUrl = doc.figmaUrl || (doc.url && doc.url.includes('figma.com'));
+        const hasPdf = !!doc.pdfFilePath;
+
+        // For repositories: show options to open frontend or backend
+        if (isRepositorios) {
+            const hasFrontend = !!doc.frontendUrl;
+            const hasBackend = !!doc.backendUrl;
+
+            if (!hasFrontend && !hasBackend) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Repositorios no disponibles',
+                    text: 'No se han ingresado los enlaces de los repositorios.',
+                    confirmButtonText: 'Entendido',
+                    confirmButtonColor: '#4A7BA7'
+                });
+                return;
+            }
+
+            // Show options for frontend and backend repositories
+            Swal.fire({
+                title: 'Selecciona el repositorio',
+                html: `
+                    <div class="space-y-3">
+                        ${hasFrontend ? `
+                            <button id="frontend-btn" class="w-full py-3 px-4 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-semibold">
+                                🌐 Frontend
+                            </button>
+                        ` : ''}
+                        ${hasBackend ? `
+                            <button id="backend-btn" class="w-full py-3 px-4 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors font-semibold">
+                                🔧 Backend
+                            </button>
+                        ` : ''}
+                    </div>
+                `,
+                showConfirmButton: false,
+                showCancelButton: true,
+                cancelButtonText: 'Cerrar',
+                cancelButtonColor: '#6c757d',
+                didOpen: () => {
+                    const frontendBtn = document.getElementById('frontend-btn');
+                    const backendBtn = document.getElementById('backend-btn');
+
+                    if (frontendBtn) {
+                        frontendBtn.addEventListener('click', () => {
+                            window.open(doc.frontendUrl, '_blank');
+                            Swal.close();
+                        });
+                    }
+
+                    if (backendBtn) {
+                        backendBtn.addEventListener('click', () => {
+                            window.open(doc.backendUrl, '_blank');
+                            Swal.close();
+                        });
+                    }
+                }
+            });
             return;
         }
 
-        // Check if there's a PDF to preview or if it's a prototype without a link
+        // For prototypes: if has PDF, show PDF preview; otherwise open Figma link
+        if (isPrototipo) {
+            if (hasPdf) {
+                // Show PDF preview (continues below)
+            } else if (hasFigmaUrl) {
+                // Open Figma in new tab (Figma is mandatory for prototypes)
+                window.open(doc.figmaUrl || doc.url, '_blank');
+                return;
+            } else {
+                // No Figma URL (should not happen as it's mandatory)
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Link no disponible',
+                    text: 'No se ha ingresado un enlace de Figma para este prototipo.',
+                    confirmButtonText: 'Entendido',
+                    confirmButtonColor: '#4A7BA7'
+                });
+                return;
+            }
+        } else {
+            // For non-prototype Figma links, open in new tab
+            if (hasFigmaUrl && !hasPdf) {
+                window.open(doc.figmaUrl || doc.url, '_blank');
+                return;
+            }
+        }
+
+        // Check if there's a PDF to preview
         if (!doc.pdfFilePath && (!doc.url || doc.url === '#')) {
-            const isPrototipo = doc.type === 'prototipo';
             Swal.fire({
                 icon: 'warning',
-                title: isPrototipo ? 'Link no disponible' : 'Documento no disponible',
-                text: isPrototipo
-                    ? 'No se ha ingresado un enlace de Figma para este prototipo.'
-                    : 'No hay un documento PDF disponible para previsualizar.',
+                title: 'Documento no disponible',
+                text: 'No hay un documento PDF disponible para previsualizar.',
                 confirmButtonText: 'Entendido',
                 confirmButtonColor: '#4A7BA7'
             });
@@ -765,7 +919,7 @@ export default function DocumentacionPage() {
                         </button>
                     </div>
                     <div className="flex gap-2 flex-wrap">
-                        {['all', 'acta', 'cronograma', 'prototipo', 'manual', 'lecciones', 'requerimientos', 'backlog'].map(type => (
+                        {['all', 'acta', 'cronograma', 'prototipo', 'manual', 'lecciones', 'requerimientos', 'backlog', 'diagrama'].map(type => (
                             <button key={type} onClick={() => setActiveType(type)} className={`py-1.5 md:py-2 px-3 md:px-4 rounded-full text-xs md:text-sm font-medium border-2 transition-colors ${activeType === type ? 'bg-[#004272] text-white border-[#004272]' : 'bg-white border-gray-200 hover:bg-gray-100'}`}>
                                 {type.charAt(0).toUpperCase() + type.slice(1)}
                             </button>
@@ -817,7 +971,7 @@ export default function DocumentacionPage() {
                                 {allCategories.find(c => c.id === activeCategory)?.name}
                             </h2>
                             <div className="flex items-center gap-2 md:gap-3">
-                                {canEditCategory(activeCategory) && (
+                                {canEditCategory(activeCategory) && (allCategories.find(c => c.id === activeCategory)?.isCustom || false) && (
                                     <button
                                         onClick={() => setUploadModalConfig({ isOpen: true, docToEdit: null })}
                                         className="flex items-center gap-1.5 px-3 py-2 md:px-4 md:py-2.5 bg-[#004272] text-white rounded-lg font-semibold hover:shadow-lg transition-all text-xs md:text-sm"
@@ -851,7 +1005,7 @@ export default function DocumentacionPage() {
                             ) : (
                                 <div className="text-center p-10 text-gray-500">
                                     <p className="mb-4">No hay documentos en este módulo.</p>
-                                    {canEditCategory(activeCategory) && (
+                                    {canEditCategory(activeCategory) && (allCategories.find(c => c.id === activeCategory)?.isCustom || false) && (
                                         <button
                                             onClick={() => setUploadModalConfig({ isOpen: true, docToEdit: null })}
                                             className="inline-flex items-center gap-2 px-6 py-3 bg-[#004272] text-white rounded-lg font-semibold hover:shadow-lg transition-all"
@@ -1009,6 +1163,9 @@ const DocListItem = ({ doc, onPreview, onEdit, onDownloadWord, onDownloadExcel, 
 
 
 const DocModal = ({ doc, onClose }) => {
+    const isPrototipo = doc.type === 'prototipo';
+    const hasFigmaUrl = !!(doc.figmaUrl || (doc.url && doc.url.includes('figma.com')));
+
     useEffect(() => {
         const handleEsc = (e) => {
             if (e.key === 'Escape') onClose();
@@ -1017,12 +1174,29 @@ const DocModal = ({ doc, onClose }) => {
         return () => window.removeEventListener('keydown', handleEsc);
     }, [onClose]);
 
+    const openFigma = () => {
+        if (hasFigmaUrl) {
+            window.open(doc.figmaUrl || doc.url, '_blank');
+        }
+    };
+
     return (
         <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4" onClick={onClose}>
             <div className="bg-white rounded-2xl shadow-2xl w-full max-w-6xl h-[90vh] flex flex-col" onClick={e => e.stopPropagation()}>
                 <header className="flex justify-between items-center p-5 border-b bg-gray-50 rounded-t-2xl">
                     <h3 className="text-lg font-semibold text-gray-800">{doc.title}</h3>
-                    <button onClick={onClose} className="w-9 h-9 rounded-full bg-red-500 text-white font-bold text-xl hover:bg-red-600 transition-colors">×</button>
+                    <div className="flex items-center gap-2">
+                        {isPrototipo && hasFigmaUrl && (
+                            <button
+                                onClick={openFigma}
+                                className="px-4 py-2 bg-purple-500 text-white rounded-lg font-semibold hover:bg-purple-600 transition-colors text-sm flex items-center gap-2"
+                                title="Abrir prototipo en Figma"
+                            >
+                                🎨 Abrir en Figma
+                            </button>
+                        )}
+                        <button onClick={onClose} className="w-9 h-9 rounded-full bg-red-500 text-white font-bold text-xl hover:bg-red-600 transition-colors">×</button>
+                    </div>
                 </header>
                 <div className="flex-1 p-2 md:p-8 bg-gray-100">
                     <iframe src={doc.embedUrl} className="w-full h-full border-0 rounded-lg bg-white" title={doc.title}></iframe>
@@ -1043,6 +1217,8 @@ const UploadDocModal = ({ onClose, onUploadSuccess, docToEdit, activeCategory, a
     const [wordFile, setWordFile] = useState<File | null>(null);
     const [excelFile, setExcelFile] = useState<File | null>(null);
     const [figmaUrl, setFigmaUrl] = useState('');
+    const [frontendUrl, setFrontendUrl] = useState('');
+    const [backendUrl, setBackendUrl] = useState('');
     const [isUploading, setIsUploading] = useState(false);
     const [error, setError] = useState('');
 
@@ -1053,8 +1229,9 @@ const UploadDocModal = ({ onClose, onUploadSuccess, docToEdit, activeCategory, a
 
     // Determine which file types are needed based on document type
     const needsExcel = ['lecciones', 'backlog', 'cronograma'].includes(type);
-    const needsWord = ['acta', 'manual', 'requerimientos'].includes(type);
+    const needsWord = ['acta', 'manual', 'requerimientos', 'arquitectura', 'diagrama'].includes(type);
     const isPrototipo = type === 'prototipo';
+    const isRepositorios = type === 'repositorios';
 
     useEffect(() => {
         if (isEditMode) {
@@ -1063,6 +1240,8 @@ const UploadDocModal = ({ onClose, onUploadSuccess, docToEdit, activeCategory, a
             setType(docToEdit.type);
             setVersion(docToEdit.version || '1.0');
             if (docToEdit.figmaUrl) setFigmaUrl(docToEdit.figmaUrl);
+            if (docToEdit.frontendUrl) setFrontendUrl(docToEdit.frontendUrl);
+            if (docToEdit.backendUrl) setBackendUrl(docToEdit.backendUrl);
         } else {
             setCategory(activeCategory);
         }
@@ -1101,8 +1280,24 @@ const UploadDocModal = ({ onClose, onUploadSuccess, docToEdit, activeCategory, a
 
         // Validaciones según tipo de documento
         if (isPrototipo) {
+            // Para prototipos, Figma URL es obligatorio, PDF es opcional
             if (!figmaUrl || !figmaUrl.includes('figma.com')) {
                 setError('Por favor, proporcione un enlace válido de Figma.');
+                return;
+            }
+            // PDF es opcional, no requiere validación
+        } else if (isRepositorios) {
+            // Para repositorios, ambos URLs son obligatorios
+            if (!frontendUrl || !backendUrl) {
+                setError('Debe proporcionar ambos enlaces: Frontend y Backend.');
+                return;
+            }
+            // Validar que sean URLs válidas
+            try {
+                new URL(frontendUrl);
+                new URL(backendUrl);
+            } catch {
+                setError('Los enlaces deben ser URLs válidas (incluir http:// o https://).');
                 return;
             }
         } else if (!isEditMode && !isCustomModule) {
@@ -1139,10 +1334,45 @@ const UploadDocModal = ({ onClose, onUploadSuccess, docToEdit, activeCategory, a
                 updatedAt: serverTimestamp(),
             };
 
-            // Handle Prototipo (Figma URL only)
+            // Handle Prototipo (Figma URL and/or PDF)
             if (isPrototipo) {
-                docData.figmaUrl = figmaUrl;
-                docData.url = figmaUrl; // Also store in url for compatibility
+                // Store Figma URL if provided
+                if (figmaUrl) {
+                    docData.figmaUrl = figmaUrl;
+                    docData.url = figmaUrl; // Also store in url for compatibility
+                } else if (docToEdit?.figmaUrl) {
+                    // Keep existing Figma URL if not updating
+                    docData.figmaUrl = docToEdit.figmaUrl;
+                    docData.url = docToEdit.figmaUrl;
+                }
+
+                // Upload PDF file if provided
+                if (pdfFile) {
+                    const pdfFormData = new FormData();
+                    pdfFormData.append('file', pdfFile);
+                    pdfFormData.append('category', category);
+
+                    const pdfUploadResponse = await fetch('/api/storage/upload', {
+                        method: 'POST',
+                        body: pdfFormData,
+                    });
+
+                    if (!pdfUploadResponse.ok) {
+                        const errorData = await pdfUploadResponse.json();
+                        throw new Error(errorData.error || 'PDF upload failed');
+                    }
+
+                    const pdfUploadResult = await pdfUploadResponse.json();
+                    docData.pdfFilePath = pdfUploadResult.filePath;
+                } else if (docToEdit?.pdfFilePath) {
+                    // Keep existing PDF if not uploading new one
+                    docData.pdfFilePath = docToEdit.pdfFilePath;
+                }
+            } else if (isRepositorios) {
+                // Handle Repositorios (Frontend and Backend URLs)
+                docData.frontendUrl = frontendUrl;
+                docData.backendUrl = backendUrl;
+                docData.url = frontendUrl; // Store frontend as primary URL for compatibility
             } else {
                 // Upload PDF file if provided
                 if (pdfFile) {
@@ -1277,25 +1507,88 @@ const UploadDocModal = ({ onClose, onUploadSuccess, docToEdit, activeCategory, a
                         <input type="text" id="version" value={version} onChange={(e) => setVersion(e.target.value)} required className="w-full p-3 border-2 border-gray-200 rounded-lg outline-none focus:border-[#004272]" placeholder="Ej: 1.0"/>
                     </div>
 
-                    {/* Prototipo: solo Figma URL */}
+                    {/* Prototipo: Figma URL obligatorio, PDF opcional */}
                     {isPrototipo && (
-                        <div>
-                            <label htmlFor="figmaUrl" className="block text-sm font-medium text-gray-700 mb-1">Enlace de Figma <span className="text-red-500">*</span></label>
-                            <input
-                                type="url"
-                                id="figmaUrl"
-                                value={figmaUrl}
-                                onChange={(e) => setFigmaUrl(e.target.value)}
-                                required
-                                className="w-full p-3 border-2 border-gray-200 rounded-lg outline-none focus:border-[#004272]"
-                                placeholder="https://figma.com/..."
-                            />
-                            <p className="text-xs text-gray-500 mt-1">Proporciona el enlace al prototipo en Figma.</p>
-                        </div>
+                        <>
+                            <div>
+                                <label htmlFor="figmaUrl" className="block text-sm font-medium text-gray-700 mb-1">
+                                    Enlace de Figma <span className="text-red-500">*</span>
+                                </label>
+                                <input
+                                    type="url"
+                                    id="figmaUrl"
+                                    value={figmaUrl}
+                                    onChange={(e) => setFigmaUrl(e.target.value)}
+                                    required
+                                    className="w-full p-3 border-2 border-gray-200 rounded-lg outline-none focus:border-[#004272]"
+                                    placeholder="https://figma.com/..."
+                                />
+                                <p className="text-xs text-gray-500 mt-1">Proporciona el enlace al prototipo en Figma.</p>
+                            </div>
+                            <div>
+                                <label htmlFor="pdfFile" className="block text-sm font-medium text-gray-700 mb-1">
+                                    Archivo PDF del Prototipo (Opcional)
+                                </label>
+                                <input
+                                    type="file"
+                                    id="pdfFile"
+                                    onChange={handlePdfFileChange}
+                                    accept=".pdf"
+                                    className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                                />
+                                <p className="text-xs text-gray-500 mt-1">Opcionalmente, sube un PDF del prototipo como complemento al enlace de Figma.</p>
+                            </div>
+                            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                                <p className="text-xs text-blue-700">
+                                    <strong>Nota:</strong> El enlace de Figma es obligatorio. El PDF es opcional y complementario.
+                                </p>
+                            </div>
+                        </>
+                    )}
+
+                    {/* Repositorios: Frontend y Backend URLs obligatorios */}
+                    {isRepositorios && (
+                        <>
+                            <div>
+                                <label htmlFor="frontendUrl" className="block text-sm font-medium text-gray-700 mb-1">
+                                    Repositorio Frontend <span className="text-red-500">*</span>
+                                </label>
+                                <input
+                                    type="url"
+                                    id="frontendUrl"
+                                    value={frontendUrl}
+                                    onChange={(e) => setFrontendUrl(e.target.value)}
+                                    required
+                                    className="w-full p-3 border-2 border-gray-200 rounded-lg outline-none focus:border-[#004272]"
+                                    placeholder="https://github.com/usuario/repositorio-frontend"
+                                />
+                                <p className="text-xs text-gray-500 mt-1">URL del repositorio de código del Frontend.</p>
+                            </div>
+                            <div>
+                                <label htmlFor="backendUrl" className="block text-sm font-medium text-gray-700 mb-1">
+                                    Repositorio Backend <span className="text-red-500">*</span>
+                                </label>
+                                <input
+                                    type="url"
+                                    id="backendUrl"
+                                    value={backendUrl}
+                                    onChange={(e) => setBackendUrl(e.target.value)}
+                                    required
+                                    className="w-full p-3 border-2 border-gray-200 rounded-lg outline-none focus:border-[#004272]"
+                                    placeholder="https://github.com/usuario/repositorio-backend"
+                                />
+                                <p className="text-xs text-gray-500 mt-1">URL del repositorio de código del Backend.</p>
+                            </div>
+                            <div className="bg-slate-50 border border-slate-200 rounded-lg p-3">
+                                <p className="text-xs text-slate-700">
+                                    <strong>Nota:</strong> Ambos enlaces son obligatorios. Deben ser URLs válidas de repositorios (GitHub, GitLab, etc.).
+                                </p>
+                            </div>
+                        </>
                     )}
 
                     {/* Documentos que requieren Excel + PDF */}
-                    {needsExcel && !isPrototipo && !isCustomModule && (
+                    {needsExcel && !isPrototipo && !isRepositorios && !isCustomModule && (
                         <>
                             <div>
                                 <label htmlFor="excelFile" className="block text-sm font-medium text-gray-700 mb-1">
@@ -1327,7 +1620,7 @@ const UploadDocModal = ({ onClose, onUploadSuccess, docToEdit, activeCategory, a
                     )}
 
                     {/* Documentos que requieren Word + PDF */}
-                    {needsWord && !isPrototipo && !isCustomModule && (
+                    {needsWord && !isPrototipo && !isRepositorios && !isCustomModule && (
                         <>
                             <div>
                                 <label htmlFor="wordFile" className="block text-sm font-medium text-gray-700 mb-1">

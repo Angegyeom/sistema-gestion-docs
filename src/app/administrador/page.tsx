@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import AppHeader from "@/components/layout/app-header";
 import { useFirestore, useCollection, useMemoFirebase, useAuth } from "@/firebase";
 import { collection, updateDoc, doc, serverTimestamp, addDoc, deleteDoc, deleteField } from "firebase/firestore";
-import { Loader2, Shield, Edit, UserX, UserCheck, Trash2 } from 'lucide-react';
+import { Loader2, Shield, Edit, UserX, UserCheck, Trash2, CheckCircle2, AlertCircle, XCircle, BarChart3, Search } from 'lucide-react';
 import Swal from 'sweetalert2';
 import { usePermissions } from '@/hooks/use-permissions';
 import { useRouter } from 'next/navigation';
@@ -14,18 +14,20 @@ export default function AdministradorPage() {
     const auth = useAuth();
     const router = useRouter();
     const { isAdmin, isUserLoading, isUserDataLoading, userData } = usePermissions();
-    const [activeTab, setActiveTab] = useState<'users' | 'roles'>('users');
+    const [activeTab, setActiveTab] = useState<'users' | 'roles' | 'report'>('users');
     const [showUserModal, setShowUserModal] = useState(false);
     const [showRoleModal, setShowRoleModal] = useState(false);
     const [editingUser, setEditingUser] = useState<any>(null);
     const [editingRole, setEditingRole] = useState<any>(null);
 
-    // Obtener usuarios y roles desde Firebase
+    // Obtener usuarios, roles y documentos desde Firebase
     const usersRef = useMemoFirebase(() => firestore ? collection(firestore, 'users') : null, [firestore]);
     const rolesRef = useMemoFirebase(() => firestore ? collection(firestore, 'roles') : null, [firestore]);
+    const docsRef = useMemoFirebase(() => firestore ? collection(firestore, 'documentos') : null, [firestore]);
 
     const { data: users, isLoading: isLoadingUsers } = useCollection(usersRef);
     const { data: roles, isLoading: isLoadingRoles } = useCollection(rolesRef);
+    const { data: documents, isLoading: isLoadingDocs } = useCollection(docsRef);
 
     // Seed y actualización de roles
     useEffect(() => {
@@ -142,7 +144,7 @@ export default function AdministradorPage() {
                     <div className="flex border-b border-gray-200">
                         <button
                             onClick={() => setActiveTab('users')}
-                            className={`flex-1 py-4 px-6 text-base md:text-lg font-semibold transition-colors ${
+                            className={`flex-1 py-4 px-4 md:px-6 text-sm md:text-lg font-semibold transition-colors ${
                                 activeTab === 'users'
                                     ? 'text-[#4A7BA7] border-b-4 border-[#4A7BA7]'
                                     : 'text-gray-500 hover:text-gray-700'
@@ -150,12 +152,13 @@ export default function AdministradorPage() {
                         >
                             <div className="flex items-center justify-center gap-2">
                                 <UserCheck size={20} />
-                                <span>Gestión de Usuarios</span>
+                                <span className="hidden sm:inline">Gestión de Usuarios</span>
+                                <span className="sm:hidden">Usuarios</span>
                             </div>
                         </button>
                         <button
                             onClick={() => setActiveTab('roles')}
-                            className={`flex-1 py-4 px-6 text-base md:text-lg font-semibold transition-colors ${
+                            className={`flex-1 py-4 px-4 md:px-6 text-sm md:text-lg font-semibold transition-colors ${
                                 activeTab === 'roles'
                                     ? 'text-[#4A7BA7] border-b-4 border-[#4A7BA7]'
                                     : 'text-gray-500 hover:text-gray-700'
@@ -163,7 +166,22 @@ export default function AdministradorPage() {
                         >
                             <div className="flex items-center justify-center gap-2">
                                 <Shield size={20} />
-                                <span>Gestión de Roles</span>
+                                <span className="hidden sm:inline">Gestión de Roles</span>
+                                <span className="sm:hidden">Roles</span>
+                            </div>
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('report')}
+                            className={`flex-1 py-4 px-4 md:px-6 text-sm md:text-lg font-semibold transition-colors ${
+                                activeTab === 'report'
+                                    ? 'text-[#4A7BA7] border-b-4 border-[#4A7BA7]'
+                                    : 'text-gray-500 hover:text-gray-700'
+                            }`}
+                        >
+                            <div className="flex items-center justify-center gap-2">
+                                📊
+                                <span className="hidden sm:inline">Reporte General</span>
+                                <span className="sm:hidden">Reporte</span>
                             </div>
                         </button>
                     </div>
@@ -180,7 +198,7 @@ export default function AdministradorPage() {
                         }}
                         firestore={firestore}
                     />
-                ) : (
+                ) : activeTab === 'roles' ? (
                     <RolesSection
                         roles={roles || []}
                         isLoading={isLoadingRoles}
@@ -189,6 +207,11 @@ export default function AdministradorPage() {
                             setShowRoleModal(true);
                         }}
                         firestore={firestore}
+                    />
+                ) : (
+                    <ReportSection
+                        documents={documents || []}
+                        isLoading={isLoadingDocs}
                     />
                 )}
             </div>
@@ -224,18 +247,28 @@ export default function AdministradorPage() {
 // Componente de sección de usuarios
 const UsersSection = ({ users, isLoading, onEditUser, firestore }) => {
     const [currentPage, setCurrentPage] = useState(1);
+    const [searchTerm, setSearchTerm] = useState('');
     const itemsPerPage = 10;
 
+    // Filtrar usuarios por término de búsqueda
+    const filteredUsers = users.filter(user => {
+        const searchLower = searchTerm.toLowerCase();
+        const emailMatch = user.email?.toLowerCase().includes(searchLower);
+        const rolesMatch = user.roles?.some(role => role.toLowerCase().includes(searchLower));
+        const roleMatch = user.role?.toLowerCase().includes(searchLower);
+        return emailMatch || rolesMatch || roleMatch;
+    });
+
     // Calcular índices de paginación
-    const totalPages = Math.ceil(users.length / itemsPerPage);
+    const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
-    const currentUsers = users.slice(startIndex, endIndex);
+    const currentUsers = filteredUsers.slice(startIndex, endIndex);
 
-    // Reset a la primera página cuando cambian los usuarios
+    // Reset a la primera página cuando cambian los usuarios o el término de búsqueda
     useEffect(() => {
         setCurrentPage(1);
-    }, [users.length]);
+    }, [users.length, searchTerm]);
 
     const handleToggleActive = async (user) => {
         // Prevenir desactivar al administrador principal
@@ -341,15 +374,43 @@ const UsersSection = ({ users, isLoading, onEditUser, firestore }) => {
 
     return (
         <div className="bg-white/95 rounded-2xl p-4 md:p-7 shadow-lg">
-            <div className="flex justify-between items-center mb-6">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
                 <h2 className="text-xl md:text-2xl font-semibold text-gray-800">Usuarios del Sistema</h2>
                 <button
                     onClick={() => onEditUser(null)}
                     className="px-4 py-2 bg-[#004272] text-white rounded-lg font-semibold hover:shadow-lg transition-all flex items-center gap-2"
                 >
                     <UserCheck size={18} />
-                    Crear Usuario
+                    <span className="hidden sm:inline">Crear Usuario</span>
+                    <span className="sm:hidden">Crear</span>
                 </button>
+            </div>
+
+            {/* Campo de búsqueda */}
+            <div className="mb-6">
+                <div className="relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+                    <input
+                        type="text"
+                        placeholder="Buscar por email o rol..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-lg outline-none focus:border-[#4A7BA7] transition-colors"
+                    />
+                    {searchTerm && (
+                        <button
+                            onClick={() => setSearchTerm('')}
+                            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                        >
+                            ✕
+                        </button>
+                    )}
+                </div>
+                {searchTerm && (
+                    <p className="text-sm text-gray-600 mt-2">
+                        {filteredUsers.length} resultado{filteredUsers.length !== 1 ? 's' : ''} encontrado{filteredUsers.length !== 1 ? 's' : ''}
+                    </p>
+                )}
             </div>
 
             {isLoading ? (
@@ -460,7 +521,7 @@ const UsersSection = ({ users, isLoading, onEditUser, firestore }) => {
                 {totalPages > 1 && (
                     <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-6 pt-4 border-t border-gray-200">
                         <div className="text-sm text-gray-600">
-                            Mostrando {startIndex + 1} - {Math.min(endIndex, users.length)} de {users.length} usuarios
+                            Mostrando {startIndex + 1} - {Math.min(endIndex, filteredUsers.length)} de {filteredUsers.length} usuarios
                         </div>
                         <div className="flex items-center gap-2">
                             <button
@@ -1035,6 +1096,289 @@ const RoleModal = ({ role, onClose, firestore }) => {
                     </div>
                 </form>
             </div>
+        </div>
+    );
+};
+
+// Componente de Reporte General
+const ReportSection = ({ documents, isLoading }) => {
+    // Definir las categorías/módulos estáticos
+    const categories = [
+        { id: 'segmentacion', name: 'Segmentación', icon: '🗺️' },
+        { id: 'reclutamiento', name: 'Reclutamiento', icon: '👥' },
+        { id: 'capacitacion', name: 'Capacitación', icon: '🎓' },
+        { id: 'logistica', name: 'Logística', icon: '📦' },
+        { id: 'capdatos-apk', name: 'Captura Datos APK', icon: '📱' },
+        { id: 'censo-linea', name: 'Censo en Línea', icon: '💻' },
+        { id: 'consistencia', name: 'Consistencia', icon: '⚙️' },
+        { id: 'monitoreo', name: 'Monitoreo', icon: '📊' },
+        { id: 'yanapaq', name: 'Yanapaq', icon: '🤝' },
+    ];
+
+    // Función para determinar el estado del documento
+    const getDocumentStatus = (doc) => {
+        const needsExcel = ['lecciones', 'backlog', 'cronograma'].includes(doc.type);
+        const needsWord = ['acta', 'manual', 'requerimientos'].includes(doc.type);
+        const isPrototipo = doc.type === 'prototipo';
+
+        if (isPrototipo) {
+            return doc.figmaUrl ? 'complete' : 'pending';
+        }
+
+        if (needsExcel) {
+            const hasExcel = !!doc.excelFilePath;
+            const hasPdf = !!doc.pdfFilePath;
+
+            if (hasExcel && hasPdf) return 'complete';
+            if (hasExcel || hasPdf) return 'incomplete';
+            return 'pending';
+        }
+
+        if (needsWord) {
+            const hasWord = !!doc.wordFilePath;
+            const hasPdf = !!doc.pdfFilePath;
+
+            if (hasWord && hasPdf) return 'complete';
+            if (hasWord || hasPdf) return 'incomplete';
+            return 'pending';
+        }
+
+        return doc.pdfFilePath ? 'complete' : 'pending';
+    };
+
+    // Calcular estadísticas por módulo
+    const getModuleStats = (categoryId) => {
+        const moduleDocs = documents.filter(doc => doc.category === categoryId);
+        const total = moduleDocs.length;
+        const complete = moduleDocs.filter(doc => getDocumentStatus(doc) === 'complete').length;
+        const incomplete = moduleDocs.filter(doc => getDocumentStatus(doc) === 'incomplete').length;
+        const pending = moduleDocs.filter(doc => getDocumentStatus(doc) === 'pending').length;
+        const percentage = total > 0 ? Math.round((complete / total) * 100) : 0;
+
+        return { total, complete, incomplete, pending, percentage, docs: moduleDocs };
+    };
+
+    // Calcular estadísticas generales
+    const generalStats = categories.reduce((acc, cat) => {
+        const stats = getModuleStats(cat.id);
+        return {
+            total: acc.total + stats.total,
+            complete: acc.complete + stats.complete,
+            incomplete: acc.incomplete + stats.incomplete,
+            pending: acc.pending + stats.pending,
+        };
+    }, { total: 0, complete: 0, incomplete: 0, pending: 0 });
+
+    const generalPercentage = generalStats.total > 0
+        ? Math.round((generalStats.complete / generalStats.total) * 100)
+        : 0;
+
+    return (
+        <div className="space-y-6">
+            {/* Resumen General */}
+            <div className="bg-white/95 rounded-2xl p-6 md:p-8 shadow-lg">
+                <div className="flex items-center gap-3 mb-6">
+                    <BarChart3 size={32} className="text-[#004272]" />
+                    <h2 className="text-2xl md:text-3xl font-bold text-gray-800">Reporte General de Avance</h2>
+                </div>
+
+                {isLoading ? (
+                    <div className="text-center p-10">
+                        <Loader2 className="animate-spin inline-block mr-2" />
+                        Cargando reporte...
+                    </div>
+                ) : (
+                    <>
+                        {/* Estadísticas Generales */}
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                            <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-5 border-2 border-blue-200">
+                                <div className="text-3xl font-bold text-blue-700">{generalStats.total}</div>
+                                <div className="text-sm text-blue-600 font-medium">Total Documentos</div>
+                            </div>
+                            <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-5 border-2 border-green-200">
+                                <div className="text-3xl font-bold text-green-700">{generalStats.complete}</div>
+                                <div className="text-sm text-green-600 font-medium">Completados</div>
+                            </div>
+                            <div className="bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-xl p-5 border-2 border-yellow-200">
+                                <div className="text-3xl font-bold text-yellow-700">{generalStats.incomplete}</div>
+                                <div className="text-sm text-yellow-600 font-medium">Incompletos</div>
+                            </div>
+                            <div className="bg-gradient-to-br from-red-50 to-red-100 rounded-xl p-5 border-2 border-red-200">
+                                <div className="text-3xl font-bold text-red-700">{generalStats.pending}</div>
+                                <div className="text-sm text-red-600 font-medium">Pendientes</div>
+                            </div>
+                        </div>
+
+                        {/* Barra de Progreso General */}
+                        <div className="bg-gray-100 rounded-xl p-6 mb-8">
+                            <div className="flex justify-between items-center mb-3">
+                                <span className="text-lg font-semibold text-gray-700">Progreso General</span>
+                                <span className="text-2xl font-bold text-[#004272]">{generalPercentage}%</span>
+                            </div>
+                            <div className="w-full bg-gray-300 rounded-full h-6 overflow-hidden">
+                                <div
+                                    className="bg-gradient-to-r from-[#004272] to-[#4A7BA7] h-full rounded-full transition-all duration-500 flex items-center justify-center text-white text-xs font-bold"
+                                    style={{ width: `${generalPercentage}%` }}
+                                >
+                                    {generalPercentage > 10 && `${generalPercentage}%`}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Detalle por Módulo */}
+                        <div>
+                            <h3 className="text-xl font-bold text-gray-800 mb-4">Avance por Módulo</h3>
+                            <div className="space-y-4">
+                                {categories.map(category => {
+                                    const stats = getModuleStats(category.id);
+                                    return (
+                                        <ModuleReport key={category.id} category={category} stats={stats} />
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    </>
+                )}
+            </div>
+        </div>
+    );
+};
+
+// Componente individual de reporte de módulo
+const ModuleReport = ({ category, stats }) => {
+    const [expanded, setExpanded] = useState(false);
+
+    const getStatusColor = () => {
+        if (stats.percentage === 100) return 'border-green-500 bg-green-50';
+        if (stats.percentage >= 70) return 'border-yellow-500 bg-yellow-50';
+        if (stats.percentage >= 40) return 'border-orange-500 bg-orange-50';
+        return 'border-red-500 bg-red-50';
+    };
+
+    const getStatusIcon = (docStatus) => {
+        switch (docStatus) {
+            case 'complete':
+                return <CheckCircle2 size={16} className="text-green-600" />;
+            case 'incomplete':
+                return <AlertCircle size={16} className="text-yellow-600" />;
+            case 'pending':
+                return <XCircle size={16} className="text-red-600" />;
+            default:
+                return <XCircle size={16} className="text-gray-400" />;
+        }
+    };
+
+    const getStatusText = (docStatus) => {
+        switch (docStatus) {
+            case 'complete':
+                return <span className="text-green-700 font-medium">Completo</span>;
+            case 'incomplete':
+                return <span className="text-yellow-700 font-medium">Incompleto</span>;
+            case 'pending':
+                return <span className="text-red-700 font-medium">Pendiente</span>;
+            default:
+                return <span className="text-gray-500">Sin datos</span>;
+        }
+    };
+
+    // Función para determinar el estado del documento
+    const getDocumentStatus = (doc) => {
+        const needsExcel = ['lecciones', 'backlog', 'cronograma'].includes(doc.type);
+        const needsWord = ['acta', 'manual', 'requerimientos'].includes(doc.type);
+        const isPrototipo = doc.type === 'prototipo';
+
+        if (isPrototipo) {
+            return doc.figmaUrl ? 'complete' : 'pending';
+        }
+
+        if (needsExcel) {
+            const hasExcel = !!doc.excelFilePath;
+            const hasPdf = !!doc.pdfFilePath;
+
+            if (hasExcel && hasPdf) return 'complete';
+            if (hasExcel || hasPdf) return 'incomplete';
+            return 'pending';
+        }
+
+        if (needsWord) {
+            const hasWord = !!doc.wordFilePath;
+            const hasPdf = !!doc.pdfFilePath;
+
+            if (hasWord && hasPdf) return 'complete';
+            if (hasWord || hasPdf) return 'incomplete';
+            return 'pending';
+        }
+
+        return doc.pdfFilePath ? 'complete' : 'pending';
+    };
+
+    return (
+        <div className={`border-l-4 rounded-lg ${getStatusColor()} transition-all`}>
+            <div
+                className="p-4 cursor-pointer hover:bg-white/50 transition-colors"
+                onClick={() => setExpanded(!expanded)}
+            >
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3 flex-1">
+                        <span className="text-2xl">{category.icon}</span>
+                        <div className="flex-1">
+                            <h4 className="font-semibold text-gray-800 text-lg">{category.name}</h4>
+                            <div className="flex items-center gap-4 mt-1">
+                                <span className="text-sm text-gray-600">
+                                    {stats.complete} de {stats.total} documentos completos
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-4">
+                        <div className="text-right">
+                            <div className="text-2xl font-bold text-[#004272]">{stats.percentage}%</div>
+                            <div className="w-32 bg-gray-300 rounded-full h-2 mt-1">
+                                <div
+                                    className="bg-[#004272] h-full rounded-full transition-all"
+                                    style={{ width: `${stats.percentage}%` }}
+                                />
+                            </div>
+                        </div>
+                        <button className="text-gray-500 hover:text-gray-700 transition-colors">
+                            {expanded ? '▼' : '▶'}
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            {/* Detalle de documentos */}
+            {expanded && stats.docs.length > 0 && (
+                <div className="px-4 pb-4 pt-2 border-t border-gray-200 bg-white">
+                    <div className="space-y-2">
+                        {stats.docs.map(doc => {
+                            const docStatus = getDocumentStatus(doc);
+                            return (
+                                <div key={doc.id} className="flex items-center justify-between py-2 px-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                                    <div className="flex items-center gap-3 flex-1">
+                                        {getStatusIcon(docStatus)}
+                                        <div>
+                                            <div className="font-medium text-gray-800">{doc.title}</div>
+                                            <div className="text-xs text-gray-500">
+                                                Tipo: {doc.type} • Versión: {doc.version || '1.0'}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="text-sm">
+                                        {getStatusText(docStatus)}
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+            )}
+
+            {expanded && stats.docs.length === 0 && (
+                <div className="px-4 pb-4 pt-2 border-t border-gray-200 bg-white">
+                    <p className="text-center text-gray-500 py-4">No hay documentos en este módulo</p>
+                </div>
+            )}
         </div>
     );
 };
