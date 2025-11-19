@@ -425,7 +425,7 @@ const UsersSection = ({ users, isLoading, onEditUser, firestore }) => {
                             <thead className="bg-gray-50 border-b-2 border-gray-200">
                                 <tr>
                                     <th className="text-left p-3 text-sm md:text-base font-semibold text-gray-700">Email</th>
-                                    <th className="text-left p-3 text-sm md:text-base font-semibold text-gray-700">Rol</th>
+                                    <th className="text-left p-3 text-sm md:text-base font-semibold text-gray-700">Role</th>
                                     <th className="text-left p-3 text-sm md:text-base font-semibold text-gray-700">Estado</th>
                                     <th className="text-right p-3 text-sm md:text-base font-semibold text-gray-700">Acciones</th>
                                 </tr>
