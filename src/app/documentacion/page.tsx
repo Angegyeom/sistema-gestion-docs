@@ -35,6 +35,8 @@ const initialDocs = {
         { id: 'seg-11', title: 'Diagrama de Flujo', description: 'Diagrama de flujo del sistema de Segmentación', type: 'diagrama', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'segmentacion' },
         { id: 'seg-12', title: 'Diagrama de Proceso', description: 'Diagrama de proceso del sistema de Segmentación', type: 'diagrama', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'segmentacion' },
         { id: 'seg-13', title: 'Repositorios', description: 'Repositorios de código del sistema de Segmentación', type: 'repositorios', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'segmentacion' },
+        { id: 'seg-14', title: 'Manual de Base de Datos', description: 'Manual de base de datos del sistema de Segmentación', type: 'manual-bd', version: '1.0', updatedAt: '15 Sep 2025', url: '#', category: 'segmentacion' },
+        { id: 'seg-15', title: 'Documentación de API', description: 'Documentación de API del sistema de Segmentación', type: 'doc-api', version: '1.0', updatedAt: '15 Sep 2025', url: '#', category: 'segmentacion' },
     ],
     reclutamiento: [
         { id: 'rec-1', title: 'Acta de Constitución', description: 'Acta de constitución del proyecto de Reclutamiento', type: 'acta', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'reclutamiento' },
@@ -50,6 +52,8 @@ const initialDocs = {
         { id: 'rec-11', title: 'Diagrama de Flujo', description: 'Diagrama de flujo del sistema de Reclutamiento', type: 'diagrama', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'reclutamiento' },
         { id: 'rec-12', title: 'Diagrama de Proceso', description: 'Diagrama de proceso del sistema de Reclutamiento', type: 'diagrama', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'reclutamiento' },
         { id: 'rec-13', title: 'Repositorios', description: 'Repositorios de código del sistema de Reclutamiento', type: 'repositorios', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'reclutamiento' },
+        { id: 'rec-14', title: 'Manual de Base de Datos', description: 'Manual de base de datos del sistema de Reclutamiento', type: 'manual-bd', version: '1.0', updatedAt: '15 Sep 2025', url: '#', category: 'reclutamiento' },
+        { id: 'rec-15', title: 'Documentación de API', description: 'Documentación de API del sistema de Reclutamiento', type: 'doc-api', version: '1.0', updatedAt: '15 Sep 2025', url: '#', category: 'reclutamiento' },
     ],
     capacitacion: [
         { id: 'cap-1', title: 'Acta de Constitución', description: 'Acta de constitución del proyecto de Capacitación', type: 'acta', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'capacitacion' },
@@ -65,6 +69,8 @@ const initialDocs = {
         { id: 'cap-11', title: 'Diagrama de Flujo', description: 'Diagrama de flujo del sistema de Capacitación', type: 'diagrama', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'capacitacion' },
         { id: 'cap-12', title: 'Diagrama de Proceso', description: 'Diagrama de proceso del sistema de Capacitación', type: 'diagrama', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'capacitacion' },
         { id: 'cap-13', title: 'Repositorios', description: 'Repositorios de código del sistema de Capacitación', type: 'repositorios', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'capacitacion' },
+        { id: 'cap-14', title: 'Manual de Base de Datos', description: 'Manual de base de datos del sistema de Capacitación', type: 'manual-bd', version: '1.0', updatedAt: '15 Sep 2025', url: '#', category: 'capacitacion' },
+        { id: 'cap-15', title: 'Documentación de API', description: 'Documentación de API del sistema de Capacitación', type: 'doc-api', version: '1.0', updatedAt: '15 Sep 2025', url: '#', category: 'capacitacion' },
     ],
     logistica: [
         { id: 'log-1', title: 'Acta de Constitución', description: 'Acta de constitución del proyecto para el área de logística', type: 'acta', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'logistica' },
@@ -80,6 +86,8 @@ const initialDocs = {
         { id: 'log-11', title: 'Diagrama de Flujo', description: 'Diagrama de flujo del sistema de logística', type: 'diagrama', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'logistica' },
         { id: 'log-12', title: 'Diagrama de Proceso', description: 'Diagrama de proceso del sistema de logística', type: 'diagrama', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'logistica' },
         { id: 'log-13', title: 'Repositorios', description: 'Repositorios de código del sistema de logística', type: 'repositorios', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'logistica' },
+        { id: 'log-14', title: 'Manual de Base de Datos', description: 'Manual de base de datos del sistema de logística', type: 'manual-bd', version: '1.0', updatedAt: '15 Sep 2025', url: '#', category: 'logistica' },
+        { id: 'log-15', title: 'Documentación de API', description: 'Documentación de API del sistema de logística', type: 'doc-api', version: '1.0', updatedAt: '15 Sep 2025', url: '#', category: 'logistica' },
     ],
     'capdatos-apk': [
         { id: 'apk-1', title: 'Acta de Constitución', description: 'Acta de constitución del proyecto de Captura Datos APK', type: 'acta', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'capdatos-apk' },
@@ -95,6 +103,8 @@ const initialDocs = {
         { id: 'apk-11', title: 'Diagrama de Flujo', description: 'Diagrama de flujo del sistema de Captura Datos APK', type: 'diagrama', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'capdatos-apk' },
         { id: 'apk-12', title: 'Diagrama de Proceso', description: 'Diagrama de proceso del sistema de Captura Datos APK', type: 'diagrama', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'capdatos-apk' },
         { id: 'apk-13', title: 'Repositorios', description: 'Repositorios de código del sistema de Captura Datos APK', type: 'repositorios', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'capdatos-apk' },
+        { id: 'apk-14', title: 'Manual de Base de Datos', description: 'Manual de base de datos del sistema de Captura Datos APK', type: 'manual-bd', version: '1.0', updatedAt: '15 Sep 2025', url: '#', category: 'capdatos-apk' },
+        { id: 'apk-15', title: 'Documentación de API', description: 'Documentación de API del sistema de Captura Datos APK', type: 'doc-api', version: '1.0', updatedAt: '15 Sep 2025', url: '#', category: 'capdatos-apk' },
     ],
     'censo-linea': [
         { id: 'cen-1', title: 'Acta de Constitución', description: 'Acta de constitución del proyecto de Censo en Línea', type: 'acta', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'censo-linea' },
@@ -110,6 +120,8 @@ const initialDocs = {
         { id: 'cen-11', title: 'Diagrama de Flujo', description: 'Diagrama de flujo del sistema de Censo en Línea', type: 'diagrama', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'censo-linea' },
         { id: 'cen-12', title: 'Diagrama de Proceso', description: 'Diagrama de proceso del sistema de Censo en Línea', type: 'diagrama', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'censo-linea' },
         { id: 'cen-13', title: 'Repositorios', description: 'Repositorios de código del sistema de Censo en Línea', type: 'repositorios', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'censo-linea' },
+        { id: 'cen-14', title: 'Manual de Base de Datos', description: 'Manual de base de datos del sistema de Censo en Línea', type: 'manual-bd', version: '1.0', updatedAt: '15 Sep 2025', url: '#', category: 'censo-linea' },
+        { id: 'cen-15', title: 'Documentación de API', description: 'Documentación de API del sistema de Censo en Línea', type: 'doc-api', version: '1.0', updatedAt: '15 Sep 2025', url: '#', category: 'censo-linea' },
     ],
     consistencia: [
         { id: 'con-1', title: 'Acta de Constitución', description: 'Acta de constitución del proyecto de Consistencia', type: 'acta', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'consistencia' },
@@ -125,6 +137,8 @@ const initialDocs = {
         { id: 'con-11', title: 'Diagrama de Flujo', description: 'Diagrama de flujo del sistema de Consistencia', type: 'diagrama', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'consistencia' },
         { id: 'con-12', title: 'Diagrama de Proceso', description: 'Diagrama de proceso del sistema de Consistencia', type: 'diagrama', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'consistencia' },
         { id: 'con-13', title: 'Repositorios', description: 'Repositorios de código del sistema de Consistencia', type: 'repositorios', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'consistencia' },
+        { id: 'con-14', title: 'Manual de Base de Datos', description: 'Manual de base de datos del sistema de Consistencia', type: 'manual-bd', version: '1.0', updatedAt: '15 Sep 2025', url: '#', category: 'consistencia' },
+        { id: 'con-15', title: 'Documentación de API', description: 'Documentación de API del sistema de Consistencia', type: 'doc-api', version: '1.0', updatedAt: '15 Sep 2025', url: '#', category: 'consistencia' },
     ],
     monitoreo: [
         { id: 'mon-1', title: 'Acta de Constitución', description: 'Acta de constitución del proyecto de Monitoreo', type: 'acta', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'monitoreo' },
@@ -140,6 +154,8 @@ const initialDocs = {
         { id: 'mon-11', title: 'Diagrama de Flujo', description: 'Diagrama de flujo del sistema de Monitoreo', type: 'diagrama', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'monitoreo' },
         { id: 'mon-12', title: 'Diagrama de Proceso', description: 'Diagrama de proceso del sistema de Monitoreo', type: 'diagrama', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'monitoreo' },
         { id: 'mon-13', title: 'Repositorios', description: 'Repositorios de código del sistema de Monitoreo', type: 'repositorios', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'monitoreo' },
+        { id: 'mon-14', title: 'Manual de Base de Datos', description: 'Manual de base de datos del sistema de Monitoreo', type: 'manual-bd', version: '1.0', updatedAt: '15 Sep 2025', url: '#', category: 'monitoreo' },
+        { id: 'mon-15', title: 'Documentación de API', description: 'Documentación de API del sistema de Monitoreo', type: 'doc-api', version: '1.0', updatedAt: '15 Sep 2025', url: '#', category: 'monitoreo' },
     ],
     yanapaq: [
         { id: 'yan-1', title: 'Acta de Constitución', description: 'Acta de constitución del proyecto Yanapaq', type: 'acta', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'yanapaq' },
@@ -155,6 +171,8 @@ const initialDocs = {
         { id: 'yan-11', title: 'Diagrama de Flujo', description: 'Diagrama de flujo del sistema Yanapaq', type: 'diagrama', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'yanapaq' },
         { id: 'yan-12', title: 'Diagrama de Proceso', description: 'Diagrama de proceso del sistema Yanapaq', type: 'diagrama', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'yanapaq' },
         { id: 'yan-13', title: 'Repositorios', description: 'Repositorios de código del sistema Yanapaq', type: 'repositorios', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'yanapaq' },
+        { id: 'yan-14', title: 'Manual de Base de Datos', description: 'Manual de base de datos del sistema Yanapaq', type: 'manual-bd', version: '1.0', updatedAt: '15 Sep 2025', url: '#', category: 'yanapaq' },
+        { id: 'yan-15', title: 'Documentación de API', description: 'Documentación de API del sistema Yanapaq', type: 'doc-api', version: '1.0', updatedAt: '15 Sep 2025', url: '#', category: 'yanapaq' },
     ]
 };
 
@@ -171,6 +189,8 @@ const docTypes = {
   arquitectura: '🏛️',
   diagrama: '🔀',
   repositorios: '📁',
+  'manual-bd': '🗄️',
+  'doc-api': '🔌',
   default: '📄',
 };
 
@@ -186,6 +206,8 @@ const docTypeClasses = {
     arquitectura: 'border-indigo-500',
     diagrama: 'border-rose-500',
     repositorios: 'border-slate-500',
+    'manual-bd': 'border-violet-500',
+    'doc-api': 'border-fuchsia-500',
     default: 'border-gray-500',
 };
 
@@ -201,6 +223,8 @@ const docTypeIconBg = {
     arquitectura: 'bg-indigo-500',
     diagrama: 'bg-rose-500',
     repositorios: 'bg-slate-500',
+    'manual-bd': 'bg-violet-500',
+    'doc-api': 'bg-fuchsia-500',
     default: 'bg-gray-500',
 }
 
@@ -211,7 +235,7 @@ const getDocIconBg = (type) => docTypeIconBg[type] || docTypeIconBg.default;
 // Función para determinar el estado del documento basado en archivos subidos
 const getDocumentStatus = (doc) => {
     const needsExcel = ['lecciones', 'backlog', 'cronograma'].includes(doc.type);
-    const needsWord = ['acta', 'manual', 'requerimientos', 'arquitectura', 'diagrama'].includes(doc.type);
+    const needsWord = ['acta', 'manual', 'requerimientos', 'arquitectura', 'diagrama', 'manual-bd', 'doc-api'].includes(doc.type);
     const isPrototipo = doc.type === 'prototipo';
     const isRepositorios = doc.type === 'repositorios';
 
@@ -256,7 +280,7 @@ const getDocumentStatus = (doc) => {
 // Componente de badge de estado
 const StatusBadge = ({ status, type, compact = false, doc = null }) => {
     const needsExcel = ['lecciones', 'backlog', 'cronograma'].includes(type);
-    const needsWord = ['acta', 'manual', 'requerimientos', 'arquitectura', 'diagrama'].includes(type);
+    const needsWord = ['acta', 'manual', 'requerimientos', 'arquitectura', 'diagrama', 'manual-bd', 'doc-api'].includes(type);
     const isPrototipo = type === 'prototipo';
     const isRepositorios = type === 'repositorios';
 
@@ -1034,7 +1058,7 @@ export default function DocumentacionPage() {
 
 const DocCard = ({ doc, onPreview, onEdit, onDownloadWord, onDownloadExcel, canEdit, isCustomModule = false, isAdmin = false, onDelete }) => {
     const needsExcel = ['lecciones', 'backlog', 'cronograma'].includes(doc.type);
-    const needsWord = ['acta', 'manual', 'requerimientos'].includes(doc.type);
+    const needsWord = ['acta', 'manual', 'requerimientos', 'arquitectura', 'diagrama', 'manual-bd', 'doc-api'].includes(doc.type);
     const status = getDocumentStatus(doc);
 
     // Para módulos personalizados, verificar qué archivos tiene
@@ -1127,7 +1151,7 @@ const DocCard = ({ doc, onPreview, onEdit, onDownloadWord, onDownloadExcel, canE
 
 const DocListItem = ({ doc, onPreview, onEdit, onDownloadWord, onDownloadExcel, canEdit }) => {
     const needsExcel = ['lecciones', 'backlog', 'cronograma'].includes(doc.type);
-    const needsWord = ['acta', 'manual', 'requerimientos'].includes(doc.type);
+    const needsWord = ['acta', 'manual', 'requerimientos', 'arquitectura', 'diagrama', 'manual-bd', 'doc-api'].includes(doc.type);
     const status = getDocumentStatus(doc);
 
     return (
@@ -1231,7 +1255,7 @@ const UploadDocModal = ({ onClose, onUploadSuccess, docToEdit, activeCategory, a
 
     // Determine which file types are needed based on document type
     const needsExcel = ['lecciones', 'backlog', 'cronograma'].includes(type);
-    const needsWord = ['acta', 'manual', 'requerimientos', 'arquitectura', 'diagrama'].includes(type);
+    const needsWord = ['acta', 'manual', 'requerimientos', 'arquitectura', 'diagrama', 'manual-bd', 'doc-api'].includes(type);
     const isPrototipo = type === 'prototipo';
     const isRepositorios = type === 'repositorios';
 

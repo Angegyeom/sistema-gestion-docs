@@ -897,7 +897,6 @@ const UserModal = ({ user, roles, onClose, firestore, auth, userData }) => {
                         </label>
                         <div className="border-2 border-gray-200 rounded-lg p-3 max-h-48 overflow-y-auto space-y-2">
                             {roles
-                                .filter(r => r.name?.toUpperCase() !== 'ADMIN') // Excluir ADMIN
                                 .filter((r, index, self) =>
                                     index === self.findIndex(t => t.name?.toUpperCase() === r.name?.toUpperCase())
                                 )

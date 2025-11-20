@@ -11,7 +11,7 @@ import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
 import PasswordResetModal from "@/components/PasswordResetModal";
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("admin@inei.gob.pe");
+  const [email, setEmail] = useState("@inei.gob.pe");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
