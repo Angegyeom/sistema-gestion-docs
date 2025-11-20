@@ -376,6 +376,8 @@ const formatTemplates = [
     { id: 'backlog', name: 'Product Backlog', file: 'Plantilla_Product_Backlog.xlsx', type: 'excel', icon: '📊', color: 'bg-teal-500' },
     { id: 'cronograma', name: 'Cronograma', file: 'cronograma.xlsx', type: 'excel', icon: '📅', color: 'bg-yellow-500' },
     { id: 'directiva', name: 'Directiva de Formatos', file: 'DIRECTIVA_DE_FORMATOS.pdf', type: 'pdf', icon: '📄', color: 'bg-red-500' },
+    { id: 'manual-db', name: 'Manual de Base de Datos', file: 'Manual_BD.docx', type: 'word', icon: '🗄️', color: 'bg-purple-500' },
+    { id: 'doc-api', name: 'Documentación de API', file: 'Plantilla_Documentacion_API.docx', type: 'word', icon: '🔌', color: 'bg-indigo-500' },
 ];
 
 export default function DocumentacionPage() {

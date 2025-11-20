@@ -7,54 +7,41 @@
 import { useState } from "react";
 import AppHeader from "@/components/layout/app-header";
 
-const systems = {
-  preparacion: [
-    { id: 'segmentacion', icon: '🗺️', title: 'SEGMENTACIÓN', description: 'Sistema para la división territorial y definición de rutas de empadronamiento', status: 'Activo', url: 'https://multiproyectos.inei.gob.pe/cpv2025-segmentacion/home', credentials: { user: 'admin_seg', password: 'Seg2025!' } },
-    { id: 'logistica', icon: '📦', title: 'LOGÍSTICA', description: 'Control de materiales, equipos y distribución logística del operativo', status: 'Activo', url: 'https://campo.censos2025.com.pe/dashboard/menu_modulos', credentials: { user: 'log_admin', password: 'Log2025!' } },
-    { id: 'capacitacion', icon: '🎓', title: 'CAPACITACIÓN', description: 'Plataforma de formación y capacitación del personal operativo', status: 'Activo', url: 'https://monitoreo.censos2025.com.pe/public/modulo-gerencial/capacitacion/censos-nacionales/informe-progreso?menu_id_est=374' },
-  ],
-  ejecucion: [
-    { id: 'operacion', icon: '📱', title: 'OPERACIÓN DE CAMPO', description: 'Captura de datos - APK móvil y censo en línea para empadronamiento', status: 'Activo', url: 'https://www.censos2025.com.pe/', credentials: { user: 'op_campo', password: 'Campo2025!' } },
-    { id: 'procesamiento', icon: '⚙️', title: 'PROCESAMIENTO DE DATOS', description: 'Validación, consistencia y procesamiento de la información recolectada', status: 'Activo', url: 'https://development2.inei.gob.pe/autenticacion/dashboard', credentials: { user: 'proc_admin', password: 'Proc2025!' } },
-  ],
-  postcenso: [
-    { id: 'encuesta', icon: '📊', title: 'ENCUESTA POST CENSAL', description: 'Aplicativo móvil para la evaluación de cobertura y calidad censal', status: 'En Desarrollo', url: '#', credentials: { user: 'enc_admin', password: 'Enc2025!' } },
-  ]
-};
-
-const Phase = ({ title, number, systems, onSystemClick, color }) => (
-  <div className="bg-white/95 rounded-2xl p-7 shadow-lg backdrop-blur-md">
-    <div className={`flex items-center mb-6 pb-4 border-b-4`} style={{borderColor: color}}>
-      <div className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-xl mr-5`} style={{backgroundColor: color}}>
-        {number}
-      </div>
-      <h2 className="text-xl font-semibold text-gray-800">{title}</h2>
-    </div>
-    <div className="grid md:grid-cols-2 lg:grid-cols-2 gap-5">
-      {systems.map(system => (
-        <SystemCard key={system.id} {...system} onClick={() => onSystemClick(system)} />
-      ))}
-    </div>
-  </div>
-);
+const systems = [
+  { id: 'segmentacion', icon: '🗺️', title: 'SEGMENTACIÓN', description: 'Sistema para la división territorial y definición de rutas de empadronamiento', status: 'Activo', url: 'https://multiproyectos.inei.gob.pe/cpv2025-segmentacion/home', credentials: { user: 'admin_seg', password: 'Seg2025!' } },
+  { id: 'reclutamiento', icon: '👥', title: 'RECLUTAMIENTO', description: 'Gestión de convocatoria y selección del personal censal', status: 'Activo', url: '#', credentials: { user: 'reclut_admin', password: 'Reclut2025!' } },
+  { id: 'capacitacion', icon: '🎓', title: 'CAPACITACIÓN', description: 'Plataforma de formación y capacitación del personal operativo', status: 'Activo', url: 'https://monitoreo.censos2025.com.pe/public/modulo-gerencial/capacitacion/censos-nacionales/informe-progreso?menu_id_est=374' },
+  { id: 'logistica', icon: '📦', title: 'LOGÍSTICA', description: 'Control de materiales, equipos y distribución logística del operativo', status: 'Activo', url: 'https://campo.censos2025.com.pe/dashboard/menu_modulos', credentials: { user: 'log_admin', password: 'Log2025!' } },
+  { id: 'capdatos-apk', icon: '📱', title: 'CAPTURA DATOS APK', description: 'Aplicación móvil para captura de datos en campo', status: 'Activo', url: 'https://www.censos2025.com.pe/', credentials: { user: 'apk_admin', password: 'Apk2025!' } },
+  { id: 'censo-linea', icon: '💻', title: 'CENSO EN LÍNEA', description: 'Plataforma web para empadronamiento en línea', status: 'Activo', url: 'https://www.censos2025.com.pe/', credentials: { user: 'online_admin', password: 'Online2025!' } },
+  { id: 'consistencia', icon: '⚙️', title: 'CONSISTENCIA', description: 'Validación, consistencia y procesamiento de la información recolectada', status: 'Activo', url: 'https://development2.inei.gob.pe/autenticacion/dashboard', credentials: { user: 'cons_admin', password: 'Cons2025!' } },
+  { id: 'monitoreo', icon: '📊', title: 'MONITOREO', description: 'Sistema de monitoreo y seguimiento del operativo censal', status: 'Activo', url: '#', credentials: { user: 'monit_admin', password: 'Monit2025!' } },
+  { id: 'yanapaq', icon: '🤝', title: 'YANAPAQ', description: 'Sistema de apoyo y asistencia para el operativo censal', status: 'Activo', url: '#', credentials: { user: 'yan_admin', password: 'Yan2025!' } },
+];
 
 const SystemCard = ({ icon, title, description, status, onClick, id }) => {
     const borderColorClass = {
         segmentacion: 'border-purple-500',
-        logistica: 'border-cyan-500',
+        reclutamiento: 'border-pink-500',
         capacitacion: 'border-green-500',
-        operacion: 'border-blue-500',
-        procesamiento: 'border-gray-500',
-        encuesta: 'border-orange-500'
+        logistica: 'border-cyan-500',
+        'capdatos-apk': 'border-blue-500',
+        'censo-linea': 'border-indigo-500',
+        consistencia: 'border-gray-500',
+        monitoreo: 'border-orange-500',
+        yanapaq: 'border-yellow-500'
     }[id];
 
     const iconBgClass = {
         segmentacion: 'bg-purple-500',
-        logistica: 'bg-cyan-500',
+        reclutamiento: 'bg-pink-500',
         capacitacion: 'bg-green-500',
-        operacion: 'bg-blue-500',
-        procesamiento: 'bg-gray-500',
-        encuesta: 'bg-orange-500'
+        logistica: 'bg-cyan-500',
+        'capdatos-apk': 'bg-blue-500',
+        'censo-linea': 'bg-indigo-500',
+        consistencia: 'bg-gray-500',
+        monitoreo: 'bg-orange-500',
+        yanapaq: 'bg-yellow-500'
     }[id];
 
   return (
@@ -102,10 +89,12 @@ export default function AplicativosPage() {
           <h1 className="text-4xl font-bold mb-2 text-shadow-lg">APLICATIVOS DEL SISTEMA CENSAL</h1>
           <p className="text-lg opacity-90">Centro de Población y Vivienda - CPV 2025</p>
         </div>
-        <div className="space-y-10">
-          <Phase title="ETAPA DE PREPARACIÓN" number="1" systems={systems.preparacion} onSystemClick={handleSystemClick} color="#4CAF50" />
-          <Phase title="ETAPA DE EJECUCIÓN" number="2" systems={systems.ejecucion} onSystemClick={handleSystemClick} color="#2196F3" />
-          <Phase title="ETAPA POST-CENSO" number="3" systems={systems.postcenso} onSystemClick={handleSystemClick} color="#FF9800" />
+        <div className="bg-white/95 rounded-2xl p-7 shadow-lg backdrop-blur-md">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {systems.map(system => (
+              <SystemCard key={system.id} {...system} onClick={() => handleSystemClick(system)} />
+            ))}
+          </div>
         </div>
       </div>
       {modalSystem && <SystemModal system={modalSystem} onClose={closeModal} />}
