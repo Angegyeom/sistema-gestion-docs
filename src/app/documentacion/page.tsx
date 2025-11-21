@@ -443,6 +443,7 @@ export default function DocumentacionPage() {
     const [previewTemplate, setPreviewTemplate] = useState(null);
     const [showModuleModal, setShowModuleModal] = useState(false);
     const [showDivisionModal, setShowDivisionModal] = useState(false);
+    const [divisionToEdit, setDivisionToEdit] = useState(null);
 
     // Combinar categorías estáticas con módulos personalizados
     const allCategories = [
@@ -609,8 +610,11 @@ export default function DocumentacionPage() {
     }, [allDocs, activeCategory, searchTerm, showPriorityOnly]);
     
     const openPreviewModal = async (doc) => {
-        // Detectar si es un manual (tiene array de files)
-        const isManual = Array.isArray(doc.files) && doc.files.length > 0;
+        // Detectar si es un tipo multi-archivo (cronograma, backlog, lecciones)
+        const isMultiFileType = ['lecciones', 'backlog', 'cronograma'].includes(doc.type);
+
+        // Detectar si es un manual (tiene array de files y no es multi-file-type)
+        const isManual = !isMultiFileType && Array.isArray(doc.files) && doc.files.length > 0;
 
         // Si es un manual, abrir el ManualFilesModal
         if (isManual) {
@@ -621,7 +625,20 @@ export default function DocumentacionPage() {
         const isPrototipo = doc.type === 'prototipo';
         const isRepositorios = doc.type === 'repositorios';
         const hasFigmaUrl = doc.figmaUrl || (doc.url && doc.url.includes('figma.com'));
-        const hasPdf = !!doc.pdfFilePath;
+
+        // Para tipos multi-archivo, buscar el PDF en el array files
+        let hasPdf = !!doc.pdfFilePath;
+        let pdfFilePath = doc.pdfFilePath;
+
+        if (isMultiFileType && doc.files && Array.isArray(doc.files)) {
+            const pdfFile = doc.files.find(f => f.type === 'pdf');
+            if (pdfFile) {
+                hasPdf = true;
+                pdfFilePath = pdfFile.path;
+            } else {
+                hasPdf = false;
+            }
+        }
 
         // For repositories: show options to open frontend or backend
         if (isRepositorios) {
@@ -725,9 +742,9 @@ export default function DocumentacionPage() {
         let embedUrl = doc.url;
 
         // If document has a pdfFilePath (GCS file), generate a fresh signed URL via API
-        if (doc.pdfFilePath) {
+        if (pdfFilePath) {
             try {
-                const response = await fetch(`/api/storage/download?filePath=${encodeURIComponent(doc.pdfFilePath)}&expiresIn=60`);
+                const response = await fetch(`/api/storage/download?filePath=${encodeURIComponent(pdfFilePath)}&expiresIn=60`);
                 if (!response.ok) {
                     const errorData = await response.json();
                     throw new Error(errorData.error || 'Failed to get signed URL');
@@ -765,7 +782,18 @@ export default function DocumentacionPage() {
     }
 
     const handleDownloadWord = async (doc) => {
-        if (!doc.wordFilePath) {
+        // Para tipos multi-archivo, buscar el archivo Word en el array files
+        const isMultiFileType = ['lecciones', 'backlog', 'cronograma'].includes(doc.type);
+        let filePath = doc.wordFilePath;
+
+        if (isMultiFileType && doc.files && Array.isArray(doc.files)) {
+            const wordFile = doc.files.find(f => f.type === 'word');
+            if (wordFile) {
+                filePath = wordFile.path;
+            }
+        }
+
+        if (!filePath) {
             Swal.fire({
                 icon: 'warning',
                 title: 'Archivo no disponible',
@@ -777,7 +805,7 @@ export default function DocumentacionPage() {
         }
 
         try {
-            const response = await fetch(`/api/storage/download?filePath=${encodeURIComponent(doc.wordFilePath)}&expiresIn=60`);
+            const response = await fetch(`/api/storage/download?filePath=${encodeURIComponent(filePath)}&expiresIn=60`);
             if (!response.ok) {
                 const errorData = await response.json();
                 throw new Error(errorData.error || 'Failed to get download URL');
@@ -797,11 +825,22 @@ export default function DocumentacionPage() {
     }
 
     const handleDownloadExcel = async (doc) => {
-        if (!doc.excelFilePath) {
+        // Para tipos multi-archivo, buscar el archivo Excel o MPP en el array files
+        const isMultiFileType = ['lecciones', 'backlog', 'cronograma'].includes(doc.type);
+        let filePath = doc.excelFilePath;
+
+        if (isMultiFileType && doc.files && Array.isArray(doc.files)) {
+            const excelFile = doc.files.find(f => f.type === 'excel' || f.type === 'mpp');
+            if (excelFile) {
+                filePath = excelFile.path;
+            }
+        }
+
+        if (!filePath) {
             Swal.fire({
                 icon: 'warning',
                 title: 'Archivo no disponible',
-                text: 'No hay un archivo Excel disponible para este documento.',
+                text: 'No hay un archivo Excel o MPP disponible para este documento.',
                 confirmButtonText: 'Entendido',
                 confirmButtonColor: '#4A7BA7'
             });
@@ -809,7 +848,7 @@ export default function DocumentacionPage() {
         }
 
         try {
-            const response = await fetch(`/api/storage/download?filePath=${encodeURIComponent(doc.excelFilePath)}&expiresIn=60`);
+            const response = await fetch(`/api/storage/download?filePath=${encodeURIComponent(filePath)}&expiresIn=60`);
             if (!response.ok) {
                 const errorData = await response.json();
                 throw new Error(errorData.error || 'Failed to get download URL');
@@ -1057,12 +1096,14 @@ export default function DocumentacionPage() {
                                 {allCategories.find(c => c.id === activeCategory)?.name}
                             </h2>
                             <div className="flex items-center gap-2 md:gap-3">
-                                <button
-                                    onClick={() => setShowPriorityOnly(!showPriorityOnly)}
-                                    className={`flex items-center gap-1.5 px-3 py-2 md:px-4 md:py-2.5 rounded-lg font-semibold transition-all text-xs md:text-sm border-2 ${showPriorityOnly ? 'bg-amber-500 text-white border-amber-500 shadow-md' : 'bg-white border-amber-400 text-amber-600 hover:bg-amber-50'}`}
-                                >
-                                     <span className="hidden sm:inline">Prioridad</span>
-                                </button>
+                                {!(allCategories.find(c => c.id === activeCategory)?.isCustom || false) && (
+                                    <button
+                                        onClick={() => setShowPriorityOnly(!showPriorityOnly)}
+                                        className={`flex items-center gap-1.5 px-3 py-2 md:px-4 md:py-2.5 rounded-lg font-semibold transition-all text-xs md:text-sm border-2 ${showPriorityOnly ? 'bg-amber-500 text-white border-amber-500 shadow-md' : 'bg-white border-amber-400 text-amber-600 hover:bg-amber-50'}`}
+                                    >
+                                         <span className="hidden sm:inline">Prioridad</span>
+                                    </button>
+                                )}
                                 {canEditCategory(activeCategory) && (allCategories.find(c => c.id === activeCategory)?.isCustom || false) && (
                                     <>
                                         <button
@@ -1134,6 +1175,10 @@ export default function DocumentacionPage() {
                                                    isCustomModule={isCustom}
                                                    isAdmin={isAdmin}
                                                    onDelete={handleDeleteDocument}
+                                                   onEditDivision={(div) => {
+                                                       setDivisionToEdit(div);
+                                                       setShowDivisionModal(true);
+                                                   }}
                                                />
                                            ))}
                                        </div>
@@ -1158,13 +1203,13 @@ export default function DocumentacionPage() {
             {showFormatsModal && <FormatsModal onClose={() => setShowFormatsModal(false)} onPreview={setPreviewTemplate} />}
             {previewTemplate && <TemplatePreviewModal template={previewTemplate} onClose={() => setPreviewTemplate(null)} />}
             {showModuleModal && <ModuleModal onClose={() => setShowModuleModal(false)} firestore={firestore} />}
-            {showDivisionModal && <DivisionModal onClose={() => setShowDivisionModal(false)} firestore={firestore} activeModuleId={activeCategory} />}
+            {showDivisionModal && <DivisionModal onClose={() => { setShowDivisionModal(false); setDivisionToEdit(null); }} firestore={firestore} activeModuleId={activeCategory} divisionToEdit={divisionToEdit} />}
         </>
     );
 }
 
 // Componente de Acordeón de Divisiones
-const DivisionAccordion = ({ division, docs, view, onPreview, onEdit, onDownloadWord, onDownloadExcel, canEdit, isCustomModule, isAdmin, onDelete }) => {
+const DivisionAccordion = ({ division, docs, view, onPreview, onEdit, onDownloadWord, onDownloadExcel, canEdit, isCustomModule, isAdmin, onDelete, onEditDivision }) => {
     const [isExpanded, setIsExpanded] = useState(false);
 
     // Filtrar documentos que pertenecen a esta división
@@ -1178,21 +1223,35 @@ const DivisionAccordion = ({ division, docs, view, onPreview, onEdit, onDownload
 
     return (
         <div className="mb-4">
-            <button
-                onClick={() => setIsExpanded(!isExpanded)}
-                className="w-full flex items-center justify-between p-4 bg-white/80 hover:bg-white rounded-lg shadow-sm transition-all"
-            >
-                <div className="flex items-center gap-3">
-                    <span className="text-2xl">{division.icon}</span>
-                    <div className="text-left">
-                        <h3 className="text-lg font-semibold text-gray-800">{division.name}</h3>
-                        <p className="text-sm text-gray-500">{divisionDocs.length} documento{divisionDocs.length !== 1 ? 's' : ''}</p>
+            <div className="w-full flex items-center gap-2 p-4 bg-white/80 hover:bg-white rounded-lg shadow-sm transition-all">
+                <button
+                    onClick={() => setIsExpanded(!isExpanded)}
+                    className="flex-1 flex items-center justify-between"
+                >
+                    <div className="flex items-center gap-3">
+                        <span className="text-2xl">{division.icon}</span>
+                        <div className="text-left">
+                            <h3 className="text-lg font-semibold text-gray-800">{division.name}</h3>
+                            <p className="text-sm text-gray-500">{divisionDocs.length} documento{divisionDocs.length !== 1 ? 's' : ''}</p>
+                        </div>
                     </div>
-                </div>
-                <div className="text-gray-400">
-                    {isExpanded ? '▼' : '▶'}
-                </div>
-            </button>
+                    <div className="text-gray-400">
+                        {isExpanded ? '▼' : '▶'}
+                    </div>
+                </button>
+                {isCustomModule && canEdit && onEditDivision && (
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onEditDivision(division);
+                        }}
+                        className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                        title="Editar bloque"
+                    >
+                        <Edit size={18} />
+                    </button>
+                )}
+            </div>
 
             {isExpanded && (
                 <div className="mt-3 pl-4">
@@ -1241,9 +1300,29 @@ const DivisionAccordion = ({ division, docs, view, onPreview, onEdit, onDownload
 const DocCard = ({ doc, onPreview, onEdit, onDownloadWord, onDownloadExcel, canEdit, isCustomModule = false, isAdmin = false, onDelete }) => {
     const status = getDocumentStatus(doc);
 
-    // Verificar qué archivos tiene el documento
-    const hasWord = !!doc.wordFilePath;
-    const hasExcel = !!doc.excelFilePath;
+    // Verificar si es un tipo multi-archivo (cronograma, backlog, lecciones)
+    const isMultiFileType = ['lecciones', 'backlog', 'cronograma'].includes(doc.type);
+
+    // Para tipos multi-archivo, verificar qué archivos tiene en el array files
+    let hasWord = !!doc.wordFilePath;
+    let hasExcel = !!doc.excelFilePath;
+    let hasPdf = !!doc.pdfFilePath;
+    let hasMpp = false;
+
+    if (isMultiFileType && doc.files && Array.isArray(doc.files)) {
+        // Resetear flags y verificar archivos en el array
+        hasWord = false;
+        hasExcel = false;
+        hasPdf = false;
+        hasMpp = false;
+
+        doc.files.forEach(file => {
+            if (file.type === 'pdf') hasPdf = true;
+            else if (file.type === 'excel') hasExcel = true;
+            else if (file.type === 'mpp') hasMpp = true;
+            else if (file.type === 'word') hasWord = true;
+        });
+    }
 
     return (
         <div className={`bg-white rounded-xl p-4 md:p-5 shadow-md border-l-4 ${getDocClass(doc.category)} flex flex-col justify-between`}>
@@ -1282,19 +1361,46 @@ const DocCard = ({ doc, onPreview, onEdit, onDownloadWord, onDownloadExcel, canE
                 <div className="flex flex-col sm:flex-row gap-2 mt-4">
                     {/* Mostrar botones según archivos disponibles */}
                     <>
-                        {hasWord && (
-                            <button onClick={() => onDownloadWord(doc)} className="flex-1 text-xs md:text-sm bg-indigo-100 text-indigo-700 font-semibold py-2 px-2 md:px-3 rounded-lg hover:bg-indigo-200 flex items-center justify-center gap-1">
-                                <FileText size={14}/> <span>Word</span>
-                            </button>
+                        {/* Para tipos multi-archivo: mostrar botones según reglas específicas */}
+                        {isMultiFileType ? (
+                            <>
+                                {/* Si tiene Excel: botón Excel para descargar */}
+                                {hasExcel && (
+                                    <button onClick={() => onDownloadExcel(doc)} className="flex-1 text-xs md:text-sm bg-green-100 text-green-700 font-semibold py-2 px-2 md:px-3 rounded-lg hover:bg-green-200 flex items-center justify-center gap-1">
+                                        <FileSpreadsheet size={14}/> <span>Excel</span>
+                                    </button>
+                                )}
+                                {/* Si tiene MPP: botón Descargar */}
+                                {hasMpp && (
+                                    <button onClick={() => onDownloadExcel(doc)} className="flex-1 text-xs md:text-sm bg-purple-100 text-purple-700 font-semibold py-2 px-2 md:px-3 rounded-lg hover:bg-purple-200 flex items-center justify-center gap-1">
+                                        <Download size={14}/> <span>Descargar</span>
+                                    </button>
+                                )}
+                                {/* Si tiene PDF: botón Ver */}
+                                {hasPdf && (
+                                    <button onClick={() => onPreview(doc)} className={`${hasExcel || hasMpp ? 'flex-1' : 'w-full'} text-xs md:text-sm bg-blue-100 text-blue-700 font-semibold py-2 px-2 md:px-3 rounded-lg hover:bg-blue-200 flex items-center justify-center gap-1`}>
+                                        <Eye size={14}/> <span>Ver</span>
+                                    </button>
+                                )}
+                            </>
+                        ) : (
+                            <>
+                                {/* Para documentos regulares: mostrar botones como antes */}
+                                {hasWord && (
+                                    <button onClick={() => onDownloadWord(doc)} className="flex-1 text-xs md:text-sm bg-indigo-100 text-indigo-700 font-semibold py-2 px-2 md:px-3 rounded-lg hover:bg-indigo-200 flex items-center justify-center gap-1">
+                                        <FileText size={14}/> <span>Word</span>
+                                    </button>
+                                )}
+                                {hasExcel && (
+                                    <button onClick={() => onDownloadExcel(doc)} className="flex-1 text-xs md:text-sm bg-green-100 text-green-700 font-semibold py-2 px-2 md:px-3 rounded-lg hover:bg-green-200 flex items-center justify-center gap-1">
+                                        <FileSpreadsheet size={14}/> <span>Excel</span>
+                                    </button>
+                                )}
+                                <button onClick={() => onPreview(doc)} className={`${hasWord || hasExcel ? 'flex-1' : 'w-full'} text-xs md:text-sm bg-blue-100 text-blue-700 font-semibold py-2 px-2 md:px-3 rounded-lg hover:bg-blue-200 flex items-center justify-center gap-1`}>
+                                    <Eye size={14}/> <span>Ver</span>
+                                </button>
+                            </>
                         )}
-                        {hasExcel && (
-                            <button onClick={() => onDownloadExcel(doc)} className="flex-1 text-xs md:text-sm bg-green-100 text-green-700 font-semibold py-2 px-2 md:px-3 rounded-lg hover:bg-green-200 flex items-center justify-center gap-1">
-                                <FileSpreadsheet size={14}/> <span>Excel</span>
-                            </button>
-                        )}
-                        <button onClick={() => onPreview(doc)} className={`${hasWord || hasExcel ? 'flex-1' : 'w-full'} text-xs md:text-sm bg-blue-100 text-blue-700 font-semibold py-2 px-2 md:px-3 rounded-lg hover:bg-blue-200 flex items-center justify-center gap-1`}>
-                            <Eye size={14}/> <span>Ver</span>
-                        </button>
                     </>
                 </div>
             </div>
@@ -1304,8 +1410,30 @@ const DocCard = ({ doc, onPreview, onEdit, onDownloadWord, onDownloadExcel, canE
 
 const DocListItem = ({ doc, onPreview, onEdit, onDownloadWord, onDownloadExcel, canEdit }) => {
     const status = getDocumentStatus(doc);
-    const hasWord = !!doc.wordFilePath;
-    const hasExcel = !!doc.excelFilePath;
+
+    // Verificar si es un tipo multi-archivo (cronograma, backlog, lecciones)
+    const isMultiFileType = ['lecciones', 'backlog', 'cronograma'].includes(doc.type);
+
+    // Para tipos multi-archivo, verificar qué archivos tiene en el array files
+    let hasWord = !!doc.wordFilePath;
+    let hasExcel = !!doc.excelFilePath;
+    let hasPdf = !!doc.pdfFilePath;
+    let hasMpp = false;
+
+    if (isMultiFileType && doc.files && Array.isArray(doc.files)) {
+        // Resetear flags y verificar archivos en el array
+        hasWord = false;
+        hasExcel = false;
+        hasPdf = false;
+        hasMpp = false;
+
+        doc.files.forEach(file => {
+            if (file.type === 'pdf') hasPdf = true;
+            else if (file.type === 'excel') hasExcel = true;
+            else if (file.type === 'mpp') hasMpp = true;
+            else if (file.type === 'word') hasWord = true;
+        });
+    }
 
     return (
         <div className={`flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 p-3 md:p-4 rounded-lg transition-colors hover:bg-gray-50`}>
@@ -1320,17 +1448,40 @@ const DocListItem = ({ doc, onPreview, onEdit, onDownloadWord, onDownloadExcel, 
                 <p className="text-xs text-gray-500 truncate">Actualizado: {doc.updatedAt?.seconds ? new Date(doc.updatedAt.seconds * 1000).toLocaleDateString() : doc.updatedAt} • Versión: {doc.version || '1.0'}</p>
             </div>
             <div className="flex flex-wrap gap-2 w-full sm:w-auto">
-                {hasWord && (
-                    <button onClick={() => onDownloadWord(doc)} className="text-xs bg-indigo-100 text-indigo-700 font-semibold py-1 px-2 md:px-3 rounded-full hover:bg-indigo-200 flex items-center gap-1 whitespace-nowrap">
-                        <FileText size={12}/> <span className="hidden sm:inline">Word</span>
-                    </button>
+                {/* Para tipos multi-archivo: mostrar botones según reglas específicas */}
+                {isMultiFileType ? (
+                    <>
+                        {hasExcel && (
+                            <button onClick={() => onDownloadExcel(doc)} className="text-xs bg-green-100 text-green-700 font-semibold py-1 px-2 md:px-3 rounded-full hover:bg-green-200 flex items-center gap-1 whitespace-nowrap">
+                                <FileSpreadsheet size={12}/> <span className="hidden sm:inline">Excel</span>
+                            </button>
+                        )}
+                        {hasMpp && (
+                            <button onClick={() => onDownloadExcel(doc)} className="text-xs bg-purple-100 text-purple-700 font-semibold py-1 px-2 md:px-3 rounded-full hover:bg-purple-200 flex items-center gap-1 whitespace-nowrap">
+                                <Download size={12}/> <span className="hidden sm:inline">Descargar</span>
+                            </button>
+                        )}
+                        {hasPdf && (
+                            <button onClick={() => onPreview(doc)} className="text-xs bg-blue-100 text-blue-700 font-semibold py-1 px-2 md:px-3 rounded-full hover:bg-blue-200 flex items-center gap-1 whitespace-nowrap">
+                                <Eye size={12}/> Ver
+                            </button>
+                        )}
+                    </>
+                ) : (
+                    <>
+                        {hasWord && (
+                            <button onClick={() => onDownloadWord(doc)} className="text-xs bg-indigo-100 text-indigo-700 font-semibold py-1 px-2 md:px-3 rounded-full hover:bg-indigo-200 flex items-center gap-1 whitespace-nowrap">
+                                <FileText size={12}/> <span className="hidden sm:inline">Word</span>
+                            </button>
+                        )}
+                        {hasExcel && (
+                            <button onClick={() => onDownloadExcel(doc)} className="text-xs bg-green-100 text-green-700 font-semibold py-1 px-2 md:px-3 rounded-full hover:bg-green-200 flex items-center gap-1 whitespace-nowrap">
+                                <FileSpreadsheet size={12}/> <span className="hidden sm:inline">Excel</span>
+                            </button>
+                        )}
+                        <button onClick={() => onPreview(doc)} className="text-xs bg-blue-100 text-blue-700 font-semibold py-1 px-2 md:px-3 rounded-full hover:bg-blue-200 flex items-center gap-1 whitespace-nowrap"><Eye size={12}/> Ver</button>
+                    </>
                 )}
-                {hasExcel && (
-                    <button onClick={() => onDownloadExcel(doc)} className="text-xs bg-green-100 text-green-700 font-semibold py-1 px-2 md:px-3 rounded-full hover:bg-green-200 flex items-center gap-1 whitespace-nowrap">
-                        <FileSpreadsheet size={12}/> <span className="hidden sm:inline">Excel</span>
-                    </button>
-                )}
-                <button onClick={() => onPreview(doc)} className="text-xs bg-blue-100 text-blue-700 font-semibold py-1 px-2 md:px-3 rounded-full hover:bg-blue-200 flex items-center gap-1 whitespace-nowrap"><Eye size={12}/> Ver</button>
                 {canEdit && (
                     <button onClick={() => onEdit(doc)} className="text-xs bg-yellow-100 text-yellow-700 font-semibold py-1 px-2 md:px-3 rounded-full hover:bg-yellow-200 flex items-center gap-1 whitespace-nowrap">
                         <Edit size={12} /> <span className="hidden sm:inline">Actualizar</span>
@@ -1645,7 +1796,8 @@ const UploadDocModal = ({ onClose, onUploadSuccess, docToEdit, activeCategory, a
     const isCustomModule = allCategories.find(cat => cat.id === category)?.isCustom || false;
 
     // Determine which file types are needed based on document type
-    const needsExcelOnly = ['lecciones', 'backlog', 'cronograma', 'solicitud-cambio'].includes(type); // Solo Excel/MPP, sin PDF ni Word
+    const isMultiFileType = ['lecciones', 'backlog', 'cronograma'].includes(type); // Tipos que permiten múltiples archivos (Excel/MPP/PDF)
+    const needsExcelOnly = false; // Ya no se usa
     const isPrototipo = type === 'prototipo';
     const isRepositorios = type === 'repositorios';
 
@@ -1743,27 +1895,35 @@ const UploadDocModal = ({ onClose, onUploadSuccess, docToEdit, activeCategory, a
 
         // Validaciones según tipo de documento
         if (isManual) {
-            // Para manuales: al menos un archivo es obligatorio (PDF o Word)
+            // Para manuales: al menos un archivo es obligatorio solo en modo creación
             const hasNewFiles = manualFiles.length > 0;
-            const hasExistingFiles = docToEdit?.files?.length > 0;
 
             if (!isEditMode && !hasNewFiles) {
                 setError('Debe subir al menos un archivo (PDF o Word).');
                 return;
             }
 
-            if (isEditMode && !hasNewFiles && !hasExistingFiles) {
-                setError('Debe subir al menos un archivo (PDF o Word).');
+            // En modo edición se permite guardar sin archivos (para eliminar todos)
+        } else if (isMultiFileType) {
+            // Para cronograma, backlog, lecciones: al menos un archivo es obligatorio solo en modo creación
+            const hasNewFiles = manualFiles.length > 0;
+
+            if (!isEditMode && !hasNewFiles) {
+                setError('Debe subir al menos un archivo (Excel, MPP o PDF).');
                 return;
             }
-        } else if (isPrototipo) {
-            // Para prototipos, al menos uno es obligatorio (Figma URL o PDF)
-            const hasFigma = figmaUrl && figmaUrl.includes('figma.com');
-            const hasPdf = pdfFile || docToEdit?.pdfFilePath;
 
-            if (!hasFigma && !hasPdf) {
-                setError('Debe proporcionar al menos un enlace de Figma o un archivo PDF.');
-                return;
+            // En modo edición se permite guardar sin archivos (para eliminar todos)
+        } else if (isPrototipo) {
+            // Para prototipos: validar solo en modo creación
+            if (!isEditMode) {
+                const hasFigma = figmaUrl && figmaUrl.includes('figma.com');
+                const hasPdf = !!pdfFile;
+
+                if (!hasFigma && !hasPdf) {
+                    setError('Debe proporcionar al menos un enlace de Figma o un archivo PDF.');
+                    return;
+                }
             }
 
             // Si proporcionó Figma URL, validar que sea válida
@@ -1771,40 +1931,42 @@ const UploadDocModal = ({ onClose, onUploadSuccess, docToEdit, activeCategory, a
                 setError('El enlace de Figma no es válido. Debe contener "figma.com".');
                 return;
             }
+
+            // En modo edición se permite guardar sin archivos (para eliminar todos)
         } else if (isRepositorios) {
-            // Para repositorios, ambos URLs son obligatorios
-            if (!frontendUrl || !backendUrl) {
-                setError('Debe proporcionar ambos enlaces: Frontend y Backend.');
-                return;
+            // Para repositorios: validar solo en modo creación
+            if (!isEditMode) {
+                if (!frontendUrl || !backendUrl) {
+                    setError('Debe proporcionar ambos enlaces: Frontend y Backend.');
+                    return;
+                }
             }
-            // Validar que sean URLs válidas
-            try {
-                new URL(frontendUrl);
-                new URL(backendUrl);
-            } catch {
-                setError('Los enlaces deben ser URLs válidas (incluir http:// o https://).');
-                return;
-            }
-        } else if (needsExcelOnly) {
-            // Para lecciones, cronograma, backlog, solicitud-cambio: Excel/MPP obligatorio
-            const hasNewExcel = !!excelFile;
-            const hasExistingExcel = isEditMode && !!docToEdit?.excelFilePath && !deleteExistingExcel;
 
-            if (!hasNewExcel && !hasExistingExcel) {
-                setError('Debe subir un archivo Excel (.xlsx, .xls) o Microsoft Project (.mpp).');
-                return;
+            // Validar que sean URLs válidas si se proporcionan
+            if (frontendUrl || backendUrl) {
+                try {
+                    if (frontendUrl) new URL(frontendUrl);
+                    if (backendUrl) new URL(backendUrl);
+                } catch {
+                    setError('Los enlaces deben ser URLs válidas (incluir http:// o https://).');
+                    return;
+                }
             }
+
+            // En modo edición se permite guardar sin enlaces (para eliminar todos)
         } else {
-            // Para documentos regulares: al menos PDF o Word obligatorio
-            const hasNewPdf = !!pdfFile;
-            const hasNewWord = !!wordFile;
-            const hasExistingPdf = isEditMode && !!docToEdit?.pdfFilePath && !deleteExistingPdf;
-            const hasExistingWord = isEditMode && !!docToEdit?.wordFilePath && !deleteExistingWord;
+            // Para documentos regulares: validar solo en modo creación
+            if (!isEditMode) {
+                const hasNewPdf = !!pdfFile;
+                const hasNewWord = !!wordFile;
 
-            if (!hasNewPdf && !hasNewWord && !hasExistingPdf && !hasExistingWord) {
-                setError('Debe subir al menos un archivo PDF o Word.');
-                return;
+                if (!hasNewPdf && !hasNewWord) {
+                    setError('Debe subir al menos un archivo PDF o Word.');
+                    return;
+                }
             }
+
+            // En modo edición se permite guardar sin archivos (para eliminar todos)
         }
 
         setIsUploading(true);
@@ -1876,7 +2038,7 @@ const UploadDocModal = ({ onClose, onUploadSuccess, docToEdit, activeCategory, a
             }
 
             // Handle Manuales (múltiples archivos PDF y Word en el mismo campo)
-            if (isManual) {
+            if (isManual || isMultiFileType) {
                 // Inicializar estructura de archivos (copiar para no mutar el original)
                 let filesData = Array.isArray(docToEdit?.files) ? [...docToEdit.files] : [];
 
@@ -1902,7 +2064,7 @@ const UploadDocModal = ({ onClose, onUploadSuccess, docToEdit, activeCategory, a
                     }
                 }
 
-                // Subir archivos nuevos (PDF y Word)
+                // Subir archivos nuevos (PDF, Word, Excel, MPP)
                 for (const file of manualFiles) {
                     const fileFormData = new FormData();
                     fileFormData.append('file', file);
@@ -1933,7 +2095,16 @@ const UploadDocModal = ({ onClose, onUploadSuccess, docToEdit, activeCategory, a
 
                     // Determinar el tipo de archivo
                     const fileExtension = file.name.split('.').pop()?.toLowerCase() || '';
-                    const fileType = ['pdf'].includes(fileExtension) ? 'pdf' : 'word';
+                    let fileType = 'other';
+                    if (['pdf'].includes(fileExtension)) {
+                        fileType = 'pdf';
+                    } else if (['doc', 'docx'].includes(fileExtension)) {
+                        fileType = 'word';
+                    } else if (['xls', 'xlsx'].includes(fileExtension)) {
+                        fileType = 'excel';
+                    } else if (['mpp'].includes(fileExtension)) {
+                        fileType = 'mpp';
+                    }
 
                     filesData.push({
                         name: file.name,
@@ -2375,7 +2546,101 @@ const UploadDocModal = ({ onClose, onUploadSuccess, docToEdit, activeCategory, a
                         </>
                     )}
 
-                    {/* Documentos que solo necesitan Excel/MPP (lecciones, cronograma, backlog, solicitud-cambio) */}
+                    {/* Cronograma, Product Backlog, Lecciones Aprendidas (múltiples archivos: Excel/MPP/PDF) */}
+                    {isMultiFileType && (
+                        <>
+                            <div className="bg-amber-50 border-l-4 border-amber-500 p-3 rounded">
+                                <p className="text-xs text-amber-700">
+                                    <strong>Nota:</strong> Puedes subir múltiples archivos (Excel, MPP o PDF). Se requiere al menos un archivo.
+                                </p>
+                            </div>
+
+                            {/* Campo único para archivos Excel, MPP y PDF */}
+                            <div>
+                                <label htmlFor="multiFiles" className="block text-sm font-medium text-gray-700 mb-1">
+                                    Archivos del Documento <span className="text-red-500">*</span>
+                                </label>
+                                <input
+                                    type="file"
+                                    id="multiFiles"
+                                    onChange={handleManualFilesChange}
+                                    accept=".pdf,.xlsx,.xls,.mpp"
+                                    multiple
+                                    className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-amber-50 file:text-amber-700 hover:file:bg-amber-100"
+                                />
+                                <p className="text-xs text-gray-500 mt-1">
+                                    Puedes seleccionar múltiples archivos Excel, MPP y/o PDF a la vez
+                                </p>
+
+                                {/* Preview de archivos seleccionados */}
+                                {manualFiles.length > 0 && (
+                                    <div className="mt-3 space-y-2">
+                                        <p className="text-sm font-medium text-gray-700">Archivos seleccionados ({manualFiles.length}):</p>
+                                        {manualFiles.map((file, index) => {
+                                            const ext = file.name.split('.').pop()?.toLowerCase();
+                                            let label = 'Archivo';
+                                            if (ext === 'pdf') label = 'PDF';
+                                            else if (['xlsx', 'xls'].includes(ext)) label = 'Excel';
+                                            else if (ext === 'mpp') label = 'MPP';
+
+                                            return (
+                                                <FilePreview
+                                                    key={index}
+                                                    file={file}
+                                                    onRemove={() => removeManualFile(index)}
+                                                    label={label}
+                                                />
+                                            );
+                                        })}
+                                    </div>
+                                )}
+
+                                {/* Mostrar archivos existentes en modo edición */}
+                                {isEditMode && docToEdit?.files && docToEdit.files.length > 0 && (
+                                    <div className="mt-3 space-y-2">
+                                        <p className="text-sm font-medium text-gray-700">Archivos existentes:</p>
+                                        {docToEdit.files.map((file, index) => {
+                                            const isMarkedForDeletion = deleteExistingManualFiles.includes(index);
+                                            if (isMarkedForDeletion) {
+                                                return (
+                                                    <div key={`existing-${index}`} className="mt-2 p-3 bg-red-50 border border-red-200 rounded-lg">
+                                                        <div className="flex items-center justify-between">
+                                                            <div className="flex items-center gap-2">
+                                                                <span className="text-red-700 text-sm">⚠️ <strong>{file.name}</strong> será eliminado al guardar</span>
+                                                            </div>
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => toggleDeleteExistingManualFile(index)}
+                                                                className="text-xs text-red-600 hover:text-red-800 underline"
+                                                            >
+                                                                Deshacer
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                );
+                                            }
+
+                                            let labelText = 'Archivo existente';
+                                            if (file.type === 'pdf') labelText = 'PDF existente';
+                                            else if (file.type === 'excel') labelText = 'Excel existente';
+                                            else if (file.type === 'mpp') labelText = 'MPP existente';
+
+                                            return (
+                                                <FilePreview
+                                                    key={`existing-${index}`}
+                                                    existingFile={file.name}
+                                                    onRemove={() => toggleDeleteExistingManualFile(index)}
+                                                    label={labelText}
+                                                />
+                                            );
+                                        })}
+                                    </div>
+                                )}
+                            </div>
+                        </>
+                    )}
+
+                    {/* Documentos que solo necesitan Excel/MPP (solicitud-cambio) */}
                     {needsExcelOnly && (
                         <>
                             <div className="bg-green-50 border-l-4 border-green-500 p-3 rounded">
@@ -2413,7 +2678,7 @@ const UploadDocModal = ({ onClose, onUploadSuccess, docToEdit, activeCategory, a
                     )}
 
                     {/* Documentos regulares: PDF o Word (al menos uno obligatorio) */}
-                    {!isPrototipo && !isRepositorios && !isManual && !needsExcelOnly && (
+                    {!isPrototipo && !isRepositorios && !isManual && !needsExcelOnly && !isMultiFileType && (
                         <>
                             <div className="bg-blue-50 border-l-4 border-blue-500 p-3 rounded">
                                 <p className="text-xs text-blue-700">
@@ -2694,9 +2959,10 @@ const TemplatePreviewModal = ({ template, onClose }) => {
 };
 
 // Modal para crear bloques/divisiones personalizadas
-const DivisionModal = ({ onClose, firestore, activeModuleId }) => {
-    const [divisionName, setDivisionName] = useState('');
-    const [divisionIcon, setDivisionIcon] = useState('📋');
+const DivisionModal = ({ onClose, firestore, activeModuleId, divisionToEdit }) => {
+    const isEditMode = Boolean(divisionToEdit);
+    const [divisionName, setDivisionName] = useState(divisionToEdit?.name || '');
+    const [divisionIcon, setDivisionIcon] = useState(divisionToEdit?.icon || '📋');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState('');
 
@@ -2717,30 +2983,49 @@ const DivisionModal = ({ onClose, firestore, activeModuleId }) => {
         setError('');
 
         try {
-            const divisionData = {
-                name: divisionName.trim(),
-                icon: divisionIcon,
-                moduleId: activeModuleId,
-                types: [], // Array vacío, los documentos se asociarán directamente con la división
-                createdAt: serverTimestamp(),
-                updatedAt: serverTimestamp()
-            };
+            if (isEditMode) {
+                // Actualizar división existente
+                const divisionData = {
+                    name: divisionName.trim(),
+                    icon: divisionIcon,
+                    updatedAt: serverTimestamp()
+                };
 
-            // Create division in Firestore
-            await addDoc(collection(firestore, 'custom-divisions'), divisionData);
+                await updateDoc(doc(firestore, 'custom-divisions', divisionToEdit.id), divisionData);
 
-            Swal.fire({
-                icon: 'success',
-                title: 'Bloque creado',
-                text: `El bloque "${divisionName}" ha sido creado exitosamente.`,
-                timer: 2000,
-                showConfirmButton: false
-            });
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Bloque actualizado',
+                    text: `El bloque "${divisionName}" ha sido actualizado exitosamente.`,
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+            } else {
+                // Crear nueva división
+                const divisionData = {
+                    name: divisionName.trim(),
+                    icon: divisionIcon,
+                    moduleId: activeModuleId,
+                    types: [], // Array vacío, los documentos se asociarán directamente con la división
+                    createdAt: serverTimestamp(),
+                    updatedAt: serverTimestamp()
+                };
+
+                await addDoc(collection(firestore, 'custom-divisions'), divisionData);
+
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Bloque creado',
+                    text: `El bloque "${divisionName}" ha sido creado exitosamente.`,
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+            }
 
             onClose();
         } catch (err: any) {
-            console.error('Error creating division:', err);
-            setError('No se pudo crear el bloque. ' + (err.message || ''));
+            console.error(`Error ${isEditMode ? 'updating' : 'creating'} division:`, err);
+            setError(`No se pudo ${isEditMode ? 'actualizar' : 'crear'} el bloque. ` + (err.message || ''));
         } finally {
             setIsSubmitting(false);
         }
@@ -2752,7 +3037,7 @@ const DivisionModal = ({ onClose, firestore, activeModuleId }) => {
         <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4" onClick={onClose}>
             <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md" onClick={e => e.stopPropagation()}>
                 <header className="flex justify-between items-center p-5 border-b bg-gray-50 rounded-t-2xl">
-                    <h3 className="text-lg font-semibold text-gray-800">Crear Bloque/División</h3>
+                    <h3 className="text-lg font-semibold text-gray-800">{isEditMode ? 'Editar Bloque/División' : 'Crear Bloque/División'}</h3>
                     <button onClick={onClose} className="w-9 h-9 rounded-full bg-red-500 text-white font-bold text-xl hover:bg-red-600 transition-colors">×</button>
                 </header>
                 <form onSubmit={handleSubmit} className="p-6 space-y-5">
@@ -2812,12 +3097,12 @@ const DivisionModal = ({ onClose, firestore, activeModuleId }) => {
                             {isSubmitting ? (
                                 <>
                                     <Loader2 className="animate-spin" size={16} />
-                                    Creando...
+                                    {isEditMode ? 'Actualizando...' : 'Creando...'}
                                 </>
                             ) : (
                                 <>
-                                    <Plus size={16} />
-                                    Crear Bloque
+                                    {isEditMode ? <Edit size={16} /> : <Plus size={16} />}
+                                    {isEditMode ? 'Actualizar Bloque' : 'Crear Bloque'}
                                 </>
                             )}
                         </button>
