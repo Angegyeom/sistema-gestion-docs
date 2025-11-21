@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import AppHeader from "@/components/layout/app-header";
 import { useFirestore, useCollection, useMemoFirebase, useUser, errorEmitter, FirestorePermissionError } from "@/firebase";
-import { collection, addDoc, serverTimestamp, doc, updateDoc, writeBatch, deleteDoc, getDocs } from "firebase/firestore";
+import { collection, addDoc, serverTimestamp, doc, updateDoc, writeBatch, deleteDoc, getDocs, deleteField } from "firebase/firestore";
 import { Loader2, Upload, Edit, Eye, Download, Plus, FileText, FileSpreadsheet, FileStack, CheckCircle2, AlertCircle, XCircle, Trash2 } from 'lucide-react';
 import Swal from 'sweetalert2';
 import { usePermissions } from '@/hooks/use-permissions';
@@ -256,26 +256,29 @@ const documentDivisions = [
 
 // Función para determinar el estado del documento basado en archivos subidos
 const getDocumentStatus = (doc) => {
-    // Si es un manual (tiene array de files)
-    if (doc.files && Array.isArray(doc.files)) {
-        return doc.files.length > 0 ? 'Completado' : 'Pendiente';
-    }
+    // Verificar si es un manual por tipo (manual o manual-bd)
+    const isManualType = doc.type === 'manual' || doc.type === 'manual-bd';
 
-    // Si tiene URL de Figma o PDF, es un prototipo completado
-    if (doc.figmaUrl || doc.pdfFilePath) {
-        // Para prototipos: al menos uno de los dos (Figma o PDF)
-        if (doc.frontendUrl !== undefined || doc.backendUrl !== undefined) {
-            // Es un repositorio, no un prototipo simple
-        } else {
-            return doc.figmaUrl || doc.pdfFilePath ? 'Completado' : 'Pendiente';
+    // Si es un manual (tiene array de files o tipo manual)
+    if (isManualType || (doc.files && Array.isArray(doc.files))) {
+        // Para manuales, verificar si tiene archivos en el array
+        if (doc.files && Array.isArray(doc.files)) {
+            return doc.files.length > 0 ? 'Completado' : 'Pendiente';
         }
+        // Si no tiene array files pero tiene pdfFilePath (legacy), también es válido
+        return doc.pdfFilePath ? 'Completado' : 'Pendiente';
     }
 
     // Si tiene URLs de repositorio, verificar que tenga ambos (obligatorios)
-    if (doc.frontendUrl !== undefined || doc.backendUrl !== undefined) {
+    if (doc.type === 'repositorios' || doc.frontendUrl !== undefined || doc.backendUrl !== undefined) {
         const hasFrontend = !!doc.frontendUrl;
         const hasBackend = !!doc.backendUrl;
         return (hasFrontend && hasBackend) ? 'Completado' : 'Pendiente';
+    }
+
+    // Para prototipos: al menos uno de los dos (Figma o PDF)
+    if (doc.type === 'prototipo') {
+        return (doc.figmaUrl || doc.pdfFilePath) ? 'Completado' : 'Pendiente';
     }
 
     // Para documentos regulares: PDF es obligatorio, Word/Excel son opcionales
@@ -689,11 +692,12 @@ export default function DocumentacionPage() {
         }
 
         // Check if there's a PDF to preview
-        if (!doc.pdfFilePath && (!doc.url || doc.url === '#')) {
+        // For regular documents (not prototypes/repos), pdfFilePath is required
+        if (!doc.pdfFilePath) {
             Swal.fire({
                 icon: 'warning',
                 title: 'Documento no disponible',
-                text: 'No hay un documento PDF disponible para previsualizar.',
+                text: 'No hay un documento PDF disponible para previsualizar. El archivo ha sido eliminado o no se ha subido.',
                 confirmButtonText: 'Entendido',
                 confirmButtonColor: '#4A7BA7'
             });
@@ -1569,6 +1573,11 @@ const UploadDocModal = ({ onClose, onUploadSuccess, docToEdit, activeCategory, a
     // Para manuales: soporte de múltiples archivos (PDF y Word en el mismo campo)
     const [manualFiles, setManualFiles] = useState<File[]>([]);
 
+    // Estados para rastrear archivos existentes que se marcarán para eliminación
+    const [deleteExistingPdf, setDeleteExistingPdf] = useState(false);
+    const [deleteExistingWord, setDeleteExistingWord] = useState(false);
+    const [deleteExistingExcel, setDeleteExistingExcel] = useState(false);
+
     const isEditMode = Boolean(docToEdit);
 
     // Verificar si es un módulo personalizado
@@ -1604,6 +1613,11 @@ const UploadDocModal = ({ onClose, onUploadSuccess, docToEdit, activeCategory, a
             if (docToEdit.figmaUrl) setFigmaUrl(docToEdit.figmaUrl);
             if (docToEdit.frontendUrl) setFrontendUrl(docToEdit.frontendUrl);
             if (docToEdit.backendUrl) setBackendUrl(docToEdit.backendUrl);
+
+            // Reset deletion flags when opening modal
+            setDeleteExistingPdf(false);
+            setDeleteExistingWord(false);
+            setDeleteExistingExcel(false);
         } else {
             setCategory(activeCategory);
         }
@@ -1718,6 +1732,57 @@ const UploadDocModal = ({ onClose, onUploadSuccess, docToEdit, activeCategory, a
                 updatedAt: serverTimestamp(),
             };
 
+            // Handle file deletions in edit mode
+            if (isEditMode && docToEdit) {
+                // Delete PDF if marked for deletion
+                if (deleteExistingPdf && docToEdit.pdfFilePath) {
+                    try {
+                        const deleteResponse = await fetch(`/api/storage/delete?filePath=${encodeURIComponent(docToEdit.pdfFilePath)}`, {
+                            method: 'DELETE',
+                        });
+                        if (!deleteResponse.ok) {
+                            console.warn('Failed to delete PDF file from storage:', docToEdit.pdfFilePath);
+                        }
+                    } catch (error) {
+                        console.error('Error deleting PDF file:', error);
+                    }
+                    // Mark field for deletion in Firestore
+                    docData.pdfFilePath = deleteField();
+                }
+
+                // Delete Word if marked for deletion
+                if (deleteExistingWord && docToEdit.wordFilePath) {
+                    try {
+                        const deleteResponse = await fetch(`/api/storage/delete?filePath=${encodeURIComponent(docToEdit.wordFilePath)}`, {
+                            method: 'DELETE',
+                        });
+                        if (!deleteResponse.ok) {
+                            console.warn('Failed to delete Word file from storage:', docToEdit.wordFilePath);
+                        }
+                    } catch (error) {
+                        console.error('Error deleting Word file:', error);
+                    }
+                    // Mark field for deletion in Firestore
+                    docData.wordFilePath = deleteField();
+                }
+
+                // Delete Excel if marked for deletion
+                if (deleteExistingExcel && docToEdit.excelFilePath) {
+                    try {
+                        const deleteResponse = await fetch(`/api/storage/delete?filePath=${encodeURIComponent(docToEdit.excelFilePath)}`, {
+                            method: 'DELETE',
+                        });
+                        if (!deleteResponse.ok) {
+                            console.warn('Failed to delete Excel file from storage:', docToEdit.excelFilePath);
+                        }
+                    } catch (error) {
+                        console.error('Error deleting Excel file:', error);
+                    }
+                    // Mark field for deletion in Firestore
+                    docData.excelFilePath = deleteField();
+                }
+            }
+
             // Handle Manuales (múltiples archivos PDF y Word en el mismo campo)
             if (isManual) {
                 // Inicializar estructura de archivos
@@ -1816,8 +1881,8 @@ const UploadDocModal = ({ onClose, onUploadSuccess, docToEdit, activeCategory, a
 
                     const pdfUploadResult = await pdfUploadResponse.json();
                     docData.pdfFilePath = pdfUploadResult.filePath;
-                } else if (docToEdit?.pdfFilePath) {
-                    // Keep existing PDF if not uploading new one
+                } else if (docToEdit?.pdfFilePath && !deleteExistingPdf) {
+                    // Keep existing PDF if not uploading new one and not marked for deletion
                     docData.pdfFilePath = docToEdit.pdfFilePath;
                 }
             } else if (isRepositorios) {
@@ -1854,8 +1919,8 @@ const UploadDocModal = ({ onClose, onUploadSuccess, docToEdit, activeCategory, a
 
                     const pdfUploadResult = await pdfUploadResponse.json();
                     docData.pdfFilePath = pdfUploadResult.filePath;
-                } else if (docToEdit?.pdfFilePath) {
-                    // Keep existing PDF if not uploading new one
+                } else if (docToEdit?.pdfFilePath && !deleteExistingPdf) {
+                    // Keep existing PDF if not uploading new one and not marked for deletion
                     docData.pdfFilePath = docToEdit.pdfFilePath;
                 }
 
@@ -1887,8 +1952,8 @@ const UploadDocModal = ({ onClose, onUploadSuccess, docToEdit, activeCategory, a
 
                     const wordUploadResult = await wordUploadResponse.json();
                     docData.wordFilePath = wordUploadResult.filePath;
-                } else if (docToEdit?.wordFilePath) {
-                    // Keep existing Word if not uploading new one
+                } else if (docToEdit?.wordFilePath && !deleteExistingWord) {
+                    // Keep existing Word if not uploading new one and not marked for deletion
                     docData.wordFilePath = docToEdit.wordFilePath;
                 }
 
@@ -1920,8 +1985,8 @@ const UploadDocModal = ({ onClose, onUploadSuccess, docToEdit, activeCategory, a
 
                     const excelUploadResult = await excelUploadResponse.json();
                     docData.excelFilePath = excelUploadResult.filePath;
-                } else if (docToEdit?.excelFilePath) {
-                    // Keep existing Excel if not uploading new one
+                } else if (docToEdit?.excelFilePath && !deleteExistingExcel) {
+                    // Keep existing Excel if not uploading new one and not marked for deletion
                     docData.excelFilePath = docToEdit.excelFilePath;
                 }
 
@@ -2163,12 +2228,17 @@ const UploadDocModal = ({ onClose, onUploadSuccess, docToEdit, activeCategory, a
                                 />
                                 <p className="text-xs text-gray-500 mt-1">Sube el archivo PDF (obligatorio)</p>
                                 {pdfFile && <FilePreview file={pdfFile} onRemove={() => setPdfFile(null)} label="PDF" />}
-                                {!pdfFile && isEditMode && docToEdit?.pdfFilePath && (
+                                {!pdfFile && isEditMode && docToEdit?.pdfFilePath && !deleteExistingPdf && (
                                     <FilePreview
                                         existingFile={docToEdit.pdfFilePath.split('/').pop()}
-                                        onRemove={() => setPdfFile(null)}
+                                        onRemove={() => setDeleteExistingPdf(true)}
                                         label="PDF existente"
                                     />
+                                )}
+                                {deleteExistingPdf && !pdfFile && (
+                                    <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+                                        ⚠️ El archivo PDF será eliminado al guardar. Puedes subir uno nuevo o dejar vacío para volver a estado Pendiente.
+                                    </div>
                                 )}
                             </div>
                             <div className="bg-blue-50 border-l-4 border-blue-500 p-3 rounded">
@@ -2187,12 +2257,17 @@ const UploadDocModal = ({ onClose, onUploadSuccess, docToEdit, activeCategory, a
                                         />
                                         <p className="text-xs text-gray-500 mt-1">Sube el archivo Word (.doc o .docx)</p>
                                         {wordFile && <FilePreview file={wordFile} onRemove={() => setWordFile(null)} label="Word" />}
-                                        {!wordFile && isEditMode && docToEdit?.wordFilePath && (
+                                        {!wordFile && isEditMode && docToEdit?.wordFilePath && !deleteExistingWord && (
                                             <FilePreview
                                                 existingFile={docToEdit.wordFilePath.split('/').pop()}
-                                                onRemove={() => setWordFile(null)}
+                                                onRemove={() => setDeleteExistingWord(true)}
                                                 label="Word existente"
                                             />
+                                        )}
+                                        {deleteExistingWord && !wordFile && (
+                                            <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded-lg text-sm text-yellow-700">
+                                                ⚠️ El archivo Word será eliminado al guardar.
+                                            </div>
                                         )}
                                     </div>
                                     <div>
@@ -2208,12 +2283,17 @@ const UploadDocModal = ({ onClose, onUploadSuccess, docToEdit, activeCategory, a
                                         />
                                         <p className="text-xs text-gray-500 mt-1">Sube el archivo Excel (.xlsx, .xls) o Microsoft Project (.mpp)</p>
                                         {excelFile && <FilePreview file={excelFile} onRemove={() => setExcelFile(null)} label="Excel" />}
-                                        {!excelFile && isEditMode && docToEdit?.excelFilePath && (
+                                        {!excelFile && isEditMode && docToEdit?.excelFilePath && !deleteExistingExcel && (
                                             <FilePreview
                                                 existingFile={docToEdit.excelFilePath.split('/').pop()}
-                                                onRemove={() => setExcelFile(null)}
+                                                onRemove={() => setDeleteExistingExcel(true)}
                                                 label="Excel existente"
                                             />
+                                        )}
+                                        {deleteExistingExcel && !excelFile && (
+                                            <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded-lg text-sm text-yellow-700">
+                                                ⚠️ El archivo Excel será eliminado al guardar.
+                                            </div>
                                         )}
                                     </div>
                                 </div>

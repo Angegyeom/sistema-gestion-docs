@@ -1101,21 +1101,29 @@ const RoleModal = ({ role, onClose, firestore }) => {
 
 // Función para determinar el estado del documento basado en archivos subidos
 const getDocumentStatus = (doc) => {
-    // Si tiene URL de Figma o PDF, es un prototipo completado
-    if (doc.figmaUrl || doc.pdfFilePath) {
-        // Para prototipos: al menos uno de los dos (Figma o PDF)
-        if (doc.frontendUrl !== undefined || doc.backendUrl !== undefined) {
-            // Es un repositorio, no un prototipo simple
-        } else {
-            return doc.figmaUrl || doc.pdfFilePath ? 'Completado' : 'Pendiente';
+    // Verificar si es un manual por tipo (manual o manual-bd)
+    const isManualType = doc.type === 'manual' || doc.type === 'manual-bd';
+
+    // Si es un manual (tiene array de files o tipo manual)
+    if (isManualType || (doc.files && Array.isArray(doc.files))) {
+        // Para manuales, verificar si tiene archivos en el array
+        if (doc.files && Array.isArray(doc.files)) {
+            return doc.files.length > 0 ? 'Completado' : 'Pendiente';
         }
+        // Si no tiene array files pero tiene pdfFilePath (legacy), también es válido
+        return doc.pdfFilePath ? 'Completado' : 'Pendiente';
     }
 
     // Si tiene URLs de repositorio, verificar que tenga ambos (obligatorios)
-    if (doc.frontendUrl !== undefined || doc.backendUrl !== undefined) {
+    if (doc.type === 'repositorios' || doc.frontendUrl !== undefined || doc.backendUrl !== undefined) {
         const hasFrontend = !!doc.frontendUrl;
         const hasBackend = !!doc.backendUrl;
         return (hasFrontend && hasBackend) ? 'Completado' : 'Pendiente';
+    }
+
+    // Para prototipos: al menos uno de los dos (Figma o PDF)
+    if (doc.type === 'prototipo') {
+        return (doc.figmaUrl || doc.pdfFilePath) ? 'Completado' : 'Pendiente';
     }
 
     // Para documentos regulares: PDF es obligatorio, Word/Excel son opcionales
