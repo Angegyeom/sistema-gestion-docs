@@ -399,7 +399,6 @@ const formatTemplates = [
     { id: 'requerimientos', name: 'Requerimientos Funcionales', file: 'REQUERMIENTOS_CPV.docx', type: 'word', icon: '📋', color: 'bg-pink-500' },
     { id: 'lecciones', name: 'Lecciones Aprendidas', file: 'Lecciones_Aprendidas.xlsx', type: 'excel', icon: '💡', color: 'bg-orange-500' },
     { id: 'backlog', name: 'Product Backlog', file: 'Plantilla_Product_Backlog.xlsx', type: 'excel', icon: '📊', color: 'bg-teal-500' },
-    { id: 'cronograma', name: 'Cronograma', file: 'cronograma.xlsx', type: 'excel', icon: '📅', color: 'bg-yellow-500' },
     { id: 'directiva', name: 'Directiva de Formatos', file: 'DIRECTIVA_DE_FORMATOS.pdf', type: 'pdf', icon: '📄', color: 'bg-red-500' },
     { id: 'manual-db', name: 'Manual de Base de Datos', file: 'Manual_BD.docx', type: 'word', icon: '🗄️', color: 'bg-purple-500' },
     { id: 'doc-api', name: 'Documentación de API', file: 'Plantilla_Documentacion_API.docx', type: 'word', icon: '🔌', color: 'bg-indigo-500' },
@@ -1573,6 +1572,9 @@ const UploadDocModal = ({ onClose, onUploadSuccess, docToEdit, activeCategory, a
     // Para manuales: soporte de múltiples archivos (PDF y Word en el mismo campo)
     const [manualFiles, setManualFiles] = useState<File[]>([]);
 
+    // Estado para rastrear archivos existentes de manuales que se marcarán para eliminación
+    const [deleteExistingManualFiles, setDeleteExistingManualFiles] = useState<number[]>([]);
+
     // Estados para rastrear archivos existentes que se marcarán para eliminación
     const [deleteExistingPdf, setDeleteExistingPdf] = useState(false);
     const [deleteExistingWord, setDeleteExistingWord] = useState(false);
@@ -1618,6 +1620,7 @@ const UploadDocModal = ({ onClose, onUploadSuccess, docToEdit, activeCategory, a
             setDeleteExistingPdf(false);
             setDeleteExistingWord(false);
             setDeleteExistingExcel(false);
+            setDeleteExistingManualFiles([]);
         } else {
             setCategory(activeCategory);
         }
@@ -1653,6 +1656,18 @@ const UploadDocModal = ({ onClose, onUploadSuccess, docToEdit, activeCategory, a
 
     const removeManualFile = (index: number) => {
         setManualFiles(prev => prev.filter((_, i) => i !== index));
+    };
+
+    const toggleDeleteExistingManualFile = (index: number) => {
+        setDeleteExistingManualFiles(prev => {
+            if (prev.includes(index)) {
+                // Si ya está marcado, desmarcarlo
+                return prev.filter(i => i !== index);
+            } else {
+                // Si no está marcado, marcarlo
+                return [...prev, index];
+            }
+        });
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -1785,8 +1800,30 @@ const UploadDocModal = ({ onClose, onUploadSuccess, docToEdit, activeCategory, a
 
             // Handle Manuales (múltiples archivos PDF y Word en el mismo campo)
             if (isManual) {
-                // Inicializar estructura de archivos
-                const filesData = docToEdit?.files || [];
+                // Inicializar estructura de archivos (copiar para no mutar el original)
+                let filesData = Array.isArray(docToEdit?.files) ? [...docToEdit.files] : [];
+
+                // En modo edición, eliminar archivos marcados para eliminación
+                if (isEditMode && deleteExistingManualFiles.length > 0) {
+                    // Ordenar índices en orden descendente para eliminar de atrás hacia adelante
+                    const sortedIndices = [...deleteExistingManualFiles].sort((a, b) => b - a);
+
+                    for (const index of sortedIndices) {
+                        const fileToDelete = filesData[index];
+                        if (fileToDelete) {
+                            try {
+                                // Eliminar archivo de Google Cloud Storage
+                                await fetch(`/api/storage/delete?filePath=${encodeURIComponent(fileToDelete.path)}`, {
+                                    method: 'DELETE',
+                                });
+                            } catch (error) {
+                                console.error('Error deleting file from storage:', error);
+                            }
+                            // Eliminar del array
+                            filesData.splice(index, 1);
+                        }
+                    }
+                }
 
                 // Subir archivos nuevos (PDF y Word)
                 for (const file of manualFiles) {
@@ -2198,14 +2235,36 @@ const UploadDocModal = ({ onClose, onUploadSuccess, docToEdit, activeCategory, a
                                 {isEditMode && docToEdit?.files && docToEdit.files.length > 0 && (
                                     <div className="mt-3 space-y-2">
                                         <p className="text-sm font-medium text-gray-700">Archivos existentes:</p>
-                                        {docToEdit.files.map((file, index) => (
-                                            <FilePreview
-                                                key={`existing-${index}`}
-                                                existingFile={file.name}
-                                                onRemove={() => {/* TODO: Implementar eliminación de archivos existentes */}}
-                                                label={file.type === 'pdf' ? 'PDF existente' : 'Word existente'}
-                                            />
-                                        ))}
+                                        {docToEdit.files.map((file, index) => {
+                                            const isMarkedForDeletion = deleteExistingManualFiles.includes(index);
+                                            if (isMarkedForDeletion) {
+                                                // Mostrar mensaje de advertencia en lugar del archivo
+                                                return (
+                                                    <div key={`existing-${index}`} className="mt-2 p-3 bg-red-50 border border-red-200 rounded-lg">
+                                                        <div className="flex items-center justify-between">
+                                                            <div className="flex items-center gap-2">
+                                                                <span className="text-red-700 text-sm">⚠️ <strong>{file.name}</strong> será eliminado al guardar</span>
+                                                            </div>
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => toggleDeleteExistingManualFile(index)}
+                                                                className="text-xs text-red-600 hover:text-red-800 underline"
+                                                            >
+                                                                Deshacer
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                );
+                                            }
+                                            return (
+                                                <FilePreview
+                                                    key={`existing-${index}`}
+                                                    existingFile={file.name}
+                                                    onRemove={() => toggleDeleteExistingManualFile(index)}
+                                                    label={file.type === 'pdf' ? 'PDF existente' : 'Word existente'}
+                                                />
+                                            );
+                                        })}
                                     </div>
                                 )}
                             </div>

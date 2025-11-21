@@ -94,8 +94,10 @@ export default function AdministradorPage() {
         }
 
         // Verificar el rol directamente desde userData para evitar race conditions
+        // Soportar tanto el campo legacy 'role' como el nuevo array 'roles'
         const userRole = userData.role?.toUpperCase();
-        const hasAdminAccess = userRole === 'ADMIN';
+        const userRoles = Array.isArray(userData.roles) ? userData.roles.map(r => r.toUpperCase()) : [];
+        const hasAdminAccess = userRole === 'ADMIN' || userRoles.includes('ADMIN');
 
         // Solo denegar acceso si definitivamente NO es admin
         if (!hasAdminAccess) {
@@ -122,8 +124,10 @@ export default function AdministradorPage() {
     }
 
     // Verificar el rol directamente desde userData
+    // Soportar tanto el campo legacy 'role' como el nuevo array 'roles'
     const userRole = userData?.role?.toUpperCase();
-    const hasAdminAccess = userRole === 'ADMIN';
+    const userRoles = Array.isArray(userData?.roles) ? userData.roles.map(r => r.toUpperCase()) : [];
+    const hasAdminAccess = userRole === 'ADMIN' || userRoles.includes('ADMIN');
 
     // Si no es admin, no mostrar nada (el useEffect redirigirá)
     if (!userData || !hasAdminAccess) {
