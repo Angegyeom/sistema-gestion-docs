@@ -1099,8 +1099,72 @@ const RoleModal = ({ role, onClose, firestore }) => {
     );
 };
 
+// Función para determinar el estado del documento basado en archivos subidos
+const getDocumentStatus = (doc) => {
+    // Si tiene URL de Figma o PDF, es un prototipo completado
+    if (doc.figmaUrl || doc.pdfFilePath) {
+        // Para prototipos: al menos uno de los dos (Figma o PDF)
+        if (doc.frontendUrl !== undefined || doc.backendUrl !== undefined) {
+            // Es un repositorio, no un prototipo simple
+        } else {
+            return doc.figmaUrl || doc.pdfFilePath ? 'Completado' : 'Pendiente';
+        }
+    }
+
+    // Si tiene URLs de repositorio, verificar que tenga ambos (obligatorios)
+    if (doc.frontendUrl !== undefined || doc.backendUrl !== undefined) {
+        const hasFrontend = !!doc.frontendUrl;
+        const hasBackend = !!doc.backendUrl;
+        return (hasFrontend && hasBackend) ? 'Completado' : 'Pendiente';
+    }
+
+    // Para documentos regulares: PDF es obligatorio, Word/Excel son opcionales
+    const hasPdf = !!doc.pdfFilePath;
+    return hasPdf ? 'Completado' : 'Pendiente';
+};
+
 // Componente de Reporte General
 const ReportSection = ({ documents, isLoading }) => {
+    const firestore = useFirestore();
+
+    // Función para migrar documentos existentes recalculando el campo 'estado' en español
+    useEffect(() => {
+        const migrateDocumentStatus = async () => {
+            if (!firestore || !documents || documents.length === 0) return;
+
+            try {
+                const { writeBatch, doc: firestoreDoc, serverTimestamp } = await import('firebase/firestore');
+                const batch = writeBatch(firestore);
+                let needsUpdate = false;
+
+                documents.forEach(docData => {
+                    // Recalcular el estado en español para todos los documentos
+                    const estadoActual = docData.estado;
+                    const estadoNuevo = getDocumentStatus(docData);
+
+                    // Actualizar TODOS los documentos donde el estado no coincida con el calculado
+                    // Esto incluye documentos con estados viejos como 'Incompleto' que ya no existen
+                    if (estadoActual !== estadoNuevo) {
+                        const docRef = firestoreDoc(firestore, "documentos", docData.id);
+                        batch.update(docRef, { estado: estadoNuevo, updatedAt: serverTimestamp() });
+                        needsUpdate = true;
+                    }
+                });
+
+                if (needsUpdate) {
+                    await batch.commit();
+                    console.log("Documentos migrados con estados en español en Reporte");
+                }
+            } catch (error) {
+                console.error("Error migrando documentos en Reporte: ", error);
+            }
+        };
+
+        if (!isLoading && documents) {
+            migrateDocumentStatus();
+        }
+    }, [firestore, documents, isLoading]);
+
     // Definir las categorías/módulos estáticos
     const categories = [
         { id: 'segmentacion', name: 'Segmentación', icon: '🗺️' },
@@ -1114,47 +1178,16 @@ const ReportSection = ({ documents, isLoading }) => {
         { id: 'yanapaq', name: 'Yanapaq', icon: '🤝' },
     ];
 
-    // Función para determinar el estado del documento
-    const getDocumentStatus = (doc) => {
-        const needsExcel = ['lecciones', 'backlog', 'cronograma'].includes(doc.type);
-        const needsWord = ['acta', 'manual', 'requerimientos'].includes(doc.type);
-        const isPrototipo = doc.type === 'prototipo';
-
-        if (isPrototipo) {
-            return doc.figmaUrl ? 'complete' : 'pending';
-        }
-
-        if (needsExcel) {
-            const hasExcel = !!doc.excelFilePath;
-            const hasPdf = !!doc.pdfFilePath;
-
-            if (hasExcel && hasPdf) return 'complete';
-            if (hasExcel || hasPdf) return 'incomplete';
-            return 'pending';
-        }
-
-        if (needsWord) {
-            const hasWord = !!doc.wordFilePath;
-            const hasPdf = !!doc.pdfFilePath;
-
-            if (hasWord && hasPdf) return 'complete';
-            if (hasWord || hasPdf) return 'incomplete';
-            return 'pending';
-        }
-
-        return doc.pdfFilePath ? 'complete' : 'pending';
-    };
-
-    // Calcular estadísticas por módulo
+    // Calcular estadísticas por módulo usando el campo 'estado' de Firestore
     const getModuleStats = (categoryId) => {
         const moduleDocs = documents.filter(doc => doc.category === categoryId);
         const total = moduleDocs.length;
-        const complete = moduleDocs.filter(doc => getDocumentStatus(doc) === 'complete').length;
-        const incomplete = moduleDocs.filter(doc => getDocumentStatus(doc) === 'incomplete').length;
-        const pending = moduleDocs.filter(doc => getDocumentStatus(doc) === 'pending').length;
+        // Usar el campo 'estado' directamente desde Firestore (en español), con fallback a 'Pendiente' si no existe
+        const complete = moduleDocs.filter(doc => (doc.estado || 'Pendiente') === 'Completado').length;
+        const pending = moduleDocs.filter(doc => (doc.estado || 'Pendiente') === 'Pendiente').length;
         const percentage = total > 0 ? Math.round((complete / total) * 100) : 0;
 
-        return { total, complete, incomplete, pending, percentage, docs: moduleDocs };
+        return { total, complete, pending, percentage, docs: moduleDocs };
     };
 
     // Calcular estadísticas generales
@@ -1163,10 +1196,9 @@ const ReportSection = ({ documents, isLoading }) => {
         return {
             total: acc.total + stats.total,
             complete: acc.complete + stats.complete,
-            incomplete: acc.incomplete + stats.incomplete,
             pending: acc.pending + stats.pending,
         };
-    }, { total: 0, complete: 0, incomplete: 0, pending: 0 });
+    }, { total: 0, complete: 0, pending: 0 });
 
     const generalPercentage = generalStats.total > 0
         ? Math.round((generalStats.complete / generalStats.total) * 100)
@@ -1189,7 +1221,7 @@ const ReportSection = ({ documents, isLoading }) => {
                 ) : (
                     <>
                         {/* Estadísticas Generales */}
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
                             <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-5 border-2 border-blue-200">
                                 <div className="text-3xl font-bold text-blue-700">{generalStats.total}</div>
                                 <div className="text-sm text-blue-600 font-medium">Total Documentos</div>
@@ -1197,10 +1229,6 @@ const ReportSection = ({ documents, isLoading }) => {
                             <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-5 border-2 border-green-200">
                                 <div className="text-3xl font-bold text-green-700">{generalStats.complete}</div>
                                 <div className="text-sm text-green-600 font-medium">Completados</div>
-                            </div>
-                            <div className="bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-xl p-5 border-2 border-yellow-200">
-                                <div className="text-3xl font-bold text-yellow-700">{generalStats.incomplete}</div>
-                                <div className="text-sm text-yellow-600 font-medium">Incompletos</div>
                             </div>
                             <div className="bg-gradient-to-br from-red-50 to-red-100 rounded-xl p-5 border-2 border-red-200">
                                 <div className="text-3xl font-bold text-red-700">{generalStats.pending}</div>
@@ -1256,11 +1284,9 @@ const ModuleReport = ({ category, stats }) => {
 
     const getStatusIcon = (docStatus) => {
         switch (docStatus) {
-            case 'complete':
+            case 'Completado':
                 return <CheckCircle2 size={16} className="text-green-600" />;
-            case 'incomplete':
-                return <AlertCircle size={16} className="text-yellow-600" />;
-            case 'pending':
+            case 'Pendiente':
                 return <XCircle size={16} className="text-red-600" />;
             default:
                 return <XCircle size={16} className="text-gray-400" />;
@@ -1269,46 +1295,13 @@ const ModuleReport = ({ category, stats }) => {
 
     const getStatusText = (docStatus) => {
         switch (docStatus) {
-            case 'complete':
-                return <span className="text-green-700 font-medium">Completo</span>;
-            case 'incomplete':
-                return <span className="text-yellow-700 font-medium">Incompleto</span>;
-            case 'pending':
+            case 'Completado':
+                return <span className="text-green-700 font-medium">Completado</span>;
+            case 'Pendiente':
                 return <span className="text-red-700 font-medium">Pendiente</span>;
             default:
                 return <span className="text-gray-500">Sin datos</span>;
         }
-    };
-
-    // Función para determinar el estado del documento
-    const getDocumentStatus = (doc) => {
-        const needsExcel = ['lecciones', 'backlog', 'cronograma'].includes(doc.type);
-        const needsWord = ['acta', 'manual', 'requerimientos'].includes(doc.type);
-        const isPrototipo = doc.type === 'prototipo';
-
-        if (isPrototipo) {
-            return doc.figmaUrl ? 'complete' : 'pending';
-        }
-
-        if (needsExcel) {
-            const hasExcel = !!doc.excelFilePath;
-            const hasPdf = !!doc.pdfFilePath;
-
-            if (hasExcel && hasPdf) return 'complete';
-            if (hasExcel || hasPdf) return 'incomplete';
-            return 'pending';
-        }
-
-        if (needsWord) {
-            const hasWord = !!doc.wordFilePath;
-            const hasPdf = !!doc.pdfFilePath;
-
-            if (hasWord && hasPdf) return 'complete';
-            if (hasWord || hasPdf) return 'incomplete';
-            return 'pending';
-        }
-
-        return doc.pdfFilePath ? 'complete' : 'pending';
     };
 
     return (
@@ -1351,7 +1344,8 @@ const ModuleReport = ({ category, stats }) => {
                 <div className="px-4 pb-4 pt-2 border-t border-gray-200 bg-white">
                     <div className="space-y-2">
                         {stats.docs.map(doc => {
-                            const docStatus = getDocumentStatus(doc);
+                            // Usar el campo 'estado' directamente desde Firestore
+                            const docStatus = doc.estado || 'Pendiente';
                             return (
                                 <div key={doc.id} className="flex items-center justify-between py-2 px-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
                                     <div className="flex items-center gap-3 flex-1">
