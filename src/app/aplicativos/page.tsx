@@ -67,19 +67,17 @@ const SystemCard = ({ icon, title, description, status, onClick, id }) => {
 };
 
 export default function AplicativosPage() {
-    const [modalSystem, setModalSystem] = useState(null);
+    const [showUnavailableModal, setShowUnavailableModal] = useState(false);
 
     const handleSystemClick = (system) => {
         if (system.url && system.url !== '#') {
-            setModalSystem(system);
+            // Abrir directamente en nueva ventana
+            window.open(system.url, '_blank');
         } else {
-            alert('Sistema no disponible temporalmente');
+            // Mostrar modal de sistema no disponible
+            setShowUnavailableModal(true);
         }
     };
-    
-    const closeModal = () => {
-        setModalSystem(null);
-    }
   
     return (
     <>
@@ -97,78 +95,39 @@ export default function AplicativosPage() {
           </div>
         </div>
       </div>
-      {modalSystem && <SystemModal system={modalSystem} onClose={closeModal} />}
+      {showUnavailableModal && (
+        <UnavailableModal onClose={() => setShowUnavailableModal(false)} />
+      )}
     </>
   );
 }
 
-const SystemModal = ({ system, onClose }) => {
-    const [showCredentials, setShowCredentials] = useState(false);
-    const [passwordVisible, setPasswordVisible] = useState(false);
-
-    const handleCopy = (text) => {
-        navigator.clipboard.writeText(text);
-        alert('Copiado al portapapeles');
-    };
-
-    const openInNewTab = () => {
-        window.open(system.url, '_blank');
-    };
-    
-    const refreshIframe = () => {
-        const iframe = document.getElementById('system-iframe') as HTMLIFrameElement;
-        if(iframe) iframe.src = system.url;
-    }
-
-    const toggleFullscreen = () => {
-        const modal = document.getElementById('modal-content');
-        if (modal) {
-            if (!document.fullscreenElement) {
-                modal.requestFullscreen();
-            } else {
-                document.exitFullscreen();
-            }
-        }
-    }
-    
-    return (
-        <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-5" onClick={onClose}>
-            <div id="modal-content" className="bg-white rounded-xl w-full h-full max-w-7xl flex flex-col overflow-hidden shadow-2xl" onClick={e => e.stopPropagation()}>
-                <header className="bg-[#004272] text-white p-4 flex justify-between items-center rounded-t-xl">
-                    <h3 className="font-semibold text-lg">{system.title}</h3>
-                    <div className="flex items-center gap-2">
-                        {system.credentials && <button onClick={() => setShowCredentials(!showCredentials)} className="bg-white/20 hover:bg-white/30 p-2 rounded-md transition-colors" title="Credenciales">🔑</button>}
-                        <button onClick={toggleFullscreen} className="bg-white/20 hover:bg-white/30 p-2 rounded-md transition-colors" title="Pantalla completa">⛶</button>
-                        <button onClick={refreshIframe} className="bg-white/20 hover:bg-white/30 p-2 rounded-md transition-colors" title="Recargar">🔄</button>
-                        <button onClick={openInNewTab} className="bg-white/20 hover:bg-white/30 p-2 rounded-md transition-colors" title="Abrir en nueva pestaña">↗</button>
-                        <button onClick={onClose} className="bg-red-500/80 hover:bg-red-500 p-2 rounded-md transition-colors" title="Cerrar">✕</button>
-                    </div>
-                </header>
-                {showCredentials && system.credentials && (
-                    <div className="bg-gray-100 p-4 border-b border-gray-200">
-                        <div className="flex gap-8 items-center">
-                            <div>
-                                <label className="text-xs font-bold text-gray-500 uppercase">Usuario</label>
-                                <div className="flex items-center gap-2 bg-white border border-gray-300 rounded-md p-2">
-                                    <input type="text" value={system.credentials.user} readOnly className="bg-transparent outline-none font-mono text-sm" />
-                                    <button onClick={() => handleCopy(system.credentials.user)} className="text-gray-500 hover:text-gray-800">📋</button>
-                                </div>
-                            </div>
-                            <div>
-                                <label className="text-xs font-bold text-gray-500 uppercase">Contraseña</label>
-                                <div className="flex items-center gap-2 bg-white border border-gray-300 rounded-md p-2">
-                                    <input type={passwordVisible ? "text" : "password"} value={system.credentials.password} readOnly className="bg-transparent outline-none font-mono text-sm" />
-                                    <button onClick={() => setPasswordVisible(!passwordVisible)} className="text-gray-500 hover:text-gray-800">{passwordVisible ? '🙈' : '👁️'}</button>
-                                    <button onClick={() => handleCopy(system.credentials.password)} className="text-gray-500 hover:text-gray-800">📋</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                )}
-                <div className="flex-1 bg-gray-200">
-                    <iframe id="system-iframe" src={system.url} className="w-full h-full border-0" />
-                </div>
-            </div>
+const UnavailableModal = ({ onClose }) => {
+  return (
+    <div
+      className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4"
+      onClick={onClose}
+    >
+      <div
+        className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 transform transition-all"
+        onClick={e => e.stopPropagation()}
+      >
+        <div className="text-center">
+          <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <span className="text-4xl">⚠️</span>
+          </div>
+          <h3 className="text-xl font-bold text-gray-800 mb-2">Sistema No Disponible</h3>
+          <p className="text-gray-600 mb-6">
+            Este sistema se encuentra temporalmente no disponible. Por favor, intente más tarde.
+          </p>
+          <button
+            onClick={onClose}
+            className="w-full bg-[#004272] text-white py-3 px-6 rounded-lg font-semibold hover:bg-[#003561] transition-colors"
+          >
+            Entendido
+          </button>
         </div>
-    );
+      </div>
+    </div>
+  );
 };

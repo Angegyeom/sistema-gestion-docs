@@ -1030,6 +1030,58 @@ export default function DocumentacionPage() {
         }
     };
 
+    const handleDeleteDivision = async (division: any) => {
+        if (!firestore) return;
+
+        // Verificar si la división tiene documentos
+        const divisionDocs = docs.filter(doc => doc.divisionId === division.id);
+
+        if (divisionDocs.length > 0) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'No se puede eliminar',
+                html: `El bloque <strong>"${division.name}"</strong> contiene ${divisionDocs.length} documento(s).<br><br>Debes eliminar primero todos los documentos del bloque.`,
+                confirmButtonText: 'Entendido',
+                confirmButtonColor: '#004272'
+            });
+            return;
+        }
+
+        const result = await Swal.fire({
+            icon: 'warning',
+            title: '¿Eliminar bloque/división?',
+            html: `¿Estás seguro de que deseas eliminar el bloque <strong>"${division.name}"</strong>?<br><br><span class="text-sm text-gray-600">Esta acción no se puede deshacer.</span>`,
+            showCancelButton: true,
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar',
+            confirmButtonColor: '#dc2626',
+            cancelButtonColor: '#6b7280'
+        });
+
+        if (!result.isConfirmed) return;
+
+        try {
+            // Eliminar la división de Firestore (colección custom-divisions)
+            await deleteDoc(doc(firestore, 'custom-divisions', division.id));
+
+            Swal.fire({
+                icon: 'success',
+                title: 'Bloque eliminado',
+                text: `El bloque "${division.name}" ha sido eliminado exitosamente.`,
+                timer: 2000,
+                showConfirmButton: false
+            });
+        } catch (error) {
+            console.error('Error deleting division:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'No se pudo eliminar el bloque. Inténtalo de nuevo.',
+                confirmButtonColor: '#004272'
+            });
+        }
+    };
+
     return (
         <>
             <AppHeader />
@@ -1179,6 +1231,7 @@ export default function DocumentacionPage() {
                                                        setDivisionToEdit(div);
                                                        setShowDivisionModal(true);
                                                    }}
+                                                   onDeleteDivision={handleDeleteDivision}
                                                />
                                            ))}
                                        </div>
@@ -1209,7 +1262,7 @@ export default function DocumentacionPage() {
 }
 
 // Componente de Acordeón de Divisiones
-const DivisionAccordion = ({ division, docs, view, onPreview, onEdit, onDownloadWord, onDownloadExcel, canEdit, isCustomModule, isAdmin, onDelete, onEditDivision }) => {
+const DivisionAccordion = ({ division, docs, view, onPreview, onEdit, onDownloadWord, onDownloadExcel, canEdit, isCustomModule, isAdmin, onDelete, onEditDivision, onDeleteDivision }) => {
     const [isExpanded, setIsExpanded] = useState(false);
 
     // Filtrar documentos que pertenecen a esta división
@@ -1249,6 +1302,18 @@ const DivisionAccordion = ({ division, docs, view, onPreview, onEdit, onDownload
                         title="Editar bloque"
                     >
                         <Edit size={18} />
+                    </button>
+                )}
+                {isCustomModule && canEdit && onDeleteDivision && (
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onDeleteDivision(division);
+                        }}
+                        className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                        title="Eliminar bloque"
+                    >
+                        <Trash2 size={18} />
                     </button>
                 )}
             </div>
@@ -2329,7 +2394,7 @@ const UploadDocModal = ({ onClose, onUploadSuccess, docToEdit, activeCategory, a
                                 {allCategories.map(cat => <option key={cat.id} value={cat.id}>{cat.name}</option>)}
                             </select>
                         </div>
-                        <div>
+                        <div className="hidden">
                             <label htmlFor="type" className="block text-sm font-medium text-gray-700 mb-1">Tipo de Documento</label>
                             <select id="type" value={type} onChange={(e) => setType(e.target.value)} className="w-full p-2.5 sm:p-3 border-2 border-gray-200 rounded-lg outline-none focus:border-[#004272] text-sm sm:text-base">
                                 <option value="default">Documento General</option>
@@ -2348,9 +2413,9 @@ const UploadDocModal = ({ onClose, onUploadSuccess, docToEdit, activeCategory, a
                             </select>
                         </div>
                     </div>
-                     <div>
+                     <div className="hidden">
                         <label htmlFor="version" className="block text-sm font-medium text-gray-700 mb-1">Versión</label>
-                        <input type="text" id="version" value={version} onChange={(e) => setVersion(e.target.value)} required className="w-full p-2.5 sm:p-3 border-2 border-gray-200 rounded-lg outline-none focus:border-[#004272] text-sm sm:text-base" placeholder="Ej: 1.0"/>
+                        <input type="text" id="version" value={version} onChange={(e) => setVersion(e.target.value)} className="w-full p-2.5 sm:p-3 border-2 border-gray-200 rounded-lg outline-none focus:border-[#004272] text-sm sm:text-base" placeholder="Ej: 1.0"/>
                     </div>
 
                     {/* Campo de División para módulos personalizados */}
