@@ -33,7 +33,7 @@ const nextConfig: NextConfig = {
   // Configuración para permitir archivos más grandes
   experimental: {
     serverActions: {
-      bodySizeLimit: '50mb',
+      bodySizeLimit: '100mb',
     },
   },
 };

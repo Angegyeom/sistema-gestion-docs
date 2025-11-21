@@ -1807,7 +1807,7 @@ const UploadDocModal = ({ onClose, onUploadSuccess, docToEdit, activeCategory, a
                         } catch (e) {
                             // Si no es JSON, probablemente es un error del servidor
                             if (uploadResponse.status === 413) {
-                                errorMessage = `El archivo "${file.name}" es demasiado grande. Tamaño máximo: 50MB`;
+                                errorMessage = `El archivo "${file.name}" es demasiado grande. Tamaño máximo: 100MB`;
                             } else {
                                 errorMessage = `Error ${uploadResponse.status}: ${uploadResponse.statusText}`;
                             }
@@ -1871,7 +1871,7 @@ const UploadDocModal = ({ onClose, onUploadSuccess, docToEdit, activeCategory, a
                             errorMessage = errorData.error || errorMessage;
                         } catch (e) {
                             if (pdfUploadResponse.status === 413) {
-                                errorMessage = `El archivo PDF es demasiado grande. Tamaño máximo: 50MB`;
+                                errorMessage = `El archivo PDF es demasiado grande. Tamaño máximo: 100MB`;
                             } else {
                                 errorMessage = `Error ${pdfUploadResponse.status}: ${pdfUploadResponse.statusText}`;
                             }
@@ -1909,7 +1909,7 @@ const UploadDocModal = ({ onClose, onUploadSuccess, docToEdit, activeCategory, a
                             errorMessage = errorData.error || errorMessage;
                         } catch (e) {
                             if (pdfUploadResponse.status === 413) {
-                                errorMessage = `El archivo PDF es demasiado grande. Tamaño máximo: 50MB`;
+                                errorMessage = `El archivo PDF es demasiado grande. Tamaño máximo: 100MB`;
                             } else {
                                 errorMessage = `Error ${pdfUploadResponse.status}: ${pdfUploadResponse.statusText}`;
                             }
@@ -1942,7 +1942,7 @@ const UploadDocModal = ({ onClose, onUploadSuccess, docToEdit, activeCategory, a
                             errorMessage = errorData.error || errorMessage;
                         } catch (e) {
                             if (wordUploadResponse.status === 413) {
-                                errorMessage = `El archivo Word es demasiado grande. Tamaño máximo: 50MB`;
+                                errorMessage = `El archivo Word es demasiado grande. Tamaño máximo: 100MB`;
                             } else {
                                 errorMessage = `Error ${wordUploadResponse.status}: ${wordUploadResponse.statusText}`;
                             }
@@ -1975,7 +1975,7 @@ const UploadDocModal = ({ onClose, onUploadSuccess, docToEdit, activeCategory, a
                             errorMessage = errorData.error || errorMessage;
                         } catch (e) {
                             if (excelUploadResponse.status === 413) {
-                                errorMessage = `El archivo Excel es demasiado grande. Tamaño máximo: 50MB`;
+                                errorMessage = `El archivo Excel es demasiado grande. Tamaño máximo: 100MB`;
                             } else {
                                 errorMessage = `Error ${excelUploadResponse.status}: ${excelUploadResponse.statusText}`;
                             }

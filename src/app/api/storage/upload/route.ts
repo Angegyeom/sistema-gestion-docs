@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { uploadFile } from '@/lib/storage';
 
-// Configurar tamaño máximo de archivo (50MB)
+// Configurar tamaño máximo de archivo (100MB)
 export const config = {
   api: {
     bodyParser: {
-      sizeLimit: '50mb',
+      sizeLimit: '100mb',
     },
   },
 };
