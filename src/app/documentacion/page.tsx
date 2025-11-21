@@ -1735,8 +1735,19 @@ const UploadDocModal = ({ onClose, onUploadSuccess, docToEdit, activeCategory, a
                     });
 
                     if (!uploadResponse.ok) {
-                        const errorData = await uploadResponse.json();
-                        throw new Error(errorData.error || 'File upload failed');
+                        let errorMessage = 'Error al subir el archivo';
+                        try {
+                            const errorData = await uploadResponse.json();
+                            errorMessage = errorData.error || errorMessage;
+                        } catch (e) {
+                            // Si no es JSON, probablemente es un error del servidor
+                            if (uploadResponse.status === 413) {
+                                errorMessage = `El archivo "${file.name}" es demasiado grande. Tamaño máximo: 50MB`;
+                            } else {
+                                errorMessage = `Error ${uploadResponse.status}: ${uploadResponse.statusText}`;
+                            }
+                        }
+                        throw new Error(errorMessage);
                     }
 
                     const uploadResult = await uploadResponse.json();
@@ -1789,8 +1800,18 @@ const UploadDocModal = ({ onClose, onUploadSuccess, docToEdit, activeCategory, a
                     });
 
                     if (!pdfUploadResponse.ok) {
-                        const errorData = await pdfUploadResponse.json();
-                        throw new Error(errorData.error || 'PDF upload failed');
+                        let errorMessage = 'Error al subir el PDF';
+                        try {
+                            const errorData = await pdfUploadResponse.json();
+                            errorMessage = errorData.error || errorMessage;
+                        } catch (e) {
+                            if (pdfUploadResponse.status === 413) {
+                                errorMessage = `El archivo PDF es demasiado grande. Tamaño máximo: 50MB`;
+                            } else {
+                                errorMessage = `Error ${pdfUploadResponse.status}: ${pdfUploadResponse.statusText}`;
+                            }
+                        }
+                        throw new Error(errorMessage);
                     }
 
                     const pdfUploadResult = await pdfUploadResponse.json();
@@ -1817,8 +1838,18 @@ const UploadDocModal = ({ onClose, onUploadSuccess, docToEdit, activeCategory, a
                     });
 
                     if (!pdfUploadResponse.ok) {
-                        const errorData = await pdfUploadResponse.json();
-                        throw new Error(errorData.error || 'PDF upload failed');
+                        let errorMessage = 'Error al subir el PDF';
+                        try {
+                            const errorData = await pdfUploadResponse.json();
+                            errorMessage = errorData.error || errorMessage;
+                        } catch (e) {
+                            if (pdfUploadResponse.status === 413) {
+                                errorMessage = `El archivo PDF es demasiado grande. Tamaño máximo: 50MB`;
+                            } else {
+                                errorMessage = `Error ${pdfUploadResponse.status}: ${pdfUploadResponse.statusText}`;
+                            }
+                        }
+                        throw new Error(errorMessage);
                     }
 
                     const pdfUploadResult = await pdfUploadResponse.json();
@@ -1840,8 +1871,18 @@ const UploadDocModal = ({ onClose, onUploadSuccess, docToEdit, activeCategory, a
                     });
 
                     if (!wordUploadResponse.ok) {
-                        const errorData = await wordUploadResponse.json();
-                        throw new Error(errorData.error || 'Word upload failed');
+                        let errorMessage = 'Error al subir el archivo Word';
+                        try {
+                            const errorData = await wordUploadResponse.json();
+                            errorMessage = errorData.error || errorMessage;
+                        } catch (e) {
+                            if (wordUploadResponse.status === 413) {
+                                errorMessage = `El archivo Word es demasiado grande. Tamaño máximo: 50MB`;
+                            } else {
+                                errorMessage = `Error ${wordUploadResponse.status}: ${wordUploadResponse.statusText}`;
+                            }
+                        }
+                        throw new Error(errorMessage);
                     }
 
                     const wordUploadResult = await wordUploadResponse.json();
@@ -1863,8 +1904,18 @@ const UploadDocModal = ({ onClose, onUploadSuccess, docToEdit, activeCategory, a
                     });
 
                     if (!excelUploadResponse.ok) {
-                        const errorData = await excelUploadResponse.json();
-                        throw new Error(errorData.error || 'Excel upload failed');
+                        let errorMessage = 'Error al subir el archivo Excel';
+                        try {
+                            const errorData = await excelUploadResponse.json();
+                            errorMessage = errorData.error || errorMessage;
+                        } catch (e) {
+                            if (excelUploadResponse.status === 413) {
+                                errorMessage = `El archivo Excel es demasiado grande. Tamaño máximo: 50MB`;
+                            } else {
+                                errorMessage = `Error ${excelUploadResponse.status}: ${excelUploadResponse.statusText}`;
+                            }
+                        }
+                        throw new Error(errorMessage);
                     }
 
                     const excelUploadResult = await excelUploadResponse.json();

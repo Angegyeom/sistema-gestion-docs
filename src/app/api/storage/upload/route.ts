@@ -1,6 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { uploadFile } from '@/lib/storage';
 
+// Configurar tamaño máximo de archivo (50MB)
+export const config = {
+  api: {
+    bodyParser: {
+      sizeLimit: '50mb',
+    },
+  },
+};
+
+// También configurar el runtime edge para mejor rendimiento con archivos grandes
+export const runtime = 'nodejs';
+
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
