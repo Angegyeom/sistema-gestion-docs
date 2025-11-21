@@ -1144,6 +1144,9 @@ const getDocumentStatus = (doc) => {
 // Componente de Reporte General
 const ReportSection = ({ documents, isLoading }) => {
     const firestore = useFirestore();
+    const [viewMode, setViewMode] = useState('list'); // 'list' o 'board'
+    const [filterModule, setFilterModule] = useState('all');
+    const [showPriorityOnly, setShowPriorityOnly] = useState(false);
 
     // Función para migrar documentos existentes recalculando el campo 'estado' en español
     useEffect(() => {
@@ -1196,6 +1199,30 @@ const ReportSection = ({ documents, isLoading }) => {
         { id: 'yanapaq', name: 'Yanapaq', icon: '🤝' },
     ];
 
+    // Definir los 17 tipos de documentos
+    const documentTypes = [
+        { id: 'acta', name: 'Acta de Constitución', priority: true },
+        { id: 'acta-conformidad', name: 'Acta de Conformidad', priority: true },
+        { id: 'acta-reunion', name: 'Acta de Reunión', priority: false },
+        { id: 'cronograma', name: 'Cronograma', priority: true },
+        { id: 'backlog', name: 'Product Backlog', priority: false },
+        { id: 'requerimientos', name: 'Requerimientos', priority: false },
+        { id: 'arquitectura', name: 'Arquitectura', priority: false },
+        { id: 'diagrama', name: 'Diagrama', priority: false },
+        { id: 'prototipo', name: 'Prototipo', priority: true },
+        { id: 'manual', name: 'Manual de Usuario', priority: true },
+        { id: 'manual-sistema', name: 'Manual de Sistema', priority: true },
+        { id: 'manual-bd', name: 'Manual de Base de Datos', priority: false },
+        { id: 'repositorios', name: 'Repositorios', priority: false },
+        { id: 'lecciones', name: 'Lecciones Aprendidas', priority: false },
+        { id: 'solicitud-cambio', name: 'Solicitud de Cambio', priority: false },
+        { id: 'doc-api', name: 'Documentación de API', priority: false },
+        { id: 'default', name: 'Documento General', priority: false },
+    ];
+
+    // Tipos prioritarios
+    const priorityTypes = documentTypes.filter(dt => dt.priority).map(dt => dt.id);
+
     // Calcular estadísticas por módulo usando el campo 'estado' de Firestore
     const getModuleStats = (categoryId) => {
         const moduleDocs = documents.filter(doc => doc.category === categoryId);
@@ -1222,22 +1249,102 @@ const ReportSection = ({ documents, isLoading }) => {
         ? Math.round((generalStats.complete / generalStats.total) * 100)
         : 0;
 
+    // Filtrar categorías según filtro de módulo
+    const filteredCategories = filterModule === 'all'
+        ? categories
+        : categories.filter(cat => cat.id === filterModule);
+
+    // Filtrar tipos de documentos según filtro de prioridad
+    const filteredDocTypes = showPriorityOnly
+        ? documentTypes.filter(dt => dt.priority)
+        : documentTypes;
+
     return (
         <div className="space-y-6">
             {/* Resumen General */}
             <div className="bg-white/95 rounded-2xl p-6 md:p-8 shadow-lg">
-                <div className="flex items-center gap-3 mb-6">
-                    <BarChart3 size={32} className="text-[#004272]" />
-                    <h2 className="text-2xl md:text-3xl font-bold text-gray-800">Reporte General de Avance</h2>
+                {/* Header con título y selector de vista */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                    <div className="flex items-center gap-3">
+                        <BarChart3 size={32} className="text-[#004272]" />
+                        <h2 className="text-2xl md:text-3xl font-bold text-gray-800">Reporte General de Avance</h2>
+                    </div>
+
+                    {/* Selector de vista */}
+                    <div className="flex gap-2 bg-gray-100 rounded-lg p-1">
+                        <button
+                            onClick={() => setViewMode('list')}
+                            className={`px-4 py-2 rounded-md text-sm font-semibold transition-colors ${
+                                viewMode === 'list'
+                                    ? 'bg-white text-[#004272] shadow-sm'
+                                    : 'text-gray-600 hover:text-gray-900'
+                            }`}
+                        >
+                            📋 Listado
+                        </button>
+                        <button
+                            onClick={() => setViewMode('board')}
+                            className={`px-4 py-2 rounded-md text-sm font-semibold transition-colors ${
+                                viewMode === 'board'
+                                    ? 'bg-white text-[#004272] shadow-sm'
+                                    : 'text-gray-600 hover:text-gray-900'
+                            }`}
+                        >
+                            📊 Tablero
+                        </button>
+                    </div>
                 </div>
+
+                {/* Filtros y estadísticas (solo visible en modo tablero) */}
+                {viewMode === 'board' && !isLoading && (
+                    <div className="flex flex-col md:flex-row justify-between gap-3 mb-4 pb-4 border-b">
+                        {/* Filtros izquierda */}
+                        <div className="flex flex-wrap gap-2">
+                            <select
+                                value={filterModule}
+                                onChange={(e) => setFilterModule(e.target.value)}
+                                className="px-3 py-1.5 border-2 border-gray-200 rounded-lg text-xs font-medium focus:border-[#004272] outline-none"
+                            >
+                                <option value="all">Todos los módulos</option>
+                                {categories.map(cat => (
+                                    <option key={cat.id} value={cat.id}>{cat.icon} {cat.name}</option>
+                                ))}
+                            </select>
+
+                            <button
+                                onClick={() => setShowPriorityOnly(!showPriorityOnly)}
+                                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+                                    showPriorityOnly
+                                        ? 'bg-amber-500 text-white'
+                                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                }`}
+                            >
+                                ⭐ Solo prioritarios
+                            </button>
+                        </div>
+
+                        {/* Estadísticas derecha */}
+                        <div className="flex gap-2">
+                            <div className="bg-green-50 border-2 border-green-200 rounded-lg px-3 py-1.5">
+                                <div className="text-xl font-bold text-green-700">{generalStats.complete}</div>
+                                <div className="text-[10px] text-green-600 font-medium">Entregados</div>
+                            </div>
+                            <div className="bg-red-50 border-2 border-red-200 rounded-lg px-3 py-1.5">
+                                <div className="text-xl font-bold text-red-700">{generalStats.pending}</div>
+                                <div className="text-[10px] text-red-600 font-medium">No entregados</div>
+                            </div>
+                        </div>
+                    </div>
+                )}
 
                 {isLoading ? (
                     <div className="text-center p-10">
                         <Loader2 className="animate-spin inline-block mr-2" />
                         Cargando reporte...
                     </div>
-                ) : (
+                ) : viewMode === 'list' ? (
                     <>
+                        {/* Vista de Listado (actual) */}
                         {/* Estadísticas Generales */}
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
                             <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-5 border-2 border-blue-200">
@@ -1281,6 +1388,77 @@ const ReportSection = ({ documents, isLoading }) => {
                                     );
                                 })}
                             </div>
+                        </div>
+                    </>
+                ) : (
+                    <>
+                        {/* Vista de Tablero */}
+                        <div className="overflow-x-auto">
+                            <table className="w-full border-collapse">
+                                <thead>
+                                    <tr className="bg-[#004272] text-white">
+                                        <th className="sticky left-0 z-10 bg-[#004272] px-3 py-2 text-left font-semibold text-sm border-r border-white/20">
+                                            Módulo
+                                        </th>
+                                        {filteredDocTypes.map(docType => (
+                                            <th key={docType.id} className="px-2 py-2 text-center font-semibold text-xs border-r border-white/20 min-w-[90px]">
+                                                {docType.name}
+                                                {docType.priority && <span className="ml-1">⭐</span>}
+                                            </th>
+                                        ))}
+                                        <th className="px-3 py-2 text-center font-semibold text-sm border-l-2 border-white/40">
+                                            Avance
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {filteredCategories.map((category, index) => {
+                                        const stats = getModuleStats(category.id);
+                                        return (
+                                            <tr
+                                                key={category.id}
+                                                className={`${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'} hover:bg-blue-50 transition-colors`}
+                                            >
+                                                <td className="sticky left-0 z-10 px-3 py-1.5 font-semibold text-gray-800 border-r border-gray-200 bg-inherit">
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="text-lg">{category.icon}</span>
+                                                        <span className="text-xs">{category.name}</span>
+                                                    </div>
+                                                </td>
+                                                {filteredDocTypes.map(docType => {
+                                                    const doc = documents.find(d =>
+                                                        d.category === category.id && d.type === docType.id
+                                                    );
+                                                    const estado = doc?.estado || 'Pendiente';
+                                                    const isComplete = estado === 'Completado';
+
+                                                    return (
+                                                        <td key={docType.id} className="px-2 py-1.5 text-center border-r border-gray-200">
+                                                            {isComplete ? (
+                                                                <span className="inline-flex items-center justify-center w-5 h-5 bg-green-100 rounded-full">
+                                                                    <span className="text-green-600 text-sm">✓</span>
+                                                                </span>
+                                                            ) : (
+                                                                <span className="inline-flex items-center justify-center w-5 h-5 bg-red-100 rounded-full">
+                                                                    <span className="text-red-600 text-sm">✗</span>
+                                                                </span>
+                                                            )}
+                                                        </td>
+                                                    );
+                                                })}
+                                                <td className="px-3 py-1.5 text-center font-bold text-[#004272] border-l-2 border-gray-300">
+                                                    <div className="text-xs">
+                                                        {stats.complete} de {filteredDocTypes.length}
+                                                    </div>
+                                                    <div className="text-[10px] text-gray-500">
+                                                        ({stats.percentage}%)
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
+                                </tbody>
+                            </table>
                         </div>
                     </>
                 )}
