@@ -9,15 +9,15 @@ import Swal from 'sweetalert2';
 import { usePermissions } from '@/hooks/use-permissions';
 
 const categories = [
-  { id: 'segmentacion', name: 'Segmentación', icon: '🗺️' },
-  { id: 'reclutamiento', name: 'Reclutamiento', icon: '👥' },
-  { id: 'capacitacion', name: 'Capacitación', icon: '🎓' },
-  { id: 'logistica', name: 'Logística', icon: '📦' },
-  { id: 'capdatos-apk', name: 'Captura Datos APK', icon: '📱' },
-  { id: 'censo-linea', name: 'Censo en Línea', icon: '💻' },
-  { id: 'consistencia', name: 'Consistencia', icon: '⚙️' },
-  { id: 'monitoreo', name: 'Monitoreo', icon: '📊' },
-  { id: 'yanapaq', name: 'Yanapaq', icon: '🤝' },
+  { id: 'segmentacion', name: 'Segmentación', icon: '🗺️', border: 'border-blue-500', bg: 'bg-blue-500' },
+  { id: 'reclutamiento', name: 'Reclutamiento', icon: '👥', border: 'border-green-500', bg: 'bg-green-500' },
+  { id: 'capacitacion', name: 'Capacitación', icon: '🎓', border: 'border-purple-500', bg: 'bg-purple-500' },
+  { id: 'logistica', name: 'Logística', icon: '📦', border: 'border-orange-500', bg: 'bg-orange-500' },
+  { id: 'capdatos-apk', name: 'Captura Datos APK', icon: '📱', border: 'border-pink-500', bg: 'bg-pink-500' },
+  { id: 'censo-linea', name: 'Censo en Línea', icon: '💻', border: 'border-teal-500', bg: 'bg-teal-500' },
+  { id: 'consistencia', name: 'Consistencia', icon: '⚙️', border: 'border-indigo-500', bg: 'bg-indigo-500' },
+  { id: 'monitoreo', name: 'Monitoreo', icon: '📊', border: 'border-yellow-500', bg: 'bg-yellow-500' },
+  { id: 'yanapaq', name: 'Yanapaq', icon: '🤝', border: 'border-cyan-500', bg: 'bg-cyan-500' },
 ];
 
 const initialDocs = {
@@ -37,6 +37,8 @@ const initialDocs = {
         { id: 'seg-13', title: 'Repositorios', description: 'Repositorios de código del sistema de Segmentación', type: 'repositorios', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'segmentacion' },
         { id: 'seg-14', title: 'Manual de Base de Datos', description: 'Manual de base de datos del sistema de Segmentación', type: 'manual-bd', version: '1.0', updatedAt: '15 Sep 2025', url: '#', category: 'segmentacion' },
         { id: 'seg-15', title: 'Documentación de API', description: 'Documentación de API del sistema de Segmentación', type: 'doc-api', version: '1.0', updatedAt: '15 Sep 2025', url: '#', category: 'segmentacion' },
+        { id: 'seg-16', title: 'Acta de Reunión', description: 'Actas de las reuniones del proyecto de Segmentación', type: 'acta', version: '1.0', updatedAt: '15 Sep 2025', url: '#', category: 'segmentacion' },
+        { id: 'seg-17', title: 'Solicitud de Cambio', description: 'Solicitudes de cambio del proyecto de Segmentación', type: 'solicitud-cambio', version: '1.0', updatedAt: '15 Sep 2025', url: '#', category: 'segmentacion' },
     ],
     reclutamiento: [
         { id: 'rec-1', title: 'Acta de Constitución', description: 'Acta de constitución del proyecto de Reclutamiento', type: 'acta', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'reclutamiento' },
@@ -54,6 +56,8 @@ const initialDocs = {
         { id: 'rec-13', title: 'Repositorios', description: 'Repositorios de código del sistema de Reclutamiento', type: 'repositorios', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'reclutamiento' },
         { id: 'rec-14', title: 'Manual de Base de Datos', description: 'Manual de base de datos del sistema de Reclutamiento', type: 'manual-bd', version: '1.0', updatedAt: '15 Sep 2025', url: '#', category: 'reclutamiento' },
         { id: 'rec-15', title: 'Documentación de API', description: 'Documentación de API del sistema de Reclutamiento', type: 'doc-api', version: '1.0', updatedAt: '15 Sep 2025', url: '#', category: 'reclutamiento' },
+        { id: 'rec-16', title: 'Acta de Reunión', description: 'Actas de las reuniones del proyecto de Reclutamiento', type: 'acta', version: '1.0', updatedAt: '15 Sep 2025', url: '#', category: 'reclutamiento' },
+        { id: 'rec-17', title: 'Solicitud de Cambio', description: 'Solicitudes de cambio del proyecto de Reclutamiento', type: 'solicitud-cambio', version: '1.0', updatedAt: '15 Sep 2025', url: '#', category: 'reclutamiento' },
     ],
     capacitacion: [
         { id: 'cap-1', title: 'Acta de Constitución', description: 'Acta de constitución del proyecto de Capacitación', type: 'acta', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'capacitacion' },
@@ -71,6 +75,8 @@ const initialDocs = {
         { id: 'cap-13', title: 'Repositorios', description: 'Repositorios de código del sistema de Capacitación', type: 'repositorios', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'capacitacion' },
         { id: 'cap-14', title: 'Manual de Base de Datos', description: 'Manual de base de datos del sistema de Capacitación', type: 'manual-bd', version: '1.0', updatedAt: '15 Sep 2025', url: '#', category: 'capacitacion' },
         { id: 'cap-15', title: 'Documentación de API', description: 'Documentación de API del sistema de Capacitación', type: 'doc-api', version: '1.0', updatedAt: '15 Sep 2025', url: '#', category: 'capacitacion' },
+        { id: 'cap-16', title: 'Acta de Reunión', description: 'Actas de las reuniones del proyecto de Capacitación', type: 'acta', version: '1.0', updatedAt: '15 Sep 2025', url: '#', category: 'capacitacion' },
+        { id: 'cap-17', title: 'Solicitud de Cambio', description: 'Solicitudes de cambio del proyecto de Capacitación', type: 'solicitud-cambio', version: '1.0', updatedAt: '15 Sep 2025', url: '#', category: 'capacitacion' },
     ],
     logistica: [
         { id: 'log-1', title: 'Acta de Constitución', description: 'Acta de constitución del proyecto para el área de logística', type: 'acta', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'logistica' },
@@ -88,6 +94,8 @@ const initialDocs = {
         { id: 'log-13', title: 'Repositorios', description: 'Repositorios de código del sistema de logística', type: 'repositorios', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'logistica' },
         { id: 'log-14', title: 'Manual de Base de Datos', description: 'Manual de base de datos del sistema de logística', type: 'manual-bd', version: '1.0', updatedAt: '15 Sep 2025', url: '#', category: 'logistica' },
         { id: 'log-15', title: 'Documentación de API', description: 'Documentación de API del sistema de logística', type: 'doc-api', version: '1.0', updatedAt: '15 Sep 2025', url: '#', category: 'logistica' },
+        { id: 'log-16', title: 'Acta de Reunión', description: 'Actas de las reuniones del proyecto de Logística', type: 'acta', version: '1.0', updatedAt: '15 Sep 2025', url: '#', category: 'logistica' },
+        { id: 'log-17', title: 'Solicitud de Cambio', description: 'Solicitudes de cambio del proyecto de Logística', type: 'solicitud-cambio', version: '1.0', updatedAt: '15 Sep 2025', url: '#', category: 'logistica' },
     ],
     'capdatos-apk': [
         { id: 'apk-1', title: 'Acta de Constitución', description: 'Acta de constitución del proyecto de Captura Datos APK', type: 'acta', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'capdatos-apk' },
@@ -105,6 +113,8 @@ const initialDocs = {
         { id: 'apk-13', title: 'Repositorios', description: 'Repositorios de código del sistema de Captura Datos APK', type: 'repositorios', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'capdatos-apk' },
         { id: 'apk-14', title: 'Manual de Base de Datos', description: 'Manual de base de datos del sistema de Captura Datos APK', type: 'manual-bd', version: '1.0', updatedAt: '15 Sep 2025', url: '#', category: 'capdatos-apk' },
         { id: 'apk-15', title: 'Documentación de API', description: 'Documentación de API del sistema de Captura Datos APK', type: 'doc-api', version: '1.0', updatedAt: '15 Sep 2025', url: '#', category: 'capdatos-apk' },
+        { id: 'apk-16', title: 'Acta de Reunión', description: 'Actas de las reuniones del proyecto de Captura Datos APK', type: 'acta', version: '1.0', updatedAt: '15 Sep 2025', url: '#', category: 'capdatos-apk' },
+        { id: 'apk-17', title: 'Solicitud de Cambio', description: 'Solicitudes de cambio del proyecto de Captura Datos APK', type: 'solicitud-cambio', version: '1.0', updatedAt: '15 Sep 2025', url: '#', category: 'capdatos-apk' },
     ],
     'censo-linea': [
         { id: 'cen-1', title: 'Acta de Constitución', description: 'Acta de constitución del proyecto de Censo en Línea', type: 'acta', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'censo-linea' },
@@ -122,6 +132,8 @@ const initialDocs = {
         { id: 'cen-13', title: 'Repositorios', description: 'Repositorios de código del sistema de Censo en Línea', type: 'repositorios', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'censo-linea' },
         { id: 'cen-14', title: 'Manual de Base de Datos', description: 'Manual de base de datos del sistema de Censo en Línea', type: 'manual-bd', version: '1.0', updatedAt: '15 Sep 2025', url: '#', category: 'censo-linea' },
         { id: 'cen-15', title: 'Documentación de API', description: 'Documentación de API del sistema de Censo en Línea', type: 'doc-api', version: '1.0', updatedAt: '15 Sep 2025', url: '#', category: 'censo-linea' },
+        { id: 'cen-16', title: 'Acta de Reunión', description: 'Actas de las reuniones del proyecto de Censo en Línea', type: 'acta', version: '1.0', updatedAt: '15 Sep 2025', url: '#', category: 'censo-linea' },
+        { id: 'cen-17', title: 'Solicitud de Cambio', description: 'Solicitudes de cambio del proyecto de Censo en Línea', type: 'solicitud-cambio', version: '1.0', updatedAt: '15 Sep 2025', url: '#', category: 'censo-linea' },
     ],
     consistencia: [
         { id: 'con-1', title: 'Acta de Constitución', description: 'Acta de constitución del proyecto de Consistencia', type: 'acta', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'consistencia' },
@@ -139,6 +151,8 @@ const initialDocs = {
         { id: 'con-13', title: 'Repositorios', description: 'Repositorios de código del sistema de Consistencia', type: 'repositorios', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'consistencia' },
         { id: 'con-14', title: 'Manual de Base de Datos', description: 'Manual de base de datos del sistema de Consistencia', type: 'manual-bd', version: '1.0', updatedAt: '15 Sep 2025', url: '#', category: 'consistencia' },
         { id: 'con-15', title: 'Documentación de API', description: 'Documentación de API del sistema de Consistencia', type: 'doc-api', version: '1.0', updatedAt: '15 Sep 2025', url: '#', category: 'consistencia' },
+        { id: 'con-16', title: 'Acta de Reunión', description: 'Actas de las reuniones del proyecto de Consistencia', type: 'acta', version: '1.0', updatedAt: '15 Sep 2025', url: '#', category: 'consistencia' },
+        { id: 'con-17', title: 'Solicitud de Cambio', description: 'Solicitudes de cambio del proyecto de Consistencia', type: 'solicitud-cambio', version: '1.0', updatedAt: '15 Sep 2025', url: '#', category: 'consistencia' },
     ],
     monitoreo: [
         { id: 'mon-1', title: 'Acta de Constitución', description: 'Acta de constitución del proyecto de Monitoreo', type: 'acta', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'monitoreo' },
@@ -156,6 +170,8 @@ const initialDocs = {
         { id: 'mon-13', title: 'Repositorios', description: 'Repositorios de código del sistema de Monitoreo', type: 'repositorios', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'monitoreo' },
         { id: 'mon-14', title: 'Manual de Base de Datos', description: 'Manual de base de datos del sistema de Monitoreo', type: 'manual-bd', version: '1.0', updatedAt: '15 Sep 2025', url: '#', category: 'monitoreo' },
         { id: 'mon-15', title: 'Documentación de API', description: 'Documentación de API del sistema de Monitoreo', type: 'doc-api', version: '1.0', updatedAt: '15 Sep 2025', url: '#', category: 'monitoreo' },
+        { id: 'mon-16', title: 'Acta de Reunión', description: 'Actas de las reuniones del proyecto de Monitoreo', type: 'acta', version: '1.0', updatedAt: '15 Sep 2025', url: '#', category: 'monitoreo' },
+        { id: 'mon-17', title: 'Solicitud de Cambio', description: 'Solicitudes de cambio del proyecto de Monitoreo', type: 'solicitud-cambio', version: '1.0', updatedAt: '15 Sep 2025', url: '#', category: 'monitoreo' },
     ],
     yanapaq: [
         { id: 'yan-1', title: 'Acta de Constitución', description: 'Acta de constitución del proyecto Yanapaq', type: 'acta', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'yanapaq' },
@@ -173,13 +189,14 @@ const initialDocs = {
         { id: 'yan-13', title: 'Repositorios', description: 'Repositorios de código del sistema Yanapaq', type: 'repositorios', version: '2.1', updatedAt: '15 Sep 2025', url: '#', category: 'yanapaq' },
         { id: 'yan-14', title: 'Manual de Base de Datos', description: 'Manual de base de datos del sistema Yanapaq', type: 'manual-bd', version: '1.0', updatedAt: '15 Sep 2025', url: '#', category: 'yanapaq' },
         { id: 'yan-15', title: 'Documentación de API', description: 'Documentación de API del sistema Yanapaq', type: 'doc-api', version: '1.0', updatedAt: '15 Sep 2025', url: '#', category: 'yanapaq' },
+        { id: 'yan-16', title: 'Acta de Reunión', description: 'Actas de las reuniones del proyecto Yanapaq', type: 'acta', version: '1.0', updatedAt: '15 Sep 2025', url: '#', category: 'yanapaq' },
+        { id: 'yan-17', title: 'Solicitud de Cambio', description: 'Solicitudes de cambio del proyecto Yanapaq', type: 'solicitud-cambio', version: '1.0', updatedAt: '15 Sep 2025', url: '#', category: 'yanapaq' },
     ]
 };
 
 
 const docTypes = {
   acta: '📝',
-  'acta-reunion': '📋',
   cronograma: '📅',
   'solicitud-cambio': '🔄',
   prototipo: '🎨',
@@ -197,18 +214,11 @@ const docTypes = {
 };
 
 // Colores por categoría - todos los cards de una categoría tendrán el mismo color
-const categoryColors = {
-    segmentacion: { border: 'border-blue-500', bg: 'bg-blue-500' },
-    reclutamiento: { border: 'border-green-500', bg: 'bg-green-500' },
-    capacitacion: { border: 'border-purple-500', bg: 'bg-purple-500' },
-    logistica: { border: 'border-orange-500', bg: 'bg-orange-500' },
-    'capdatos-apk': { border: 'border-pink-500', bg: 'bg-pink-500' },
-    'censo-linea': { border: 'border-teal-500', bg: 'bg-teal-500' },
-    consistencia: { border: 'border-indigo-500', bg: 'bg-indigo-500' },
-    monitoreo: { border: 'border-yellow-500', bg: 'bg-yellow-500' },
-    yanapaq: { border: 'border-cyan-500', bg: 'bg-cyan-500' },
-    default: { border: 'border-gray-500', bg: 'bg-gray-500' },
-};
+// Generar categoryColors dinámicamente desde el array categories
+const categoryColors = categories.reduce((acc, cat) => {
+    acc[cat.id] = { border: cat.border, bg: cat.bg };
+    return acc;
+}, { default: { border: 'border-gray-500', bg: 'bg-gray-500' } });
 
 const getDocumentIcon = () => '📄'; // Ícono genérico para todos los documentos
 const getDocClass = (category) => categoryColors[category]?.border || categoryColors.default.border;
@@ -281,9 +291,15 @@ const getDocumentStatus = (doc) => {
         return (doc.figmaUrl || doc.pdfFilePath) ? 'Completado' : 'Pendiente';
     }
 
-    // Para documentos regulares: PDF es obligatorio, Word/Excel son opcionales
+    // Para lecciones, cronograma, backlog, solicitud-cambio: Excel o MPP es suficiente
+    if (doc.type === 'lecciones' || doc.type === 'cronograma' || doc.type === 'backlog' || doc.type === 'solicitud-cambio') {
+        return doc.excelFilePath ? 'Completado' : 'Pendiente';
+    }
+
+    // Para otros documentos (incluye acta-reunion): PDF o Word es suficiente
     const hasPdf = !!doc.pdfFilePath;
-    return hasPdf ? 'Completado' : 'Pendiente';
+    const hasWord = !!doc.wordFilePath;
+    return (hasPdf || hasWord) ? 'Completado' : 'Pendiente';
 };
 
 // Componente para mostrar archivo seleccionado con opción de eliminar
@@ -408,8 +424,10 @@ export default function DocumentacionPage() {
     const firestore = useFirestore();
     const docsRef = useMemoFirebase(() => firestore ? collection(firestore, 'documentos') : null, [firestore]);
     const customModulesRef = useMemoFirebase(() => firestore ? collection(firestore, 'custom-modules') : null, [firestore]);
+    const customDivisionsRef = useMemoFirebase(() => firestore ? collection(firestore, 'custom-divisions') : null, [firestore]);
     const { data: allDocs, isLoading: isLoadingDocs, error: firestoreError } = useCollection(docsRef);
     const { data: customModules, isLoading: isLoadingModules } = useCollection(customModulesRef);
+    const { data: customDivisions, isLoading: isLoadingDivisions } = useCollection(customDivisionsRef);
     const { canEditCategory, isAdmin } = usePermissions();
 
     const [docs, setDocs] = useState([]);
@@ -424,6 +442,7 @@ export default function DocumentacionPage() {
     const [showFormatsModal, setShowFormatsModal] = useState(false);
     const [previewTemplate, setPreviewTemplate] = useState(null);
     const [showModuleModal, setShowModuleModal] = useState(false);
+    const [showDivisionModal, setShowDivisionModal] = useState(false);
 
     // Combinar categorías estáticas con módulos personalizados
     const allCategories = [
@@ -1045,14 +1064,29 @@ export default function DocumentacionPage() {
                                      <span className="hidden sm:inline">Prioridad</span>
                                 </button>
                                 {canEditCategory(activeCategory) && (allCategories.find(c => c.id === activeCategory)?.isCustom || false) && (
-                                    <button
-                                        onClick={() => setUploadModalConfig({ isOpen: true, docToEdit: null })}
-                                        className="flex items-center gap-1.5 px-3 py-2 md:px-4 md:py-2.5 bg-[#004272] text-white rounded-lg font-semibold hover:shadow-lg transition-all text-xs md:text-sm"
-                                    >
-                                        <Upload size={16} />
-                                        <span className="hidden sm:inline">Subir Documento</span>
-                                        <span className="sm:hidden">Subir</span>
-                                    </button>
+                                    <>
+                                        <button
+                                            onClick={() => setShowDivisionModal(true)}
+                                            className="flex items-center gap-1.5 px-3 py-2 md:px-4 md:py-2.5 bg-green-600 text-white rounded-lg font-semibold hover:shadow-lg transition-all text-xs md:text-sm"
+                                        >
+                                            <Plus size={16} />
+                                            <span className="hidden sm:inline">Crear Bloque</span>
+                                            <span className="sm:hidden">Bloque</span>
+                                        </button>
+                                        {(() => {
+                                            const moduleDivisions = (customDivisions || []).filter(d => d.moduleId === activeCategory);
+                                            return moduleDivisions.length > 0 ? (
+                                                <button
+                                                    onClick={() => setUploadModalConfig({ isOpen: true, docToEdit: null })}
+                                                    className="flex items-center gap-1.5 px-3 py-2 md:px-4 md:py-2.5 bg-[#004272] text-white rounded-lg font-semibold hover:shadow-lg transition-all text-xs md:text-sm"
+                                                >
+                                                    <Upload size={16} />
+                                                    <span className="hidden sm:inline">Subir Documento</span>
+                                                    <span className="sm:hidden">Subir</span>
+                                                </button>
+                                            ) : null;
+                                        })()}
+                                    </>
                                 )}
                                 <div className="bg-gray-100 p-1 rounded-lg flex gap-1 flex-shrink-0">
                                     <button onClick={() => setView('grid')} className={`p-1.5 md:p-2 rounded-md text-sm md:text-base ${view === 'grid' ? 'bg-white shadow' : ''}`}>⊞</button>
@@ -1063,39 +1097,56 @@ export default function DocumentacionPage() {
 
                         {isLoadingDocs ? <div className="text-center p-10"><Loader2 className="animate-spin inline-block mr-2" />Cargando documentos...</div> : (
                            firestoreError ? <div className="text-center p-10 text-red-500">Error: {firestoreError.message}</div> :
-                           docs.length > 0 ? (
-                                <div className="space-y-3">
-                                    {documentDivisions.map(division => (
-                                        <DivisionAccordion
-                                            key={division.id}
-                                            division={division}
-                                            docs={docs}
-                                            view={view}
-                                            onPreview={openPreviewModal}
-                                            onEdit={openUploadModal}
-                                            onDownloadWord={handleDownloadWord}
-                                            onDownloadExcel={handleDownloadExcel}
-                                            canEdit={canEditCategory(activeCategory)}
-                                            isCustomModule={allCategories.find(c => c.id === activeCategory)?.isCustom || false}
-                                            isAdmin={isAdmin}
-                                            onDelete={handleDeleteDocument}
-                                        />
-                                    ))}
-                                </div>
-                            ) : (
-                                <div className="text-center p-10 text-gray-500">
-                                    <p className="mb-4">No hay documentos en este módulo.</p>
-                                    {canEditCategory(activeCategory) && (allCategories.find(c => c.id === activeCategory)?.isCustom || false) && (
-                                        <button
-                                            onClick={() => setUploadModalConfig({ isOpen: true, docToEdit: null })}
-                                            className="inline-flex items-center gap-2 px-6 py-3 bg-[#004272] text-white rounded-lg font-semibold hover:shadow-lg transition-all"
-                                        >
-                                            <Plus size={18} />
-                                            Agregar Documento
-                                        </button>
-                                    )}
-                                </div>
-                            )
+                           (() => {
+                               const isCustom = allCategories.find(c => c.id === activeCategory)?.isCustom || false;
+                               const moduleDivisions = isCustom ? (customDivisions || []).filter(d => d.moduleId === activeCategory) : null;
+
+                               // Para módulos personalizados sin divisiones, mostrar mensaje
+                               if (isCustom && (!moduleDivisions || moduleDivisions.length === 0)) {
+                                   return (
+                                       <div className="text-center p-10 text-gray-500">
+                                           <div className="text-6xl mb-4">📋</div>
+                                           <p className="text-lg font-semibold mb-2">No hay bloques/divisiones creados</p>
+                                           <p className="text-sm">Se podrá subir documento, cuando al menos haya creado una división</p>
+                                           <p className="text-xs text-gray-400 mt-2">Usa el botón "Crear Bloque" en la parte superior</p>
+                                       </div>
+                                   );
+                               }
+
+                               // Determinar qué divisiones usar (custom o estáticas)
+                               const divisionsToUse = isCustom ? moduleDivisions : documentDivisions;
+
+                               // Si hay documentos o divisiones, mostrarlos
+                               if (docs.length > 0 || (divisionsToUse && divisionsToUse.length > 0)) {
+                                   return (
+                                       <div className="space-y-3">
+                                           {divisionsToUse.map(division => (
+                                               <DivisionAccordion
+                                                   key={division.id}
+                                                   division={division}
+                                                   docs={docs}
+                                                   view={view}
+                                                   onPreview={openPreviewModal}
+                                                   onEdit={openUploadModal}
+                                                   onDownloadWord={handleDownloadWord}
+                                                   onDownloadExcel={handleDownloadExcel}
+                                                   canEdit={canEditCategory(activeCategory)}
+                                                   isCustomModule={isCustom}
+                                                   isAdmin={isAdmin}
+                                                   onDelete={handleDeleteDocument}
+                                               />
+                                           ))}
+                                       </div>
+                                   );
+                               }
+
+                               // No hay documentos ni divisiones
+                               return (
+                                   <div className="text-center p-10 text-gray-500">
+                                       <p className="mb-4">No hay documentos en este módulo.</p>
+                                   </div>
+                               );
+                           })()
                         )}
 
                     </main>
@@ -1103,10 +1154,11 @@ export default function DocumentacionPage() {
             </div>
             {modalDoc && <DocModal doc={modalDoc} onClose={closePreviewModal} />}
             {manualFilesModalDoc && <ManualFilesModal doc={manualFilesModalDoc} onClose={() => setManualFilesModalDoc(null)} onDeleteFile={handleUploadSuccess} firestore={firestore} />}
-            {uploadModalConfig.isOpen && <UploadDocModal onClose={closeUploadModal} onUploadSuccess={handleUploadSuccess} docToEdit={uploadModalConfig.docToEdit} activeCategory={activeCategory} allDocs={allDocs} allCategories={allCategories} />}
+            {uploadModalConfig.isOpen && <UploadDocModal onClose={closeUploadModal} onUploadSuccess={handleUploadSuccess} docToEdit={uploadModalConfig.docToEdit} activeCategory={activeCategory} allDocs={allDocs} allCategories={allCategories} customDivisions={customDivisions} />}
             {showFormatsModal && <FormatsModal onClose={() => setShowFormatsModal(false)} onPreview={setPreviewTemplate} />}
             {previewTemplate && <TemplatePreviewModal template={previewTemplate} onClose={() => setPreviewTemplate(null)} />}
             {showModuleModal && <ModuleModal onClose={() => setShowModuleModal(false)} firestore={firestore} />}
+            {showDivisionModal && <DivisionModal onClose={() => setShowDivisionModal(false)} firestore={firestore} activeModuleId={activeCategory} />}
         </>
     );
 }
@@ -1116,9 +1168,13 @@ const DivisionAccordion = ({ division, docs, view, onPreview, onEdit, onDownload
     const [isExpanded, setIsExpanded] = useState(false);
 
     // Filtrar documentos que pertenecen a esta división
-    const divisionDocs = docs.filter(doc => division.types.includes(doc.type));
+    const divisionDocs = isCustomModule
+        ? docs.filter(doc => doc.divisionId === division.id)
+        : docs.filter(doc => division.types.includes(doc.type));
 
-    if (divisionDocs.length === 0) return null;
+    // Para módulos estáticos, no mostrar divisiones vacías
+    // Para módulos personalizados, mostrar todas las divisiones (incluso vacías)
+    if (!isCustomModule && divisionDocs.length === 0) return null;
 
     return (
         <div className="mb-4">
@@ -1140,7 +1196,11 @@ const DivisionAccordion = ({ division, docs, view, onPreview, onEdit, onDownload
 
             {isExpanded && (
                 <div className="mt-3 pl-4">
-                    {view === 'grid' ? (
+                    {divisionDocs.length === 0 ? (
+                        <div className="text-center py-8 text-gray-400">
+                            <p className="text-sm">No hay documentos en este bloque</p>
+                        </div>
+                    ) : view === 'grid' ? (
                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-5">
                             {divisionDocs.map(doc => (
                                 <DocCard
@@ -1474,19 +1534,17 @@ const ManualFilesModal = ({ doc, onClose, onDeleteFile, firestore }) => {
                                         <div className="flex items-center gap-2 flex-shrink-0 ml-2">
                                             <button
                                                 onClick={() => handleViewFile(file)}
-                                                className="px-3 py-1.5 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600 transition-colors flex items-center gap-1"
+                                                className="w-8 h-8 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors flex items-center justify-center"
                                                 title="Vista previa"
                                             >
-                                                <Eye size={14} />
-                                                <span className="hidden sm:inline">Ver</span>
+                                                <Eye size={16} />
                                             </button>
                                             <button
                                                 onClick={() => handleDownloadFile(file)}
-                                                className="px-3 py-1.5 bg-green-500 text-white rounded-lg text-sm hover:bg-green-600 transition-colors flex items-center gap-1"
+                                                className="w-8 h-8 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors flex items-center justify-center"
                                                 title="Descargar archivo"
                                             >
-                                                <Download size={14} />
-                                                <span className="hidden sm:inline">Descargar</span>
+                                                <Download size={16} />
                                             </button>
                                             <button
                                                 onClick={() => handleDeleteFile(index)}
@@ -1553,13 +1611,14 @@ const ManualFilesModal = ({ doc, onClose, onDeleteFile, firestore }) => {
     );
 };
 
-const UploadDocModal = ({ onClose, onUploadSuccess, docToEdit, activeCategory, allDocs, allCategories }) => {
+const UploadDocModal = ({ onClose, onUploadSuccess, docToEdit, activeCategory, allDocs, allCategories, customDivisions }) => {
     const firestore = useFirestore();
     const { user } = useUser();
     const [title, setTitle] = useState('');
     const [category, setCategory] = useState(activeCategory);
     const [type, setType] = useState('default'); // Tipo por defecto para nuevos documentos
     const [version, setVersion] = useState('1.0');
+    const [divisionId, setDivisionId] = useState(''); // Para módulos personalizados
     const [pdfFile, setPdfFile] = useState<File | null>(null);
     const [wordFile, setWordFile] = useState<File | null>(null);
     const [excelFile, setExcelFile] = useState<File | null>(null);
@@ -1586,8 +1645,7 @@ const UploadDocModal = ({ onClose, onUploadSuccess, docToEdit, activeCategory, a
     const isCustomModule = allCategories.find(cat => cat.id === category)?.isCustom || false;
 
     // Determine which file types are needed based on document type
-    const needsExcel = ['lecciones', 'backlog', 'cronograma'].includes(type);
-    const needsWord = ['acta', 'manual', 'requerimientos', 'arquitectura', 'diagrama', 'manual-bd', 'doc-api'].includes(type);
+    const needsExcelOnly = ['lecciones', 'backlog', 'cronograma', 'solicitud-cambio'].includes(type); // Solo Excel/MPP, sin PDF ni Word
     const isPrototipo = type === 'prototipo';
     const isRepositorios = type === 'repositorios';
 
@@ -1615,6 +1673,7 @@ const UploadDocModal = ({ onClose, onUploadSuccess, docToEdit, activeCategory, a
             if (docToEdit.figmaUrl) setFigmaUrl(docToEdit.figmaUrl);
             if (docToEdit.frontendUrl) setFrontendUrl(docToEdit.frontendUrl);
             if (docToEdit.backendUrl) setBackendUrl(docToEdit.backendUrl);
+            if (docToEdit.divisionId) setDivisionId(docToEdit.divisionId);
 
             // Reset deletion flags when opening modal
             setDeleteExistingPdf(false);
@@ -1726,13 +1785,26 @@ const UploadDocModal = ({ onClose, onUploadSuccess, docToEdit, activeCategory, a
                 setError('Los enlaces deben ser URLs válidas (incluir http:// o https://).');
                 return;
             }
-        } else if (!isEditMode) {
-            // Para nuevos documentos: PDF obligatorio, otros archivos opcionales
-            if (!pdfFile) {
-                setError('El archivo PDF es obligatorio.');
+        } else if (needsExcelOnly) {
+            // Para lecciones, cronograma, backlog, solicitud-cambio: Excel/MPP obligatorio
+            const hasNewExcel = !!excelFile;
+            const hasExistingExcel = isEditMode && !!docToEdit?.excelFilePath && !deleteExistingExcel;
+
+            if (!hasNewExcel && !hasExistingExcel) {
+                setError('Debe subir un archivo Excel (.xlsx, .xls) o Microsoft Project (.mpp).');
                 return;
             }
-            // Word, Excel y otros archivos son opcionales al crear, se pueden agregar después
+        } else {
+            // Para documentos regulares: al menos PDF o Word obligatorio
+            const hasNewPdf = !!pdfFile;
+            const hasNewWord = !!wordFile;
+            const hasExistingPdf = isEditMode && !!docToEdit?.pdfFilePath && !deleteExistingPdf;
+            const hasExistingWord = isEditMode && !!docToEdit?.wordFilePath && !deleteExistingWord;
+
+            if (!hasNewPdf && !hasNewWord && !hasExistingPdf && !hasExistingWord) {
+                setError('Debe subir al menos un archivo PDF o Word.');
+                return;
+            }
         }
 
         setIsUploading(true);
@@ -1746,6 +1818,11 @@ const UploadDocModal = ({ onClose, onUploadSuccess, docToEdit, activeCategory, a
                 version,
                 updatedAt: serverTimestamp(),
             };
+
+            // Agregar divisionId para módulos personalizados
+            if (isCustomModule && divisionId) {
+                docData.divisionId = divisionId;
+            }
 
             // Handle file deletions in edit mode
             if (isEditMode && docToEdit) {
@@ -2105,6 +2182,33 @@ const UploadDocModal = ({ onClose, onUploadSuccess, docToEdit, activeCategory, a
                         <input type="text" id="version" value={version} onChange={(e) => setVersion(e.target.value)} required className="w-full p-2.5 sm:p-3 border-2 border-gray-200 rounded-lg outline-none focus:border-[#004272] text-sm sm:text-base" placeholder="Ej: 1.0"/>
                     </div>
 
+                    {/* Campo de División para módulos personalizados */}
+                    {isCustomModule && (() => {
+                        const moduleDivisions = (customDivisions || []).filter(d => d.moduleId === category);
+                        return moduleDivisions.length > 0 ? (
+                            <div>
+                                <label htmlFor="division" className="block text-sm font-medium text-gray-700 mb-1">
+                                    Bloque/División <span className="text-red-500">*</span>
+                                </label>
+                                <select
+                                    id="division"
+                                    value={divisionId}
+                                    onChange={(e) => setDivisionId(e.target.value)}
+                                    required
+                                    className="w-full p-2.5 sm:p-3 border-2 border-gray-200 rounded-lg outline-none focus:border-[#004272] text-sm sm:text-base"
+                                >
+                                    <option value="">Seleccione un bloque</option>
+                                    {moduleDivisions.map(div => (
+                                        <option key={div.id} value={div.id}>
+                                            {div.icon} {div.name}
+                                        </option>
+                                    ))}
+                                </select>
+                                <p className="text-xs text-gray-500 mt-1">Seleccione el bloque donde se guardará este documento</p>
+                            </div>
+                        ) : null;
+                    })()}
+
                     {/* Prototipo: Figma URL o PDF (al menos uno obligatorio) */}
                     {isPrototipo && (
                         <>
@@ -2271,12 +2375,54 @@ const UploadDocModal = ({ onClose, onUploadSuccess, docToEdit, activeCategory, a
                         </>
                     )}
 
-                    {/* Documentos regulares y módulos personalizados: PDF obligatorio + Word/Excel opcionales */}
-                    {!isPrototipo && !isRepositorios && !isManual && (
+                    {/* Documentos que solo necesitan Excel/MPP (lecciones, cronograma, backlog, solicitud-cambio) */}
+                    {needsExcelOnly && (
                         <>
+                            <div className="bg-green-50 border-l-4 border-green-500 p-3 rounded">
+                                <p className="text-xs text-green-700">
+                                    <strong>Nota:</strong> Este tipo de documento requiere un archivo Excel (.xlsx, .xls) o Microsoft Project (.mpp).
+                                </p>
+                            </div>
+                            <div>
+                                <label htmlFor="excelFile" className="block text-sm font-medium text-gray-700 mb-1">
+                                    Archivo Excel/MPP <span className="text-red-500">*</span>
+                                </label>
+                                <input
+                                    type="file"
+                                    id="excelFile"
+                                    onChange={handleExcelFileChange}
+                                    accept=".xlsx,.xls,.mpp"
+                                    className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100"
+                                />
+                                <p className="text-xs text-gray-500 mt-1">Sube el archivo Excel (.xlsx, .xls) o Microsoft Project (.mpp)</p>
+                                {excelFile && <FilePreview file={excelFile} onRemove={() => setExcelFile(null)} label="Excel/MPP" />}
+                                {!excelFile && isEditMode && docToEdit?.excelFilePath && !deleteExistingExcel && (
+                                    <FilePreview
+                                        existingFile={docToEdit.excelFilePath.split('/').pop()}
+                                        onRemove={() => setDeleteExistingExcel(true)}
+                                        label="Excel/MPP existente"
+                                    />
+                                )}
+                                {deleteExistingExcel && !excelFile && (
+                                    <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+                                        ⚠️ El archivo será eliminado al guardar. Sube uno nuevo para mantener el estado Completado.
+                                    </div>
+                                )}
+                            </div>
+                        </>
+                    )}
+
+                    {/* Documentos regulares: PDF o Word (al menos uno obligatorio) */}
+                    {!isPrototipo && !isRepositorios && !isManual && !needsExcelOnly && (
+                        <>
+                            <div className="bg-blue-50 border-l-4 border-blue-500 p-3 rounded">
+                                <p className="text-xs text-blue-700">
+                                    <strong>Nota:</strong> Debes subir al menos un archivo PDF o Word. Ambos son opcionales pero se requiere mínimo uno.
+                                </p>
+                            </div>
                             <div>
                                 <label htmlFor="customPdfFile" className="block text-sm font-medium text-gray-700 mb-1">
-                                    Archivo PDF <span className="text-red-500">*</span>
+                                    Archivo PDF
                                 </label>
                                 <input
                                     type="file"
@@ -2285,7 +2431,7 @@ const UploadDocModal = ({ onClose, onUploadSuccess, docToEdit, activeCategory, a
                                     accept=".pdf"
                                     className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-red-50 file:text-red-700 hover:file:bg-red-100"
                                 />
-                                <p className="text-xs text-gray-500 mt-1">Sube el archivo PDF (obligatorio)</p>
+                                <p className="text-xs text-gray-500 mt-1">Sube el archivo PDF</p>
                                 {pdfFile && <FilePreview file={pdfFile} onRemove={() => setPdfFile(null)} label="PDF" />}
                                 {!pdfFile && isEditMode && docToEdit?.pdfFilePath && !deleteExistingPdf && (
                                     <FilePreview
@@ -2295,67 +2441,36 @@ const UploadDocModal = ({ onClose, onUploadSuccess, docToEdit, activeCategory, a
                                     />
                                 )}
                                 {deleteExistingPdf && !pdfFile && (
-                                    <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
-                                        ⚠️ El archivo PDF será eliminado al guardar. Puedes subir uno nuevo o dejar vacío para volver a estado Pendiente.
+                                    <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded-lg text-sm text-yellow-700">
+                                        ⚠️ El archivo PDF será eliminado al guardar.
                                     </div>
                                 )}
                             </div>
-                            <div className="bg-blue-50 border-l-4 border-blue-500 p-3 rounded">
-                                <p className="text-xs text-blue-700 font-medium mb-2">Archivos adicionales (opcionales, puedes agregar ahora o después):</p>
-                                <div className="space-y-3">
-                                    <div>
-                                        <label htmlFor="customWordFile" className="block text-sm font-medium text-gray-700 mb-1">
-                                            Archivo Word <span className="text-gray-400 text-xs">(Opcional)</span>
-                                        </label>
-                                        <input
-                                            type="file"
-                                            id="customWordFile"
-                                            onChange={handleWordFileChange}
-                                            accept=".doc,.docx"
-                                            className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-                                        />
-                                        <p className="text-xs text-gray-500 mt-1">Sube el archivo Word (.doc o .docx)</p>
-                                        {wordFile && <FilePreview file={wordFile} onRemove={() => setWordFile(null)} label="Word" />}
-                                        {!wordFile && isEditMode && docToEdit?.wordFilePath && !deleteExistingWord && (
-                                            <FilePreview
-                                                existingFile={docToEdit.wordFilePath.split('/').pop()}
-                                                onRemove={() => setDeleteExistingWord(true)}
-                                                label="Word existente"
-                                            />
-                                        )}
-                                        {deleteExistingWord && !wordFile && (
-                                            <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded-lg text-sm text-yellow-700">
-                                                ⚠️ El archivo Word será eliminado al guardar.
-                                            </div>
-                                        )}
+                            <div>
+                                <label htmlFor="customWordFile" className="block text-sm font-medium text-gray-700 mb-1">
+                                    Archivo Word
+                                </label>
+                                <input
+                                    type="file"
+                                    id="customWordFile"
+                                    onChange={handleWordFileChange}
+                                    accept=".doc,.docx"
+                                    className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                                />
+                                <p className="text-xs text-gray-500 mt-1">Sube el archivo Word (.doc o .docx)</p>
+                                {wordFile && <FilePreview file={wordFile} onRemove={() => setWordFile(null)} label="Word" />}
+                                {!wordFile && isEditMode && docToEdit?.wordFilePath && !deleteExistingWord && (
+                                    <FilePreview
+                                        existingFile={docToEdit.wordFilePath.split('/').pop()}
+                                        onRemove={() => setDeleteExistingWord(true)}
+                                        label="Word existente"
+                                    />
+                                )}
+                                {deleteExistingWord && !wordFile && (
+                                    <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded-lg text-sm text-yellow-700">
+                                        ⚠️ El archivo Word será eliminado al guardar.
                                     </div>
-                                    <div>
-                                        <label htmlFor="customExcelFile" className="block text-sm font-medium text-gray-700 mb-1">
-                                            Archivo Excel <span className="text-gray-400 text-xs">(Opcional)</span>
-                                        </label>
-                                        <input
-                                            type="file"
-                                            id="customExcelFile"
-                                            onChange={handleExcelFileChange}
-                                            accept=".xlsx,.xls,.mpp"
-                                            className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100"
-                                        />
-                                        <p className="text-xs text-gray-500 mt-1">Sube el archivo Excel (.xlsx, .xls) o Microsoft Project (.mpp)</p>
-                                        {excelFile && <FilePreview file={excelFile} onRemove={() => setExcelFile(null)} label="Excel" />}
-                                        {!excelFile && isEditMode && docToEdit?.excelFilePath && !deleteExistingExcel && (
-                                            <FilePreview
-                                                existingFile={docToEdit.excelFilePath.split('/').pop()}
-                                                onRemove={() => setDeleteExistingExcel(true)}
-                                                label="Excel existente"
-                                            />
-                                        )}
-                                        {deleteExistingExcel && !excelFile && (
-                                            <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded-lg text-sm text-yellow-700">
-                                                ⚠️ El archivo Excel será eliminado al guardar.
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
+                                )}
                             </div>
                         </>
                     )}
@@ -2573,6 +2688,141 @@ const TemplatePreviewModal = ({ template, onClose }) => {
                         </div>
                     )}
                 </div>
+            </div>
+        </div>
+    );
+};
+
+// Modal para crear bloques/divisiones personalizadas
+const DivisionModal = ({ onClose, firestore, activeModuleId }) => {
+    const [divisionName, setDivisionName] = useState('');
+    const [divisionIcon, setDivisionIcon] = useState('📋');
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [error, setError] = useState('');
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+
+        if (!divisionName.trim()) {
+            setError('El nombre de la división es requerido.');
+            return;
+        }
+
+        if (!firestore) {
+            setError('Error de conexión con la base de datos.');
+            return;
+        }
+
+        setIsSubmitting(true);
+        setError('');
+
+        try {
+            const divisionData = {
+                name: divisionName.trim(),
+                icon: divisionIcon,
+                moduleId: activeModuleId,
+                types: [], // Array vacío, los documentos se asociarán directamente con la división
+                createdAt: serverTimestamp(),
+                updatedAt: serverTimestamp()
+            };
+
+            // Create division in Firestore
+            await addDoc(collection(firestore, 'custom-divisions'), divisionData);
+
+            Swal.fire({
+                icon: 'success',
+                title: 'Bloque creado',
+                text: `El bloque "${divisionName}" ha sido creado exitosamente.`,
+                timer: 2000,
+                showConfirmButton: false
+            });
+
+            onClose();
+        } catch (err: any) {
+            console.error('Error creating division:', err);
+            setError('No se pudo crear el bloque. ' + (err.message || ''));
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    const commonIcons = ['📋', '📊', '📁', '📂', '📈', '🔧', '⚙️', '🎯', '💼', '🗂️', '📌', '🔔', '⭐', '🌟', '💡', '🎓', '📚', '📝'];
+
+    return (
+        <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4" onClick={onClose}>
+            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md" onClick={e => e.stopPropagation()}>
+                <header className="flex justify-between items-center p-5 border-b bg-gray-50 rounded-t-2xl">
+                    <h3 className="text-lg font-semibold text-gray-800">Crear Bloque/División</h3>
+                    <button onClick={onClose} className="w-9 h-9 rounded-full bg-red-500 text-white font-bold text-xl hover:bg-red-600 transition-colors">×</button>
+                </header>
+                <form onSubmit={handleSubmit} className="p-6 space-y-5">
+                    {error && (
+                        <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+                            {error}
+                        </div>
+                    )}
+                    <div>
+                        <label htmlFor="divisionName" className="block text-sm font-medium text-gray-700 mb-2">
+                            Nombre del Bloque <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                            type="text"
+                            id="divisionName"
+                            value={divisionName}
+                            onChange={(e) => setDivisionName(e.target.value)}
+                            className="w-full p-3 border-2 border-gray-200 rounded-lg outline-none focus:border-green-500"
+                            placeholder="Ej: Documentos Técnicos, Informes, etc."
+                            required
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Ícono del Bloque
+                        </label>
+                        <div className="grid grid-cols-9 gap-2">
+                            {commonIcons.map((icon) => (
+                                <button
+                                    key={icon}
+                                    type="button"
+                                    onClick={() => setDivisionIcon(icon)}
+                                    className={`w-10 h-10 flex items-center justify-center text-2xl rounded-lg transition-all ${
+                                        divisionIcon === icon
+                                            ? 'bg-green-500 scale-110 shadow-lg'
+                                            : 'bg-gray-100 hover:bg-gray-200'
+                                    }`}
+                                >
+                                    {icon}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                    <div className="flex justify-end gap-3 pt-4 border-t">
+                        <button
+                            type="button"
+                            onClick={onClose}
+                            className="px-5 py-2.5 bg-gray-200 text-gray-800 rounded-lg font-semibold hover:bg-gray-300 transition-colors"
+                        >
+                            Cancelar
+                        </button>
+                        <button
+                            type="submit"
+                            disabled={isSubmitting}
+                            className="px-5 py-2.5 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                        >
+                            {isSubmitting ? (
+                                <>
+                                    <Loader2 className="animate-spin" size={16} />
+                                    Creando...
+                                </>
+                            ) : (
+                                <>
+                                    <Plus size={16} />
+                                    Crear Bloque
+                                </>
+                            )}
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     );

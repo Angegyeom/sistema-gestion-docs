@@ -1130,9 +1130,15 @@ const getDocumentStatus = (doc) => {
         return (doc.figmaUrl || doc.pdfFilePath) ? 'Completado' : 'Pendiente';
     }
 
-    // Para documentos regulares: PDF es obligatorio, Word/Excel son opcionales
+    // Para lecciones, cronograma, backlog: Excel o MPP es suficiente
+    if (doc.type === 'lecciones' || doc.type === 'cronograma' || doc.type === 'backlog') {
+        return doc.excelFilePath ? 'Completado' : 'Pendiente';
+    }
+
+    // Para otros documentos: PDF o Word es suficiente
     const hasPdf = !!doc.pdfFilePath;
-    return hasPdf ? 'Completado' : 'Pendiente';
+    const hasWord = !!doc.wordFilePath;
+    return (hasPdf || hasWord) ? 'Completado' : 'Pendiente';
 };
 
 // Componente de Reporte General
