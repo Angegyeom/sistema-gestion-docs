@@ -1415,14 +1415,11 @@ const DocCard = ({ doc, onPreview, onEdit, onDownloadWord, onDownloadExcel, canE
     return (
         <div className={`bg-white rounded-xl p-4 md:p-5 shadow-md border-l-4 ${getDocClass(doc.category)} flex flex-col justify-between`}>
             <div>
-                <div className="flex items-start justify-between gap-2 mb-3">
-                     <div className="flex items-start gap-2 md:gap-3 min-w-0 flex-1">
-                        <div className={`w-8 h-8 md:w-10 md:h-10 rounded-lg flex items-center justify-center text-white text-lg md:text-xl flex-shrink-0 ${getDocIconBg(doc.category)}`}>
-                            {getDocumentIcon()}
-                        </div>
-                        <h4 className="font-semibold text-sm md:text-base text-gray-800 leading-tight mt-0.5 truncate" title={doc.title}>{doc.title}</h4>
+                <div className="flex items-center justify-between gap-2 mb-2">
+                     <div className={`w-8 h-8 md:w-10 md:h-10 rounded-lg flex items-center justify-center text-white text-lg md:text-xl flex-shrink-0 ${getDocIconBg(doc.category)}`}>
+                        {getDocumentIcon()}
                      </div>
-                     <div className="flex items-center gap-2 flex-shrink-0">
+                     <div className="flex items-center gap-1 flex-shrink-0">
                         {/* Badge de estado compacto */}
                         <StatusBadge status={status} compact={true} doc={doc} />
                         {/* Botón editar */}
@@ -1439,6 +1436,7 @@ const DocCard = ({ doc, onPreview, onEdit, onDownloadWord, onDownloadExcel, canE
                         )}
                      </div>
                 </div>
+                <h4 className="font-semibold text-sm md:text-base text-gray-800 leading-tight mb-2 line-clamp-2">{doc.title}</h4>
                 <p className="text-xs md:text-sm text-gray-600 mb-4 line-clamp-2 md:line-clamp-3 min-h-[2.5rem] md:min-h-[3rem]">{doc.description}</p>
             </div>
             <div>
@@ -1529,8 +1527,8 @@ const DocListItem = ({ doc, onPreview, onEdit, onDownloadWord, onDownloadExcel, 
                 {getDocumentIcon()}
             </div>
             <div className="flex-1 cursor-pointer min-w-0" onClick={() => onPreview(doc)}>
-                <div className="flex items-center gap-2 mb-1 min-w-0">
-                    <h4 className="font-semibold text-sm md:text-base text-gray-800 truncate flex-1 min-w-0" title={doc.title}>{doc.title}</h4>
+                <div className="flex items-start gap-2 mb-1">
+                    <h4 className="font-semibold text-sm md:text-base text-gray-800 flex-1 line-clamp-2">{doc.title}</h4>
                     <StatusBadge status={status} doc={doc} />
                 </div>
                 <p className="text-xs text-gray-500 truncate">Actualizado: {doc.updatedAt?.seconds ? new Date(doc.updatedAt.seconds * 1000).toLocaleDateString() : doc.updatedAt} • Versión: {doc.version || '1.0'}</p>
