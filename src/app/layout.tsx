@@ -5,8 +5,11 @@ import { cn } from "@/lib/utils";
 import { FirebaseClientProvider } from "@/firebase/client-provider";
 
 export const metadata: Metadata = {
-  title: "OptimoSystem",
-  description: "Optimize your system with AI-powered insights.",
+  title: "Documentación CPV",
+  description: "Sistema de Gestión de Documentación - Censos Nacionales de Población y Vivienda 2025 - INEI",
+  icons: {
+    icon: "/images/inei-logo.png",
+  },
 };
 
 export default function RootLayout({

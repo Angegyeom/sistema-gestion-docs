@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
 import PasswordResetModal from "@/components/PasswordResetModal";
+import Image from "next/image";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("@inei.gob.pe");
@@ -126,9 +127,16 @@ export default function LoginPage() {
       }`}
     >
       <div className="bg-white/95 backdrop-blur-sm rounded-2xl p-10 shadow-lg w-full max-w-md text-center">
-        <div className="text-5xl mb-2.5">🏛️</div>
-        <h1 className="text-3xl font-semibold text-gray-800 mb-2.5">CPV 2025</h1>
-        <p className="text-gray-600 mb-7 text-lg">Sistema de Gestión Censal</p>
+        <div className="mb-2.5 flex justify-center">
+          <Image
+            src="/images/censo-logo.png"
+            alt="Censos 2025"
+            width={200}
+            height={80}
+            priority
+          />
+        </div>
+        <p className="text-gray-600 mb-7 text-lg">Sistema de Gestión Documental Censal</p>
 
         {error && (
           <div
