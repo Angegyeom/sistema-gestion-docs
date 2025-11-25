@@ -1420,7 +1420,7 @@ const DocCard = ({ doc, onPreview, onEdit, onDownloadWord, onDownloadExcel, canE
                         <div className={`w-8 h-8 md:w-10 md:h-10 rounded-lg flex items-center justify-center text-white text-lg md:text-xl flex-shrink-0 ${getDocIconBg(doc.category)}`}>
                             {getDocumentIcon()}
                         </div>
-                        <h4 className="font-semibold text-sm md:text-base text-gray-800 leading-tight mt-0.5">{doc.title}</h4>
+                        <h4 className="font-semibold text-sm md:text-base text-gray-800 leading-tight mt-0.5 truncate" title={doc.title}>{doc.title}</h4>
                      </div>
                      <div className="flex items-center gap-2 flex-shrink-0">
                         {/* Badge de estado compacto */}
@@ -1529,8 +1529,8 @@ const DocListItem = ({ doc, onPreview, onEdit, onDownloadWord, onDownloadExcel, 
                 {getDocumentIcon()}
             </div>
             <div className="flex-1 cursor-pointer min-w-0" onClick={() => onPreview(doc)}>
-                <div className="flex items-center gap-2 mb-1">
-                    <h4 className="font-semibold text-sm md:text-base text-gray-800">{doc.title}</h4>
+                <div className="flex items-center gap-2 mb-1 min-w-0">
+                    <h4 className="font-semibold text-sm md:text-base text-gray-800 truncate flex-1 min-w-0" title={doc.title}>{doc.title}</h4>
                     <StatusBadge status={status} doc={doc} />
                 </div>
                 <p className="text-xs text-gray-500 truncate">Actualizado: {doc.updatedAt?.seconds ? new Date(doc.updatedAt.seconds * 1000).toLocaleDateString() : doc.updatedAt} • Versión: {doc.version || '1.0'}</p>
