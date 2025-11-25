@@ -309,6 +309,14 @@ const FilePreview = ({ file, onRemove, label, existingFile = null }) => {
     const fileName = file ? file.name : (existingFile || 'Archivo existente');
     const fileSize = file ? `${(file.size / 1024).toFixed(2)} KB` : '';
 
+    const handleRemove = (e: React.MouseEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (onRemove) {
+            onRemove();
+        }
+    };
+
     return (
         <div className="mt-2 flex items-center gap-2 p-2 bg-gray-50 rounded-lg border border-gray-200">
             <FileText size={16} className="text-gray-600 flex-shrink-0" />
@@ -318,7 +326,7 @@ const FilePreview = ({ file, onRemove, label, existingFile = null }) => {
             </div>
             <button
                 type="button"
-                onClick={onRemove}
+                onClick={handleRemove}
                 className="flex-shrink-0 w-6 h-6 rounded-full bg-red-500 text-white hover:bg-red-600 transition-colors flex items-center justify-center"
                 title="Eliminar archivo"
             >
@@ -332,38 +340,8 @@ const FilePreview = ({ file, onRemove, label, existingFile = null }) => {
 const StatusBadge = ({ status, compact = false, doc = null }) => {
     // Función para generar el tooltip personalizado
     const getTooltipMessage = () => {
-        if (!doc) return null;
-
-        const hasPdf = !!doc.pdfFilePath;
-        const hasWord = !!doc.wordFilePath;
-        const hasExcel = !!doc.excelFilePath;
-        const hasFrontend = !!doc.frontendUrl;
-        const hasBackend = !!doc.backendUrl;
-        const hasFigmaUrl = !!doc.figmaUrl;
-
-        // Si tiene URLs de repositorio
-        if (hasFrontend !== undefined || hasBackend !== undefined) {
-            if (hasFrontend && hasBackend) return 'Completado (Frontend + Backend)';
-            if (hasFrontend && !hasBackend) return 'Pendiente (Falta Backend URL)';
-            if (!hasFrontend && hasBackend) return 'Pendiente (Falta Frontend URL)';
-            return 'Pendiente (Falta Frontend y Backend)';
-        }
-
-        // Si tiene Figma URL, es prototipo
-        if (hasFigmaUrl) {
-            if (hasPdf) return 'Completado (Figma + PDF)';
-            return 'Completado (Figma)';
-        }
-
-        // Para documentos regulares
-        if (hasPdf) {
-            const extras = [];
-            if (hasWord) extras.push('Word');
-            if (hasExcel) extras.push('Excel');
-            return extras.length > 0 ? `Completado (PDF + ${extras.join(', ')})` : 'Completado (PDF)';
-        }
-
-        return 'Pendiente (Sin archivos)';
+        if (!doc) return status;
+        return status === 'Completado' ? 'Completado' : 'Pendiente';
     };
 
     const getStatusConfig = () => {
@@ -416,7 +394,7 @@ const formatTemplates = [
     { id: 'lecciones', name: 'Lecciones Aprendidas', file: 'Lecciones_Aprendidas.xlsx', type: 'excel', icon: '💡', color: 'bg-orange-500' },
     { id: 'backlog', name: 'Product Backlog', file: 'Plantilla_Product_Backlog.xlsx', type: 'excel', icon: '📊', color: 'bg-teal-500' },
     { id: 'directiva', name: 'Directiva de Formatos', file: 'DIRECTIVA_DE_FORMATOS.pdf', type: 'pdf', icon: '📄', color: 'bg-red-500' },
-    { id: 'manual-db', name: 'Manual de Base de Datos', file: 'Manual_BD.docx', type: 'word', icon: '🗄️', color: 'bg-purple-500' },
+    { id: 'manual-db', name: 'Manual de Base de Datos', file: 'MANUAL_BD.docx', type: 'word', icon: '🗄️', color: 'bg-purple-500' },
     { id: 'doc-api', name: 'Documentación de API', file: 'Plantilla_Documentacion_API.docx', type: 'word', icon: '🔌', color: 'bg-indigo-500' },
 ];
 
@@ -2501,12 +2479,17 @@ const UploadDocModal = ({ onClose, onUploadSuccess, docToEdit, activeCategory, a
                                 />
                                 <p className="text-xs text-gray-500 mt-1">Sube un archivo PDF del prototipo.</p>
                                 {pdfFile && <FilePreview file={pdfFile} onRemove={() => setPdfFile(null)} label="PDF" />}
-                                {!pdfFile && isEditMode && docToEdit?.pdfFilePath && (
+                                {!pdfFile && isEditMode && docToEdit?.pdfFilePath && !deleteExistingPdf && (
                                     <FilePreview
                                         existingFile={docToEdit.pdfFilePath.split('/').pop()}
-                                        onRemove={() => setPdfFile(null)}
+                                        onRemove={() => setDeleteExistingPdf(true)}
                                         label="PDF existente"
                                     />
+                                )}
+                                {deleteExistingPdf && !pdfFile && (
+                                    <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded-lg text-sm text-yellow-700">
+                                        ⚠️ El archivo PDF será eliminado al guardar.
+                                    </div>
                                 )}
                             </div>
                         </>
