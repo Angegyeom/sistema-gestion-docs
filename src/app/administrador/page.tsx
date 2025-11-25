@@ -29,10 +29,13 @@ export default function AdministradorPage() {
     const { data: roles, isLoading: isLoadingRoles } = useCollection(rolesRef);
     const { data: documents, isLoading: isLoadingDocs } = useCollection(docsRef);
 
-    // Seed y actualización de roles
+    // Flag para ejecutar seed de roles solo una vez por sesión
+    const [hasRolesSeeded, setHasRolesSeeded] = useState(false);
+
+    // Seed y actualización de roles (solo una vez si es necesario)
     useEffect(() => {
         const seedAndUpdateRoles = async () => {
-            if (!firestore || !roles || isLoadingRoles) return;
+            if (!firestore || !roles || isLoadingRoles || hasRolesSeeded) return;
 
             const initialRoles = [
                 { name: 'ADMIN', description: 'Administrador del sistema con acceso completo' },
@@ -50,10 +53,22 @@ export default function AdministradorPage() {
             // Roles obsoletos que deben eliminarse
             const obsoleteRoles = ['RRHH', 'OPERACION', 'PROCESAMIENTO', 'POSTCENSAL', 'GENERALES'];
 
-            try {
-                // Obtener roles existentes
-                const existingRoleNames = roles.map(r => r.name?.toUpperCase());
+            // Obtener roles existentes
+            const existingRoleNames = new Set(roles.map(r => r.name?.toUpperCase()));
 
+            // Verificar si hay trabajo que hacer
+            const hasObsolete = roles.some(r => obsoleteRoles.includes(r.name?.toUpperCase()));
+            const hasMissing = initialRoles.some(r => !existingRoleNames.has(r.name.toUpperCase()));
+
+            // Si no hay nada que hacer, marcar como completado y salir
+            if (!hasObsolete && !hasMissing) {
+                setHasRolesSeeded(true);
+                return;
+            }
+
+            setHasRolesSeeded(true);
+
+            try {
                 // 1. Eliminar roles obsoletos
                 for (const role of roles) {
                     if (obsoleteRoles.includes(role.name?.toUpperCase())) {
@@ -64,7 +79,7 @@ export default function AdministradorPage() {
 
                 // 2. Agregar roles faltantes
                 for (const role of initialRoles) {
-                    if (!existingRoleNames.includes(role.name.toUpperCase())) {
+                    if (!existingRoleNames.has(role.name.toUpperCase())) {
                         await addDoc(collection(firestore, 'roles'), {
                             ...role,
                             createdAt: serverTimestamp(),
@@ -79,7 +94,7 @@ export default function AdministradorPage() {
         };
 
         seedAndUpdateRoles();
-    }, [firestore, roles, isLoadingRoles]);
+    }, [firestore, roles, isLoadingRoles, hasRolesSeeded]);
 
     // Proteger la página - solo accesible para admin
     useEffect(() => {
@@ -1147,35 +1162,40 @@ const ReportSection = ({ documents, isLoading }) => {
     const [viewMode, setViewMode] = useState('list'); // 'list' o 'board'
     const [filterModule, setFilterModule] = useState('all');
     const [showPriorityOnly, setShowPriorityOnly] = useState(false);
+    const [hasMigrated, setHasMigrated] = useState(false);
 
-    // Función para migrar documentos existentes recalculando el campo 'estado' en español
+    // Función para migrar documentos existentes recalculando el campo 'estado' en español (solo si es necesario)
     useEffect(() => {
         const migrateDocumentStatus = async () => {
-            if (!firestore || !documents || documents.length === 0) return;
+            if (!firestore || !documents || documents.length === 0 || hasMigrated) return;
+
+            // Verificar si hay documentos que necesitan actualización
+            const docsToUpdate = documents.filter(docData => {
+                const estadoActual = docData.estado;
+                const estadoNuevo = getDocumentStatus(docData);
+                return estadoActual !== estadoNuevo;
+            });
+
+            // Si no hay nada que actualizar, marcar como completado
+            if (docsToUpdate.length === 0) {
+                setHasMigrated(true);
+                return;
+            }
+
+            setHasMigrated(true);
 
             try {
                 const { writeBatch, doc: firestoreDoc, serverTimestamp } = await import('firebase/firestore');
                 const batch = writeBatch(firestore);
-                let needsUpdate = false;
 
-                documents.forEach(docData => {
-                    // Recalcular el estado en español para todos los documentos
-                    const estadoActual = docData.estado;
+                docsToUpdate.forEach(docData => {
                     const estadoNuevo = getDocumentStatus(docData);
-
-                    // Actualizar TODOS los documentos donde el estado no coincida con el calculado
-                    // Esto incluye documentos con estados viejos como 'Incompleto' que ya no existen
-                    if (estadoActual !== estadoNuevo) {
-                        const docRef = firestoreDoc(firestore, "documentos", docData.id);
-                        batch.update(docRef, { estado: estadoNuevo, updatedAt: serverTimestamp() });
-                        needsUpdate = true;
-                    }
+                    const docRef = firestoreDoc(firestore, "documentos", docData.id);
+                    batch.update(docRef, { estado: estadoNuevo, updatedAt: serverTimestamp() });
                 });
 
-                if (needsUpdate) {
-                    await batch.commit();
-                    console.log("Documentos migrados con estados en español en Reporte");
-                }
+                await batch.commit();
+                console.log(`Documentos migrados: ${docsToUpdate.length} actualizados`);
             } catch (error) {
                 console.error("Error migrando documentos en Reporte: ", error);
             }
@@ -1184,7 +1204,7 @@ const ReportSection = ({ documents, isLoading }) => {
         if (!isLoading && documents) {
             migrateDocumentStatus();
         }
-    }, [firestore, documents, isLoading]);
+    }, [firestore, documents, isLoading, hasMigrated]);
 
     // Definir las categorías/módulos estáticos
     const categories = [

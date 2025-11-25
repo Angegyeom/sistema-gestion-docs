@@ -457,53 +457,61 @@ export default function DocumentacionPage() {
         }))
     ];
 
-    // Migrar módulos antiguos que no tienen folderId
+    // Migrar módulos antiguos que no tienen folderId (solo una vez)
+    const [hasModulesMigrated, setHasModulesMigrated] = useState(false);
+
     useEffect(() => {
         const migrateModules = async () => {
-            if (!firestore || !customModules || !allDocs) return;
+            if (!firestore || !customModules || !allDocs || hasModulesMigrated) return;
 
-            for (const mod of customModules) {
-                // Si el módulo no tiene folderId, agregarlo
-                if (!mod.folderId && mod.name) {
-                    const folderId = mod.name.trim()
-                        .toLowerCase()
-                        .normalize('NFD')
-                        .replace(/[\u0300-\u036f]/g, '')
-                        .replace(/[^\w\s-]/g, '')
-                        .replace(/\s+/g, '-');
+            // Verificar si hay módulos que necesitan migración
+            const modulesToMigrate = customModules.filter(mod => !mod.folderId && mod.name);
+            if (modulesToMigrate.length === 0) {
+                setHasModulesMigrated(true);
+                return;
+            }
 
-                    try {
-                        // Actualizar el módulo
-                        const moduleRef = doc(firestore, 'custom-modules', mod.id);
-                        await updateDoc(moduleRef, {
-                            folderId: folderId,
-                            updatedAt: serverTimestamp()
+            setHasModulesMigrated(true);
+
+            for (const mod of modulesToMigrate) {
+                const folderId = mod.name.trim()
+                    .toLowerCase()
+                    .normalize('NFD')
+                    .replace(/[\u0300-\u036f]/g, '')
+                    .replace(/[^\w\s-]/g, '')
+                    .replace(/\s+/g, '-');
+
+                try {
+                    // Actualizar el módulo
+                    const moduleRef = doc(firestore, 'custom-modules', mod.id);
+                    await updateDoc(moduleRef, {
+                        folderId: folderId,
+                        updatedAt: serverTimestamp()
+                    });
+                    console.log(`Migrated module "${mod.name}" with folderId: "${folderId}"`);
+
+                    // Actualizar todos los documentos que pertenecen a este módulo usando batch
+                    const docsToUpdate = allDocs.filter(d => d.category === mod.id);
+                    if (docsToUpdate.length > 0) {
+                        const batch = writeBatch(firestore);
+                        docsToUpdate.forEach(document => {
+                            const docRef = doc(firestore, 'documentos', document.id);
+                            batch.update(docRef, {
+                                category: folderId,
+                                updatedAt: serverTimestamp()
+                            });
                         });
-                        console.log(`Migrated module "${mod.name}" with folderId: "${folderId}"`);
-
-                        // Actualizar todos los documentos que pertenecen a este módulo
-                        const docsToUpdate = allDocs.filter(d => d.category === mod.id);
-                        for (const document of docsToUpdate) {
-                            try {
-                                const docRef = doc(firestore, 'documentos', document.id);
-                                await updateDoc(docRef, {
-                                    category: folderId,
-                                    updatedAt: serverTimestamp()
-                                });
-                                console.log(`Updated document "${document.title}" category to: "${folderId}"`);
-                            } catch (docError) {
-                                console.error(`Error updating document ${document.title}:`, docError);
-                            }
-                        }
-                    } catch (error) {
-                        console.error(`Error migrating module ${mod.name}:`, error);
+                        await batch.commit();
+                        console.log(`Updated ${docsToUpdate.length} documents category to: "${folderId}"`);
                     }
+                } catch (error) {
+                    console.error(`Error migrating module ${mod.name}:`, error);
                 }
             }
         };
 
         migrateModules();
-    }, [firestore, customModules, allDocs]);
+    }, [firestore, customModules, allDocs, hasModulesMigrated]);
 
     const seedData = async () => {
         if (!firestore || !allDocs) return;
@@ -589,12 +597,25 @@ export default function DocumentacionPage() {
         }
     };
 
+    // Flag para ejecutar seed/migración solo una vez por sesión
+    const [hasInitialized, setHasInitialized] = useState(false);
+
     useEffect(() => {
-        if (!isLoadingDocs && allDocs) {
-            seedData();
-            migrateDocumentStatus();
+        if (!isLoadingDocs && allDocs && !hasInitialized) {
+            setHasInitialized(true);
+            // Solo ejecutar si hay documentos faltantes o con estados incorrectos
+            const allInitialDocs = Object.values(initialDocs).flat();
+            const existingIds = new Set(allDocs.map(d => d.id));
+            const hasMissing = allInitialDocs.some(d => !existingIds.has(d.id));
+            const hasIncorrectStatus = allDocs.some(d => {
+                const estadosIngles = ['complete', 'incomplete', 'pending'];
+                return !d.estado || estadosIngles.includes(d.estado);
+            });
+
+            if (hasMissing) seedData();
+            if (hasIncorrectStatus) migrateDocumentStatus();
         }
-    }, [isLoadingDocs, allDocs, firestore]);
+    }, [isLoadingDocs, allDocs, firestore, hasInitialized]);
 
     useEffect(() => {
         if (allDocs) {

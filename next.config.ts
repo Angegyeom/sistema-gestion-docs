@@ -30,10 +30,10 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  // Configuración para permitir archivos más grandes
+  // Límite de tamaño para archivos (1GB)
   experimental: {
     serverActions: {
-      bodySizeLimit: '100mb',
+      bodySizeLimit: '1gb',
     },
   },
 };

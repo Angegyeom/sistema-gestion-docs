@@ -1,8 +1,8 @@
 'use client';
 
-import React, { DependencyList, createContext, useContext, ReactNode, useMemo, useState, useEffect } from 'react';
+import React, { DependencyList, createContext, useContext, ReactNode, useMemo, useState, useEffect, useRef } from 'react';
 import { FirebaseApp } from 'firebase/app';
-import { Firestore } from 'firebase/firestore';
+import { Firestore, doc, onSnapshot } from 'firebase/firestore';
 import { Auth, User, onAuthStateChanged } from 'firebase/auth';
 import { FirebaseErrorListener } from '@/components/FirebaseErrorListener'
 
@@ -172,12 +172,19 @@ export function useMemoFirebase<T>(factory: () => T, deps: DependencyList): T | 
  * This provides the User object, loading status, any auth errors, and user data from Firestore.
  * @returns {UserHookResult} Object with user, isUserLoading, userError, userData.
  */
-export const useUser = (): UserHookResult => { // Renamed from useAuthUser
-  const { user, isUserLoading, userError, firestore } = useFirebase(); // Leverages the main hook
+export const useUser = (): UserHookResult => {
+  const { user, isUserLoading, userError, firestore } = useFirebase();
   const [userData, setUserData] = useState<any>(null);
   const [isUserDataLoading, setIsUserDataLoading] = useState(true);
+  const unsubscribeRef = useRef<(() => void) | null>(null);
 
   useEffect(() => {
+    // Limpiar suscripción anterior si existe
+    if (unsubscribeRef.current) {
+      unsubscribeRef.current();
+      unsubscribeRef.current = null;
+    }
+
     if (!user || !firestore) {
       setUserData(null);
       setIsUserDataLoading(false);
@@ -186,26 +193,30 @@ export const useUser = (): UserHookResult => { // Renamed from useAuthUser
 
     setIsUserDataLoading(true);
 
-    // Import necesario para Firestore
-    import('firebase/firestore').then(({ doc, onSnapshot }) => {
-      const userDocRef = doc(firestore, 'users', user.uid);
-      const unsubscribe = onSnapshot(userDocRef, (docSnap) => {
-        if (docSnap.exists()) {
-          const data = { id: docSnap.id, ...docSnap.data() };
-          setUserData(data);
-          setIsUserDataLoading(false);
-        } else {
-          setUserData(null);
-          setIsUserDataLoading(false);
-        }
-      }, (error) => {
-        console.error('Error fetching user data:', error);
+    // Usar imports directos en lugar de dynamic import
+    const userDocRef = doc(firestore, 'users', user.uid);
+    const unsubscribe = onSnapshot(userDocRef, (docSnap) => {
+      if (docSnap.exists()) {
+        const data = { id: docSnap.id, ...docSnap.data() };
+        setUserData(data);
+      } else {
         setUserData(null);
-        setIsUserDataLoading(false);
-      });
-
-      return () => unsubscribe();
+      }
+      setIsUserDataLoading(false);
+    }, (error) => {
+      console.error('Error fetching user data:', error);
+      setUserData(null);
+      setIsUserDataLoading(false);
     });
+
+    unsubscribeRef.current = unsubscribe;
+
+    return () => {
+      if (unsubscribeRef.current) {
+        unsubscribeRef.current();
+        unsubscribeRef.current = null;
+      }
+    };
   }, [user, firestore]);
 
   return { user, isUserLoading, userError, userData, isUserDataLoading };

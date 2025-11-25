@@ -222,3 +222,39 @@ await deleteFile(result.filePath);
 - **UI Components**: Follow shadcn/ui pattern with Radix UI primitives in `src/components/ui/`
 - **Background Color**: Uses `bg-[#004272]` (dark blue) instead of the purple gradient mentioned in `docs/blueprint.md`
 - Uses `patch-package` for dependency modifications
+
+## Known Issues & Technical Debt
+
+### Critical Security Issues
+
+1. **Missing Authentication on Storage API Routes** - Routes in `/api/storage/` (upload, download, delete, create-folder, delete-folder) lack authentication checks. Any unauthenticated user can upload/delete files.
+
+2. **SSL Certificate Verification Disabled** - Auth API routes (`/api/auth/create-user`, `/api/auth/delete-user`, `/api/auth/update-password`) disable SSL verification in development with `NODE_TLS_REJECT_UNAUTHORIZED = '0'`. Ensure this never reaches production.
+
+3. **File Path Traversal Risk** - `/api/storage/download` doesn't validate that `filePath` stays within expected category folders. Attacker could potentially use path traversal.
+
+4. **Hardcoded GCP Fallback Credentials** - `src/lib/storage.ts` has hardcoded fallback values for `GCP_PROJECT_ID` and `GCP_BUCKET_NAME`.
+
+### Data Consistency Issues
+
+1. **Inconsistent Role Schema** - Login page creates users with `role` string field, but admin page uses `roles` array. The system handles both for backwards compatibility, but new code should only use `roles` array.
+
+2. **Race Condition in useUser Hook** - Dynamic import inside useEffect in `src/firebase/provider.tsx` can cause race conditions with rapid user changes.
+
+### Incomplete Features
+
+1. **PasswordResetModal Not Implemented** - Component exists but is never rendered. The `showPasswordResetModal` state is declared but never set to true, and `requirePasswordReset` flag is never checked.
+
+### Code Quality
+
+1. **Excessive `any` Types** - Multiple files use `any` type defeating TypeScript checking: `provider.tsx`, `administrador/page.tsx`, `login/page.tsx`, `documentacion/page.tsx`, `PasswordResetModal.tsx`.
+
+2. **Build Errors Ignored** - `next.config.ts` has `ignoreBuildErrors: true` and `ignoreDuringBuilds: true`. Type errors should be fixed before production deployment.
+
+### Recommended Fixes (Priority Order)
+
+1. Add Firebase Auth token verification to all `/api/storage/` routes
+2. Implement file path validation (whitelist approach for categories)
+3. Migrate all users to `roles` array, deprecate `role` string
+4. Replace `any` types with proper TypeScript interfaces
+5. Enable TypeScript error checking in builds
