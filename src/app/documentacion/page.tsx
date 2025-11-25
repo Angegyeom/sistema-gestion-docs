@@ -623,7 +623,9 @@ export default function DocumentacionPage() {
             const filteredDocs = allDocs.filter(doc => {
                 const categoryMatch = doc.category === activeCategory;
                 const searchMatch = doc.title.toLowerCase().includes(searchTerm.toLowerCase());
-                const priorityMatch = !showPriorityOnly || priorityTypes.includes(doc.type);
+                // Excluir "Acta de Reunión" de los prioritarios
+                const isActaReunion = doc.type === 'acta' && doc.title.toLowerCase().includes('reunión');
+                const priorityMatch = !showPriorityOnly || (priorityTypes.includes(doc.type) && !isActaReunion);
                 return categoryMatch && searchMatch && priorityMatch;
             });
             setDocs(filteredDocs);
