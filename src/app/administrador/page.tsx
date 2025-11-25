@@ -1220,24 +1220,25 @@ const ReportSection = ({ documents, isLoading }) => {
     ];
 
     // Definir los 17 tipos de documentos
+    // NOTA: Los tipos en Firestore son: acta (para constitución, conformidad, reunión), manual (para usuario y sistema)
+    // Usamos titleMatch para distinguir entre documentos del mismo tipo
     const documentTypes = [
-        { id: 'acta', name: 'Acta de Constitución', priority: true },
-        { id: 'acta-conformidad', name: 'Acta de Conformidad', priority: true },
-        { id: 'acta-reunion', name: 'Acta de Reunión', priority: false },
+        { id: 'acta', name: 'Acta de Constitución', priority: true, titleMatch: 'Constitución' },
+        { id: 'acta', name: 'Acta de Conformidad', priority: true, titleMatch: 'Conformidad' },
+        { id: 'acta', name: 'Acta de Reunión', priority: false, titleMatch: 'Reunión' },
         { id: 'cronograma', name: 'Cronograma', priority: true },
         { id: 'backlog', name: 'Product Backlog', priority: false },
         { id: 'requerimientos', name: 'Requerimientos', priority: false },
         { id: 'arquitectura', name: 'Arquitectura', priority: false },
         { id: 'diagrama', name: 'Diagrama', priority: false },
         { id: 'prototipo', name: 'Prototipo', priority: true },
-        { id: 'manual', name: 'Manual de Usuario', priority: true },
-        { id: 'manual-sistema', name: 'Manual de Sistema', priority: true },
-        { id: 'manual-bd', name: 'Manual de Base de Datos', priority: false },
+        { id: 'manual', name: 'Manual de Usuario', priority: true, titleMatch: 'Usuario' },
+        { id: 'manual', name: 'Manual de Sistema', priority: true, titleMatch: 'Sistema' },
+        { id: 'manual-bd', name: 'Diccionario de Base de Datos', priority: false },
         { id: 'repositorios', name: 'Repositorios', priority: false },
-        { id: 'lecciones', name: 'Lecciones Aprendidas', priority: false },
+        { id: 'lecciones', name: 'Lecciones Aprendidas', priority: true },
         { id: 'solicitud-cambio', name: 'Solicitud de Cambio', priority: false },
         { id: 'doc-api', name: 'Documentación de API', priority: false },
-        { id: 'default', name: 'Documento General', priority: false },
     ];
 
     // Tipos prioritarios
@@ -1420,8 +1421,8 @@ const ReportSection = ({ documents, isLoading }) => {
                                         <th className="sticky left-0 z-10 bg-[#004272] px-3 py-2 text-left font-semibold text-sm border-r border-white/20">
                                             Módulo
                                         </th>
-                                        {filteredDocTypes.map(docType => (
-                                            <th key={docType.id} className="px-2 py-2 text-center font-semibold text-xs border-r border-white/20 min-w-[90px]">
+                                        {filteredDocTypes.map((docType, index) => (
+                                            <th key={`${docType.id}-${index}`} className="px-2 py-2 text-center font-semibold text-xs border-r border-white/20 min-w-[90px]">
                                                 {docType.name}
                                                 {docType.priority && <span className="ml-1">⭐</span>}
                                             </th>
@@ -1445,15 +1446,22 @@ const ReportSection = ({ documents, isLoading }) => {
                                                         <span className="text-xs">{category.name}</span>
                                                     </div>
                                                 </td>
-                                                {filteredDocTypes.map(docType => {
-                                                    const doc = documents.find(d =>
-                                                        d.category === category.id && d.type === docType.id
-                                                    );
+                                                {filteredDocTypes.map((docType, docIndex) => {
+                                                    // Buscar documento por tipo Y por título si tiene titleMatch
+                                                    const doc = documents.find(d => {
+                                                        if (d.category !== category.id) return false;
+                                                        if (d.type !== docType.id) return false;
+                                                        // Si tiene titleMatch, verificar que el título contenga esa palabra
+                                                        if (docType.titleMatch) {
+                                                            return d.title?.toLowerCase().includes(docType.titleMatch.toLowerCase());
+                                                        }
+                                                        return true;
+                                                    });
                                                     const estado = doc?.estado || 'Pendiente';
                                                     const isComplete = estado === 'Completado';
 
                                                     return (
-                                                        <td key={docType.id} className="px-2 py-1.5 text-center border-r border-gray-200">
+                                                        <td key={`${docType.id}-${docIndex}`} className="px-2 py-1.5 text-center border-r border-gray-200">
                                                             {isComplete ? (
                                                                 <span className="inline-flex items-center justify-center w-5 h-5 bg-green-100 rounded-full">
                                                                     <span className="text-green-600 text-sm">✓</span>
