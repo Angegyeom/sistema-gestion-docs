@@ -619,7 +619,7 @@ export default function DocumentacionPage() {
 
     useEffect(() => {
         if (allDocs) {
-            const priorityTypes = ['acta', 'cronograma', 'manual', 'prototipo'];
+            const priorityTypes = ['acta', 'cronograma', 'manual', 'prototipo', 'lecciones'];
             const filteredDocs = allDocs.filter(doc => {
                 const categoryMatch = doc.category === activeCategory;
                 const searchMatch = doc.title.toLowerCase().includes(searchTerm.toLowerCase());
