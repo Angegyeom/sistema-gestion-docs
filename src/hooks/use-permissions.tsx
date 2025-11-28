@@ -14,6 +14,7 @@ export const CATEGORY_ROLE_MAP = {
   consistencia: 'CONSISTENCIA',
   monitoreo: 'MONITOREO',
   yanapaq: 'YANAPAQ',
+  'bolsa-proveedores': 'BOLSA-PROVEEDORES',
 };
 
 export function usePermissions() {

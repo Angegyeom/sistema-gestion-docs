@@ -18,6 +18,7 @@ const categories = [
   { id: 'consistencia', name: 'Consistencia', icon: '⚙️', border: 'border-indigo-500', bg: 'bg-indigo-500' },
   { id: 'monitoreo', name: 'Monitoreo', icon: '📊', border: 'border-yellow-500', bg: 'bg-yellow-500' },
   { id: 'yanapaq', name: 'Yanapaq', icon: '🤝', border: 'border-cyan-500', bg: 'bg-cyan-500' },
+  { id: 'bolsa-proveedores', name: 'Bolsa Proveedores', icon: '🛒', border: 'border-rose-500', bg: 'bg-rose-500' },
 ];
 
 const initialDocs = {
@@ -191,6 +192,25 @@ const initialDocs = {
         { id: 'yan-15', title: 'Documentación de API', description: 'Documentación de API del sistema Yanapaq', type: 'doc-api', version: '1.0', updatedAt: '15 Sep 2025', url: '#', category: 'yanapaq' },
         { id: 'yan-16', title: 'Acta de Reunión', description: 'Actas de las reuniones del proyecto Yanapaq', type: 'acta', version: '1.0', updatedAt: '15 Sep 2025', url: '#', category: 'yanapaq' },
         { id: 'yan-17', title: 'Solicitud de Cambio', description: 'Solicitudes de cambio del proyecto Yanapaq', type: 'solicitud-cambio', version: '1.0', updatedAt: '15 Sep 2025', url: '#', category: 'yanapaq' },
+    ],
+    'bolsa-proveedores': [
+        { id: 'bol-1', title: 'Acta de Constitución', description: 'Acta de constitución del proyecto de Bolsa Proveedores', type: 'acta', version: '1.0', updatedAt: '28 Nov 2025', url: '#', category: 'bolsa-proveedores' },
+        { id: 'bol-2', title: 'Cronograma', description: 'Cronograma detallado de actividades de Bolsa Proveedores', type: 'cronograma', version: '1.0', updatedAt: '28 Nov 2025', url: '#', category: 'bolsa-proveedores' },
+        { id: 'bol-3', title: 'Prototipo', description: 'Prototipo y diseño del sistema de Bolsa Proveedores', type: 'prototipo', version: '1.0', updatedAt: '28 Nov 2025', url: '#', category: 'bolsa-proveedores' },
+        { id: 'bol-4', title: 'Manual de Usuario', description: 'Manual de usuario del sistema de Bolsa Proveedores', type: 'manual', version: '1.0', updatedAt: '28 Nov 2025', url: '#', category: 'bolsa-proveedores' },
+        { id: 'bol-5', title: 'Manual de Sistema', description: 'Manual técnico del sistema de Bolsa Proveedores', type: 'manual', version: '1.0', updatedAt: '28 Nov 2025', url: '#', category: 'bolsa-proveedores' },
+        { id: 'bol-6', title: 'Lecciones Aprendidas', description: 'Lecciones aprendidas del desarrollo de Bolsa Proveedores', type: 'lecciones', version: '1.0', updatedAt: '28 Nov 2025', url: '#', category: 'bolsa-proveedores' },
+        { id: 'bol-7', title: 'Requerimientos Funcionales', description: 'Requerimientos funcionales de Bolsa Proveedores', type: 'requerimientos', version: '1.0', updatedAt: '28 Nov 2025', url: '#', category: 'bolsa-proveedores' },
+        { id: 'bol-8', title: 'Product Backlog', description: 'Product Backlog de Bolsa Proveedores', type: 'backlog', version: '1.0', updatedAt: '28 Nov 2025', url: '#', category: 'bolsa-proveedores' },
+        { id: 'bol-9', title: 'Acta de Conformidad', description: 'Acta de conformidad de Bolsa Proveedores', type: 'acta', version: '1.0', updatedAt: '28 Nov 2025', url: '#', category: 'bolsa-proveedores' },
+        { id: 'bol-10', title: 'Arquitectura de Software', description: 'Arquitectura de software del sistema de Bolsa Proveedores', type: 'arquitectura', version: '1.0', updatedAt: '28 Nov 2025', url: '#', category: 'bolsa-proveedores' },
+        { id: 'bol-11', title: 'Diagrama de Flujo', description: 'Diagrama de flujo del sistema de Bolsa Proveedores', type: 'diagrama', version: '1.0', updatedAt: '28 Nov 2025', url: '#', category: 'bolsa-proveedores' },
+        { id: 'bol-12', title: 'Diagrama de Proceso', description: 'Diagrama de proceso del sistema de Bolsa Proveedores', type: 'diagrama', version: '1.0', updatedAt: '28 Nov 2025', url: '#', category: 'bolsa-proveedores' },
+        { id: 'bol-13', title: 'Repositorios', description: 'Repositorios de código del sistema de Bolsa Proveedores', type: 'repositorios', version: '1.0', updatedAt: '28 Nov 2025', url: '#', category: 'bolsa-proveedores' },
+        { id: 'bol-14', title: 'Manual de Base de Datos', description: 'Manual de base de datos del sistema de Bolsa Proveedores', type: 'manual-bd', version: '1.0', updatedAt: '28 Nov 2025', url: '#', category: 'bolsa-proveedores' },
+        { id: 'bol-15', title: 'Documentación de API', description: 'Documentación de API del sistema de Bolsa Proveedores', type: 'doc-api', version: '1.0', updatedAt: '28 Nov 2025', url: '#', category: 'bolsa-proveedores' },
+        { id: 'bol-16', title: 'Acta de Reunión', description: 'Actas de las reuniones del proyecto de Bolsa Proveedores', type: 'acta', version: '1.0', updatedAt: '28 Nov 2025', url: '#', category: 'bolsa-proveedores' },
+        { id: 'bol-17', title: 'Solicitud de Cambio', description: 'Solicitudes de cambio del proyecto de Bolsa Proveedores', type: 'solicitud-cambio', version: '1.0', updatedAt: '28 Nov 2025', url: '#', category: 'bolsa-proveedores' },
     ]
 };
 

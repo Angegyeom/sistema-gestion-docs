@@ -48,6 +48,7 @@ export default function AdministradorPage() {
                 { name: 'CONSISTENCIA', description: 'Acceso al módulo de Consistencia de Datos' },
                 { name: 'MONITOREO', description: 'Acceso al módulo de Monitoreo y Supervisión' },
                 { name: 'YANAPAQ', description: 'Acceso al módulo Yanapaq' },
+                { name: 'BOLSA-PROVEEDORES', description: 'Acceso al módulo de Bolsa de Proveedores' },
             ];
 
             // Roles obsoletos que deben eliminarse
@@ -1217,6 +1218,7 @@ const ReportSection = ({ documents, isLoading }) => {
         { id: 'consistencia', name: 'Consistencia', icon: '⚙️' },
         { id: 'monitoreo', name: 'Monitoreo', icon: '📊' },
         { id: 'yanapaq', name: 'Yanapaq', icon: '🤝' },
+        { id: 'bolsa-proveedores', name: 'Bolsa Proveedores', icon: '🛒' },
     ];
 
     // Definir los 17 tipos de documentos
